@@ -1,0 +1,79 @@
+<html layout:decorate="~{/common/layout}">
+<head>
+	<link rel="stylesheet" th:href="@{/css/product/detail.css}" />
+</head>
+    
+<div layout:fragment="content" class="container my-3"><!-- 아래가 레이아웃 content 부분에 담김 -->
+
+        <section class="top">
+            <!-- 상품 제목 -->
+            <span class="jua-regular fs-2" th:text="${detail.productName}"></span>
+        </section>
+        <!-- 상품 제목 -->
+
+        <div class="d-flex justify-content-center">
+            <!-- 상품 사진, 상품 개요 -->
+            <form th:object="${shoppingCartForm}" th:action="@{/order/cartInsert}" method="post">
+                <input type="hidden" th:field="*{thumbnailName}" />
+                <!-- cartForm에 저장된 썸네일명 -->
+                <div class="w-50">
+                    <!-- 상품 사진 (슬라이더)-->
+                    <div th:each=" img : ${images}">
+                        <img th:src="@{|/upload/product/${img}|}" class="w-25" />
+                    </div>
+                </div>
+
+                <div>
+                    <!-- 상품 개요/구매/장바구니/찜-->
+                    <div>
+                        <!-- 상품 개요 -->
+                        <h6 class="card-subtitle" th:text="'가게: '+${detail.shopNo}"></h6>
+                        <input type="hidden" th:field="*{shopNo}" />
+                        <!-- cartForm에 저장된 가게번호 -->
+                        <h4 class="card-title" th:text="'이름: '+${detail.productName}"></h4>
+                        <input type="hidden" th:field="*{productName}" />
+                        <!-- cartForm에 저장된 상품명 -->
+                        <h6 th:text="${detail.price}+'원'">가격</h6>
+                        <input type="hidden" th:field="*{price}" />
+                        <!-- cartForm에 저장된 1개당 가격 -->
+                    </div>
+                    <div>
+                        <!-- 찜/구매/장바구니 -->
+                        <input type="number" th:field="*{quantity}" value="1" maxlength="3" min="1" max="999" />
+                        <!-- 수량 -->
+                        <input type="hidden" th:field="*{productNo}" th:value="${detail.productNo}" />
+                        <!-- 상품번호 -->
+                        <div class="" th:unless="${session.user==null}">
+                            <img th:src="@{/image/main/favorite.png}" style="width: 30px" />
+                            <br />
+                            <!-- 찜 -->
+                            <input type="hidden" name="buyerNo" th:value="${session.user.memberNo}" />
+                            <!-- 구매자 회원 번호 -->
+                            <button class="btn btn-light w-50" style="max-width: 200px" type="submit">
+                                <img class="shoppingCartIcon" th:src="@{/image/main/add_shopping_cart.png}" />
+                                &nbsp;담기
+                            </button>
+                            <button class="btn btn-light w-50" style="max-width: 200px" type="submit" disabled>구매</button>
+                        </div>
+                        <div class="" th:if="${session.user==null}">
+                            <p>로그인 후 구매가 가능합니다.</p>
+                            <button class="btn btn-light w-50" style="max-width: 200px" type="submit" disabled>
+                                <img class="shoppingCartIcon" th:src="@{/image/main/add_shopping_cart.png}" />
+                                &nbsp;담기
+                            </button>
+                            <button class="btn btn-light w-50" style="max-width: 200px" type="submit" disabled>구매</button>
+                        </div>
+                    </div>
+                    <!-- 찜/구매/장바구니 -->
+                </div>
+                <!-- 상품 개요/구매/장바구니/찜 -->
+            </form>
+        </div>
+        <div th:utext="${detail.productInfo}"></div>
+        <!-- 상품 상세 정보 -->
+</div><!-- layout:fragment="content" -->
+
+<script layout:fragment="script" type="text/javascript" th:inline="javascript">
+
+</script>
+</html>

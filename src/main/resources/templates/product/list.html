@@ -1,0 +1,330 @@
+<html layout:decorate="~{common/layout}">	<!--layout.html을 include한 셈-->
+<head>
+ 	<link rel="stylesheet" th:href="@{/css/product/list.css}" /> 
+ 	
+ 	<!-- 시큐리티에서 ajax 활성화 -->
+	<th:block layout:fragment="head-extra">
+        <meta name="_csrf" th:content="${_csrf.token}">
+        <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    </th:block>
+	<!-- 카카오맵 api sdk -->
+	<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=b4fd57268b42b0698df77c27d1c4e78c&libraries=services"></script>        
+</head>
+
+<div layout:fragment="content" class="container my-3 d-flex col">
+<!-- 아래가 레이아웃 content 부분에 담김 -->
+
+	<!-- 필터링박스 -->
+	<div class="sticky-wrapper">
+		<div class="box filtering">
+			<form>
+				<div class="mb-1 d-flex justify-content-between">
+					<h4>필터</h4>
+					<button class="btn btn-secondary btm-xs reset-filter" type="reset"
+						onclick="window.location.reload()">초기화</button>
+				</div>
+				<div class="mt-1 mb-2 d-flex row">
+					<div>
+						<input type="checkbox" name="onlySubs" id="onlySubs" value="1" />
+						<span>정기 배송 상품만</span>
+					</div>
+					<div>
+						<input type="checkbox" name="onlySubs" id="onlySales" value="1" />
+						<span>품절 상품 제외</span>
+					</div>
+					<div>
+						<input type="checkbox" name="onlyOpen" id="onlyOpen" value="1" />
+						<span>준비중인 상점 제외</span>
+					</div>
+				</div>
+				<div class="mb-2 d-flex row">
+					<b class="fs-6">정렬</b> <span class="sort sort-sales"
+						th:attr="data-sorttype=sales">구매순</span> <span
+						class="sort sort-new" th:attr="data-sorttype=new">최신 등록순</span> <span
+						class="sort sort-rating" th:attr="data-sorttype=rating">별점
+						높은순</span> <span class="sort sort-price" th:attr="data-sorttype=price">낮은
+						가격순</span> <span class="sort sort-priceDesc"
+						th:attr="data-sorttype=priceDesc">높은 가격순</span>
+				</div>
+			</form>
+
+			<div class="fs-6 fw-bold">위치</div>
+			<div th:replace="~{/common/location :: location}"></div>
+			<script>
+				//위치설정 option 사이에 br추가
+				$(document).ready(function(){
+					$("#sido").append('<br>');
+				});
+				</script>
+		</div>
+	</div>
+
+	<!-- 제목&목록 -->
+	<div class="d-flex row p-2 w-100 col-9">
+		<section class="top">
+			<!-- 목록 상단부 -->
+			<h1 class="jua-regular mt-5 mb-3 ms-2">
+				<!-- 목록 제목 -->
+				<span class="sigungu"></span> <span th:if="${category==null}">
+					모든 빵</span> <span th:unless="${category==null}" th:text="${category}"></span>
+			</h1>
+		</section>
+		<!-- 목록 상단부 -->
+
+		<!-- 두 박스 나란히  -->
+		<div class="d-flex justify-content-between">
+			<!-- 목록 출력 -->
+			<div class="ms-3 position-relative">
+				<!-- 로딩 오버레이 -->
+				<!-- 		<div id="loadingOverlay" class="position-absolute w-100 h-100 d-flex justify-content-center align-items-center"
+					style="background: rgba(255,255,255,0.7); display:none; z-index: 50;">
+					<div class="spinner-border text-warning" role="status">
+						<span class="visually-hidden">로딩중</span>
+					</div>
+				</div>	 -->
+
+				<!-- 시군구별 카테고리 목록 fragment -->
+				<div id="sigunguList" th:fragment="sigunguList"></div>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- layout:fragment="content" -->
+
+<script layout:fragment="script" type="text/javascript" th:inline="javascript">
+	// 모든 jQuery AJAX 요청에 CSRF 헤더 자동 첨부
+	$(function () {
+	  const token  = $('meta[name="_csrf"]').attr('content');
+	  const header = $('meta[name="_csrf_header"]').attr('content');
+	  $(document).ajaxSend(function (e, xhr) {
+	    if (token && header) xhr.setRequestHeader(header, token);
+	  });
+	});
+	
+	$(document).ready(function(){
+		//카드12개만 가져오기
+		loadProducts();
+	});
+	
+	//필터링 기능
+	function checkFilter(){
+		//체크박스 선택자
+		const checkedSubs =  $('#onlySubs').is(':checked');
+		const checkedSales = $('#onlySales').is(':checked');
+		const checkedOpen = $('#onlyOpen').is(':checked');
+		
+		$('.card').each(function(){
+			//각 카드의 data
+			const isSubs = $(this).data('is-subs');
+			const isSales = $(this).data('status');
+			const isOpen = $(this).data('shopstatus');
+			
+			let show = true;
+			//subs=1이면 정기 상품(보여야함)
+			if(checkedSubs && isSubs != 1 ){
+				show = false;
+			}
+			//sales=1이면 품절 상품(숨겨야함)
+			if(checkedSales && isSales == 1){
+				show = false;
+			}
+			//open=1이면 준비중(숨겨야함)
+			if(checkedOpen && isOpen == 1){
+				show = false;
+			}
+			
+			$(this).toggle(show); //show=true면 보이고 false면 안보임
+		});
+	}
+	
+	//체크박스 클릭 시 필터링 동작
+	$('#onlySubs, #onlySales, #onlyOpen').on('change',checkFilter);
+	
+	//정렬
+	$('.sort-sales, .sort-new, .sort-rating, .sort-price, .sort-priceDesc').on('click',function(){
+		const selectedSido = $('#sido').val();
+		const selectedSigungu = $('#sigungu').val();
+		let cateName = /*[[${category}]]*/ 'all'; //카테고리이름 없으면 null
+		const sortType = $(this).data('sorttype');
+		const thisSort = $(this);
+		
+		//로딩 중 오버레이 보여주기
+		//$('#loadingOverlay').show();
+		
+		$.ajax({
+			url : '/product/sigunguListSortBy',
+			method : 'get',
+			data : {
+				sido : selectedSido,
+				sigungu : selectedSigungu,
+				cateName : cateName,
+				sortType : sortType
+			},
+			success : function(fragmentHtml){
+				//출력목록 변경
+				$('#sigunguList').html(fragmentHtml);
+				//선택된 링크에만 active 클래스 추가
+				$('.sort').removeClass('active');
+				thisSort.addClass('active');
+				//필터링 체크박스 확인
+				checkFilter();
+				//처음 12개만 보여주기
+				loadProducts();
+			},
+			error : function(error){
+				console.log(error);
+				showToast("다시 시도해주세요.","error");
+			},
+		});
+		//로딩완료 후 오버레이 숨기기
+		//$('#loadingOverlay').hide();
+	});
+	
+	//12개씩만 보여주는 함수
+	function loadProducts(){
+		const cards = $("#sigunguList .card");
+		const batchSize = 12; //한번에 보여줄 개수
+		let shownCount = 0; //이미 보여진 개수
+		
+		//처음 12개 보여주기
+		cards.hide();//전체 카드 숨기기
+		cards.slice(0, batchSize).show(); //12개 공개
+		shownCount = batchSize; //보여진 개수 업데이트
+		
+		//스크롤 내리면
+		$(window).off("scroll.cardScroll").on("scroll.cardScroll",function(){
+			//페이지 끝까지 내려가면
+			if($(window).scrollTop() + $(window).height() >= $(document).height() - 100){
+				//다음 12개 보여주기
+				cards.slice(shownCount, shownCount + batchSize).fadeIn();
+				shownCount += batchSize;
+			}
+		});
+	}
+	
+	
+	//지역값이 선택되었다면 목록 제목 &목록 변경
+	function changeList(){
+		const selectedSido = $('#sido').val();
+		const selectedSigungu = $('#sigungu').val();
+		let cateName = /*[[${category}]]*/ 'all'; //카테고리이름 없으면 all
+		
+		//로딩 중 오버레이 보여주기
+		//$('#loadingOverlay').show();
+		
+		//제목 변경
+		$('.sigungu').empty().text(selectedSigungu);
+		//기존 목록 삭제
+		$('#sigunguList').empty();
+		//카테고리 목록 변경
+	 	$.ajax({
+			url : '/product/sigunguList',
+			method : 'get',
+			data : {
+				sido : selectedSido,
+				sigungu : selectedSigungu,
+				cateName : cateName
+			},
+			success : function(fragmentHtml){
+				//출력목록 변경
+				$('#sigunguList').html(fragmentHtml);
+				//필터링 확인
+				checkFilter();
+				//다시 처음 12개만 보여주기
+				loadProducts();
+			},
+			error : function(){
+				showToast("다시 시도해주세요.","error");
+			},
+			complete : function(){
+				//로딩완료 후 오버레이 숨기기
+				//$('#loadingOverlay').hide();
+			}
+		});
+	}
+
+	
+	//전역변수 선언
+	let memberno = /*[[${memberNo}]]*/ null;
+	
+	//담기 버튼 클릭 시 장바구니에 상품 추가
+	$(document).on('click','.insertBtn',function(){
+		let productno = $(this).closest(".card").data("productno"); //closest 상위요소 찾기
+		let shopno = $(this).closest('.card').find('[data-shopno]').data("shopno"); //find..data.. 하위요소 찾기
+		let productname = $(this).closest('.card').find('[data-productname]').data("productname");
+		let price = $(this).closest('.card').find('[data-price]').data("price");
+		let quantity = 1; //상품카드에서 '담기'클릭 시 무조건 상품 1개 추가
+		let thumbnailname = $(this).closest('.card').find('[data-thumbnailname]').data('thumbnailname');
+		
+		//로그인한 사용자만 장바구니 추가 가능하도록
+		if(memberno==null){ //로그인한 회원이 아니라면
+			showConfirmAlert('이용을 위해 로그인 하시겠습니까?',
+					() => { /* 예 */
+						window.location="/member/login";
+					},
+					() => {	/* 아니오 */	}
+			);
+			return; //로그인 안됨
+		}		
+		
+		//ajax로 장바구니 추가 처리
+		$.ajax({
+			url : "/order/cartInsert", //장바구니에 추가하는 url 요청
+			method : "POST",
+			contentType : "application/json", //json방식으로 데이터 전송
+			data : JSON.stringify({ //데이터를 key:value의 JSON문자열로 변환
+				productNo : productno,
+				shopNo : shopno,
+				productName : productname,
+				price : price,
+				quantity : 1,
+				thumbnailName : thumbnailname,
+				memberNo : memberno
+			}),
+			success :function(response){
+				console.log(response); //응답 출력
+				showToast("장바구니에 추가되었습니다.","success",2500);
+			},
+			error : function(error){
+				console.log(error); //응답 출력
+				showToast("다시 시도해주세요.","error",2500);
+			}
+		}); //ajax종료
+	});
+	
+	//찜 토글
+	$(document).on('click','.wish-btn',function(){
+		let thisBtn = $(this);
+		let productno = $(this).closest(".card").data("productno"); //closest 상위요소 찾기
+		
+		//로그인한 사용자만 찜 가능하도록
+		if(memberno==null){ //로그인한 회원이 아니라면
+			showConfirmAlert('이용을 위해 로그인 하시겠습니까?',
+					() => { /* 예 */
+						window.location="/member/login";
+					},
+					() => {	/* 아니오 */	}
+			);
+			return; //로그인 안됨
+		}		
+		
+		//ajax로 찜 추가 처리
+		$.ajax({
+			url: '/product/wish/toggle',
+			method: 'post',
+			contentType:'application/json',
+			data: JSON.stringify({
+				productNo : productno
+			}),
+			success:function(response){ //응답JSON
+				const wished = !!response.wished; //응답JSON에 wished가 있으면 true(찜 추가)
+				thisBtn.removeClass('bi-heart bi-heart-fill').addClass(wished ? 'bi-heart-fill' : 'bi-heart'); //원래 아이콘 삭제 후 찜 결과에 따라 아이콘 추가
+				showToast(wished ? '찜했습니다.' : '찜을 취소했습니다.', 'success'); //찜 추가면 true값, 찜 취소면 false값 출력
+			},
+			error:function(response){
+				showToast('다시 시도해주세요.','error',2000);
+			}
+		});
+	});
+</script>
+</html>

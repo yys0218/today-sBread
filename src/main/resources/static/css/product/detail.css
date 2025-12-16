@@ -1,0 +1,267 @@
+/* ===============================
+   detail.css (상품 상세 페이지 전용)
+   =============================== */
+
+/* ===== 공통 레이아웃 ===== */
+.box { 
+  background:#fff; 
+  border:1px solid #eee; 
+  border-radius:12px; 
+  padding:20px; 
+}
+.subnav a { color:#222; }
+.subnav a:hover { text-decoration:underline; }
+.sticky-subnav { 
+  position:sticky; 
+  top:56px; 
+  z-index:10; 
+  background:#fff; 
+  border-bottom:1px solid #eee; 
+}
+.subnav a.active {
+  font-weight:700; 
+  border-bottom:2px solid #222; 
+}
+
+/* ===== 상단 2단 (좌:이미지 / 우:주문정보) ===== */
+.product-detail-grid { 
+  display:grid; 
+  grid-template-columns: 1fr 1fr; /* 반반 */
+  gap:24px;
+}
+@media (max-width: 992px){
+  .product-detail-grid { grid-template-columns:1fr; }
+  .order-panel{ position:static; }
+}
+.order-panel{ 
+  position:sticky; 
+  top:84px; 
+  align-self: start;
+}
+
+/* ===== 이미지 갤러리 ===== */
+#mainImg { 
+  border-radius:12px; 
+  border:1px solid #eee; 
+  object-fit:cover; 
+}
+.mb-2 img[style*="cursor:pointer"] { 
+  transition: transform .2s ease; 
+}
+.mb-2 img[style*="cursor:pointer"]:hover { 
+  transform: scale(1.02); 
+}
+
+/* ===== 이미지 슬라이더 ===== */
+.image-wrapper { 
+  aspect-ratio: 1/1; 
+  position: relative; 
+  overflow: hidden; 
+}
+.image-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.slider-container {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  overflow: hidden;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+}
+.slider-track {
+  display: flex;
+  transition: transform 0.4s ease-in-out;
+}
+.slide {
+  min-width: 100%;
+  box-sizing: border-box;
+}
+.slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+/* 슬라이드 이동 버튼 */
+.slide-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.4);
+  border: none;
+  color: white;
+  font-size: 24px;
+  padding: 8px 12px;
+  cursor: pointer;
+  z-index: 10;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.slider-container:hover .slide-btn {
+  opacity: 1;
+  pointer-events: auto;
+}
+.prev { left: 0; }
+.next { right: 0; }
+
+/* ===== 상품 요약/주문 영역 ===== */
+.productInfo h2.productName { font-weight:700; }
+.orderInfo .price { font-weight:700; }
+.orderInfo .btn { border-radius:10px; }
+
+/* 정기 상품 / 품절 / 영업 준비 버튼 */
+.subs-btn, .closed, .sold-out { 
+  pointer-events:none;
+}
+
+/* ===== 버튼 색상 커스터마이즈 ===== */
+.orderBtn { /* 구매 */
+  background-color: #ff7542 !important;
+  color: #fff !important;
+  border: none !important;
+}
+.orderBtn:hover {
+  background-color: #ff946d !important;
+}
+
+.deleteBtn { /* 삭제 */
+  background-color: #6c757d !important;
+  color: #fff !important;
+  border: none !important;
+}
+.deleteBtn:hover {
+  background-color: #5a6268 !important;
+}
+
+/* ===== 리뷰 섹션 ===== */
+.review-summary .avg-box { min-width:220px; }
+.avg-stars i { font-size:1.1rem; }
+/* 히스토그램 */
+.histogram .bar-wrap { 
+  height: 10px; 
+  background:#f1f3f5; 
+  border-radius:5px; 
+  overflow:hidden;
+}
+.histogram .bar-wrap .bar { 
+  height: 100%; 
+  width:0%; 
+  background:#ff8a65; 
+  transition: width .3s ease;
+}
+/* 리뷰 리스트 */
+.review-item { 
+  border:1px solid #eee; 
+  border-radius:10px; 
+  padding:14px; 
+}
+.review-item .rv-header { 
+  display:flex; 
+  justify-content:space-between; 
+  gap:8px; 
+}
+.review-item .rv-nick { font-weight:600; }
+.review-item .rv-date { color:#868e96; font-size:.9rem; }
+.review-item .rv-stars i { font-size:1rem; color:#f08c00; }
+.review-item .rv-content { white-space:pre-wrap; }
+.review-item .rv-content .more { 
+  cursor:pointer; 
+  color:#666; 
+  text-decoration:underline; 
+  font-size:.9rem; 
+}
+.review-item .rv-photos img { 
+  width:84px; 
+  height:84px; 
+  object-fit:cover; 
+  border-radius:8px; 
+  border:1px solid #eee; 
+  margin-right:6px; 
+  margin-top:6px; 
+}
+
+/* 사장님 댓글 */
+.owner-reply { 
+  background:#f8f9fa; 
+  border-radius:8px; 
+  padding:10px; 
+  border:1px solid #eee; 
+}
+.owner-reply .title { 
+  font-weight:600; 
+  margin-bottom:6px; 
+  font-size:.95rem; 
+}
+
+/* ===== QnA 테이블 ===== */
+.qna-head { 
+  display:flex; 
+  justify-content:space-between; 
+  align-items:center; 
+  gap:12px; 
+}
+.qna-btn { border-radius:10px; }
+.table-qna { 
+  width:100%; 
+  border-collapse:separate; 
+  border-spacing:0 10px; 
+}
+.table-qna thead th{
+  font-weight:600; 
+  color:#555; 
+  font-size:.95rem; 
+  border-bottom:1px solid #eee; 
+  padding:10px 12px;
+}
+.table-qna tbody tr{
+  background:#fff; 
+  border:1px solid #eee; 
+  border-radius:10px;
+}
+.table-qna tbody td{
+  padding:12px; 
+  vertical-align:middle; 
+  border-top:1px solid #eee;
+}
+.table-qna tbody tr:first-child td{ border-top:none; }
+.qna-title { cursor:pointer; color:#222; text-decoration:none; }
+.qna-title:hover { text-decoration:underline; }
+
+/* 상태 뱃지 */
+.badge { 
+  display:inline-block; 
+  padding:4px 8px; 
+  font-size:.8rem; 
+  border-radius:999px; 
+  border:1px solid #eee; 
+}
+.badge.gray { background:#f1f3f5; color:#495057; }
+.badge.green { background:#e6fcf5; color:#0ca678; border-color:#c3fae8; }
+
+/* 더보기 버튼 */
+.qna-more { text-align:center; margin-top:12px; }
+
+/* ===== 제목 (상품 정보 헤더) ===== */
+.top h1{ 
+  font-family: 'Jua', system-ui; 
+  font-size: clamp(28px, 4.4vw, 48px); 
+  line-height:1.15; 
+  margin:.1em 0 .4em; 
+}
+/* 가격과 수량 나란히 붙이기 */
+.orderInfo .price {
+  margin-right: 12px; /* 가격과 수량 사이 여백 (원하는 만큼 조정 가능) */
+}
+
+.orderInfo .form-label {
+  margin: 0 6px 0 0; /* "수량" 라벨 오른쪽 여백 */
+}
+
+.orderInfo #quantity {
+  width: 80px;  /* 기존보다 조금 줄여서 가격 옆에 딱 맞게 */
+}

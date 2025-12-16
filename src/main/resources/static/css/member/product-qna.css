@@ -1,0 +1,179 @@
+/* ===== 페이지 레이아웃 공통 ===== */
+.content-right {
+  width: 100%;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-sizing: border-box;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between; /* 좌: 제목 / 우: 검색창 */
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.page-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0;
+  color: #333;
+}
+
+.content-area {
+  flex-grow: 1 1 auto;
+  padding: 28px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.07);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  max-height: 600px;
+}
+
+/* ===== QnA 전용 ===== */
+.qna-topbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.qna-topbar .filters {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* QnA 리스트 */
+.qna-list {
+  width: 100%;
+  font-size: 0.95rem;
+}
+.qna-row {
+  display: flex;
+  align-items: center;
+  padding: 14px 8px;         /* ← 위아래 여백 확대 (기존 8px → 14px) */
+  min-height: 56px;          /* 최소 높이 확보 */
+  border-bottom: 1px solid #eee;
+  transition: background 0.2s ease;
+}
+.qna-row:hover {
+  background: #fffaf8;       /* hover 시 은은한 오렌지 톤 배경 */
+}
+.qna-header {
+  font-weight: 600;
+  background: #fafafa;
+  border-bottom: 2px solid #eee;
+  padding: 14px 8px;         /* 헤더도 동일한 높이 */
+}
+.qna-row > .col {
+  padding: 6px 8px;
+}
+/* QnA 글 제목 스타일 */
+.qna-row .col a {
+  color: #000;              /* 검정색 */
+  font-weight: 600;         /* 굵게 */
+  text-decoration: none;    /* 밑줄 제거 */
+}
+
+.qna-row .col a:hover {
+  text-decoration: underline; /* hover 시 밑줄 */
+  color: #ff7542;             /* hover 시 팀 시그니처 오렌지 */
+}
+
+/* QnA 글 제목 영역 가운데 정렬 */
+.qna-row .col {
+  text-align: center;
+}
+
+/* 제목만 가운데, 상품/번호는 기존 그대로 두고 싶으면 별도 지정 */
+.qna-row .col.title-col {
+  text-align: center;
+}
+
+/* 제목 링크 스타일 */
+.qna-row .col.title-col a {
+  color: #000;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.qna-row .col.title-col a:hover {
+  text-decoration: underline;
+  color: #ff7542;
+}
+/* 번호 / 제목 / 상품 가운데 정렬 */
+.qna-row .col-1,
+.qna-row .col.title-col,
+.qna-row .col-3 {
+  text-align: center;
+}
+
+/* 제목 링크 강조 */
+.qna-row .col.title-col a {
+  color: #000;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.qna-row .col.title-col a:hover {
+  text-decoration: underline;
+  color: #ff7542;
+}
+
+/* 상태 뱃지 */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+}
+.badge-wait {
+  background: #fff4e5;
+  color: #a15c00;
+}
+.badge-done {
+  background: #e6f7ef;
+  color: #176b4d;
+}
+
+/* ===== 페이지네이션 ===== */
+.pagination {
+  margin-top: 14px;
+}
+.pagination .page-link {
+  color: #ff7542;             /* 기본 글자색 */
+  border: 1px solid #ff7542;  /* 테두리 */
+  background-color: #fff;     /* 배경 흰색 */
+  margin: 0 2px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+  padding: 4px 10px;
+}
+
+.pagination .page-link:hover {
+  background-color: #ff7542;  /* hover 시 오렌지 */
+  color: #fff;                /* hover 시 글자 흰색 */
+}
+
+.pagination .page-item.active .page-link {
+  background-color: #ff7542;  /* 현재 페이지 강조 */
+  border-color: #ff7542;
+  color: #fff;
+}
+
+.pagination .page-item.disabled .page-link {
+  color: #ccc;                /* 비활성화 회색 */
+  border-color: #eee;
+  background-color: #f9f9f9;
+  pointer-events: none;
+}

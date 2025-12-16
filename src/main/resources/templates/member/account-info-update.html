@@ -1,0 +1,183 @@
+<!-- account-info-update.html -->
+<!-- 마이페이지 - 회원 정보 수정 페이지 -->
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="ko"
+	layout:decorate="~{common/layout}">
+
+<head>
+<link rel="stylesheet" th:href="@{/css/member/mypage.css}">
+<link rel="stylesheet" th:href="@{/css/member/account-info-update.css}">
+<script th:src="@{/js/comm/sweetalert.noah.js}"></script>
+</head>
+
+<body>
+	<div layout:fragment="content" class="container my-3 mypage">
+		<div class="main-wrapper">
+			<!-- 왼쪽 사이드바 -->
+			<div class="sidebar">
+				<ul>
+					<li><a class="mypage-title" th:href="@{/member/mypage}">마이페이지</a></li>
+					<li><a th:href="@{/member/order-list}">주문 내역</a></li>
+					<li><a th:href="@{/member/wish-list}">찜 목록</a></li>
+					<li><a th:href="@{/member/subscription}">정기 결제 조회/해지</a></li>
+					<li><a th:href="@{/member/review-list}">상품 후기</a></li>
+					<li><a th:href="@{/member/address}">배송지 관리</a></li>
+					<li><a th:href="@{/member/account-info}" class="is-active"
+						aria-current="page">회원 정보 관리</a></li>
+					<li><a th:href="@{/center}">고객 센터</a></li>
+					<li><a th:href="@{/center/report/list}">신고 내역</a></li>
+					<li><a th:href="@{/center/inquiry/list}">문의 내역</a></li>
+				</ul>
+			</div>
+
+			<!-- 오른쪽 content-area -->
+			<div class="content-area">
+				<h3>회원 정보 수정</h3>
+
+				<form th:action="@{/member/account-info-update}" method="post">
+					<input type="hidden" th:name="${_csrf.parameterName}"
+						th:value="${_csrf.token}" />
+
+					<!-- 아이디 : 수정 불가 -->
+					<div>
+						<label>아이디</label> <input type="text" name="memberId"
+							th:value="${dto.memberId}" readonly />
+					</div>
+
+					<!-- 이름 -->
+					<div>
+						<label>이름</label> <input type="text" name="memberName"
+							th:value="${dto.memberName}" required placeholder="이름을 입력하세요." />
+					</div>
+
+					<!-- 전화번호 (11자리 숫자만 가능) -->
+					<div>
+						<label>전화번호</label> <input type="text" name="memberPhone"
+							th:value="${dto.memberPhone}" required maxlength="11"
+							pattern="\d*" placeholder="예) 01012345678" />
+					</div>
+
+					<!-- 현재 비밀번호 -->
+					<div>
+						<label>현재 비밀번호</label> <input type="password" name="memberPw"
+							required />
+					</div>
+
+					<!-- 새 비밀번호 -->
+					<div>
+						<label>새 비밀번호</label> <input type="password" name="newPw"
+							autocomplete="new-password" />
+					</div>
+
+					<!-- 비밀번호 확인 -->
+					<div>
+						<label>비밀번호 확인</label> <input type="password" name="confirmPw"
+							autocomplete="new-password" />
+					</div>
+
+					<!-- 버튼 -->
+					<div>
+						<button type="submit">저장</button>
+						<a th:href="@{/member/account-info}" class="btn">취소</a>
+					</div>
+				</form>
+				<p class="error-msg" th:text="${errorMessage}"></p>
+			</div>
+		</div>
+	</div>
+	<!-- ====== 검증 스크립트 ====== -->
+	<script>
+	document.addEventListener("DOMContentLoaded", function() {
+	    // 폼 요소를 가져오기
+	    const form = document.getElementById("accountUpdateForm");
+	
+	    // submit 이벤트 감지 (저장 버튼 클릭 시 실행됨)
+	    form.addEventListener("submit", function(e) {
+	        // 1) 기본 제출 막기 (검증 후 통과 시 수동으로 submit)
+	        e.preventDefault();
+	
+	        // 2) 각 input 요소를 변수로 담기
+	        const name     = form.memberName;   // 이름 입력란
+	        const phone    = form.memberPhone;  // 전화번호 입력란
+	        const curPw    = form.memberPw;     // 현재 비밀번호
+	        const newPw    = form.newPw;        // 새 비밀번호
+	        const confirmPw= form.confirmPw;    // 비밀번호 확인
+	
+	        // === 검증 시작 ===
+	
+	        // (이름) 비어있으면 경고 후 focus
+	        if (!name.value.trim()) {
+	            Swal.fire("입력 오류", "이름을 입력하세요.", "warning").then(() => {
+	                name.focus();
+	            });
+	            return; // 더 이상 진행하지 않고 종료
+	        }
+	
+	        // (전화번호) 11자리 숫자만 허용
+	        if (!/^\d{11}$/.test(phone.value)) {
+	            Swal.fire("입력 오류", "전화번호는 숫자 11자리여야 합니다.", "warning").then(() => {
+	                phone.focus();
+	            });
+	            return;
+	        }
+	
+	        // (현재 비밀번호) 비어있으면 안 됨
+	        if (!curPw.value.trim()) {
+	            Swal.fire("입력 오류", "현재 비밀번호를 입력하세요.", "warning").then(() => {
+	                curPw.focus();
+	            });
+	            return;
+	        }
+	
+	    	// (새 비밀번호) 비어있으면 안 됨
+	        if (!newPw.value.trim()) {
+	            Swal.fire("입력 오류", "새 비밀번호를 입력하세요.", "warning").then(() => {
+	                newPw.focus();
+	            });
+	            return;
+	        }
+	
+	        // (비밀번호 확인) 비어있으면 안 됨
+	        if (!confirmPw.value.trim()) {
+	            Swal.fire("입력 오류", "비밀번호 확인을 입력하세요.", "warning").then(() => {
+	                confirmPw.focus();
+	            });
+	            return;
+	        }
+	
+	        // (새 비밀번호와 확인) 일치 여부 검사
+	        if (newPw.value !== confirmPw.value) {
+	            Swal.fire("비밀번호 오류", "새 비밀번호와 확인이 일치하지 않습니다.", "error").then(() => {
+	                confirmPw.focus();
+	            });
+	            return;
+	        }
+	
+	        // === 모든 검증 통과 시 폼 제출 ===
+	        form.submit();
+	    });
+	});
+</script>
+
+	<!-- 서버에서 내려주는 알림 처리 -->
+	<script th:inline="javascript">
+/*<![CDATA[*/
+    const msg  = /*[[${alertMessage}]]*/ null;
+    const type = /*[[${alertType}]]*/ null;
+
+    // 전화번호 전용 얼랏
+    if(phoneDuplicate){
+    	showWarning("이미 다른 회원이 사용 중인 전화번호 입니다.");
+    	
+    }else if (msg) {
+        switch(type){
+            case 'success': showSuccessAlert(msg); break;
+            case 'error':   showErrorAlert(msg);   break;
+            case 'warning': showWarningAlert(msg); break;
+            default:        showInfoAlert(msg);
+        }
+    }
+/*]]>*/
+</script>
+</body>
+</html>

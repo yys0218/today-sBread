@@ -1,0 +1,775 @@
+<!--
+******************************************
+*  Created On : 2025. 8. 12.
+*  File : rider-all-view.html
+*******************************************
+ -->
+
+<html layout:decorate="~{rider/rider-layout1}">
+    <!-- 페이지 전용 CSS 주입 -->
+    <th:block layout:fragment="head-extra">
+        <!-- 외부 CSS -->
+        <!-- <link rel="stylesheet" th:href="@{/css/rider-page.css}"> -->
+        <!-- 혹은 인라인 스타일 -->
+        <style>
+            .rider_Info {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center; /* 세로 가운데 정렬 */
+                padding: 8px 12px;
+                border-bottom: 2px solid #000;
+                background-color: #333; /* 어두운 배경 */
+                color: #fff;
+            }
+
+            .info_id,
+            .info_time {
+                margin: 5px 10px;
+                font-size: 15px;
+                font-weight: 500;
+                color: #fff; /* 글씨 흰색 */
+            }
+
+            .delivery_info {
+                padding: 12px;
+                font-weight: bold;
+                background-color: #444; /* 어두운 배경 */
+                border-radius: 8px;
+                text-align: center;
+                color: #fff;
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+            }
+
+            /* 각 섹션 (금액/연락처/주소/메모) */
+            .delivery_detail {
+                padding: 15px;
+                /* min-height: 490px;
+                max-height: 700px; */
+                height: 800px;
+                border-radius: 10px;
+                background: #222; /* 다크 배경 */
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.6);
+                color: #fff;
+            }
+            .delivery_title {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin: 12px 0;
+                font-size: 14px;
+            }
+            .delivery_title span,
+            .dModal_title span {
+                font-weight: 600;
+                color: #fff;
+            }
+
+            /* input, textarea */
+            .custom-h-input {
+                color: #eee;
+                border: none;
+                background: transparent;
+                text-align: right;
+                margin-right: 10px;
+                width: 100%;
+                pointer-events: none; /* 읽기전용 */
+            }
+            #delivery_address {
+                padding: 6px 10px;
+                width: 100%;
+                text-align: right;
+                max-width: 250px;
+                font-size: 14px;
+                line-height: 1.5;
+                border-radius: 6px;
+                background: rgba(0, 0, 0, 0);
+                color: #fff;
+                overflow-wrap: break-word; /* 긴 주소 줄바꿈 */
+                white-space: pre-wrap; /* 줄바꿈 유지 */
+            }
+
+            /* 고객 메모 */
+            .delivery_title.flex-column,
+            .dModal_title.flex-column {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .delivery_title.flex-column span,
+            .dModal_title.flex-column span {
+                margin-bottom: 6px;
+            }
+            .delivery_title.flex-column .card,
+            .dModal_title.flex-column .card {
+                width: 100%;
+                padding: 8px;
+                background: #2a2a2a;
+                color: #fff;
+            }
+
+            .order-box {
+                background-color: #111; /* 아주 어두운 배경 */
+                color: #fff; /* 글씨 흰색 */
+                padding: 12px 16px;
+                border-radius: 12px;
+                word-break: break-word;
+                font-size: 14px;
+                line-height: 1.6;
+
+                overflow-y: auto;
+                margin-top: 6px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+                width: 100%;
+                max-height: 90px;
+                overflow-y: auto;
+                scrollbar-gutter: stable;
+            }
+
+            /* 부모 div */
+            .delivery_title.flex-column > div,
+            .dModal_title.dModal_title.flex-column > div {
+                width: 100%;
+            }
+            .delivery_title > div,
+            .dModal_title > div {
+                height: auto;
+            }
+
+            /* 주문 항목 */
+            .order-box p {
+                margin: 0 0 6px 0;
+                padding-left: 8px;
+                font-size: 14px;
+                position: relative;
+            }
+            .order-box p:before {
+                content: '•';
+                position: absolute;
+                left: 0;
+                color: #ffcd39; /* 노란 포인트 */
+                font-size: 14px;
+            }
+            .order-box p:last-child {
+                margin-bottom: 0;
+            }
+
+            /* 스크롤바 */
+            .order-box::-webkit-scrollbar {
+                width: 10px;
+            }
+            .order-box::-webkit-scrollbar-thumb {
+                background: #555;
+                border-radius: 12px;
+            }
+            .order-box::-webkit-scrollbar-track {
+                background: #222;
+                border-radius: 12px;
+            }
+
+            /* 로그인/로그아웃 버튼 */
+            a,
+            .btn-sub,
+            .custom-btn {
+                color: #fff !important;
+                background-color: #333 !important;
+                border-radius: 6px;
+                padding: 6px 12px;
+                text-decoration: none;
+                transition: background-color 0.2s ease;
+            }
+            a:hover,
+            .btn-sub:hover,
+            .custom-btn:hover {
+                background-color: #555 !important;
+                color: #fff !important;
+            }
+
+            .timeline {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background: #111;
+                padding: 10px 15px;
+                border-radius: 10px;
+                gap: 20px;
+            }
+
+            /* 각 단계 */
+            .step {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                position: relative;
+            }
+
+            /* 시간 */
+            .step .time {
+                font-size: 12px;
+                color: #aaa;
+                margin-bottom: 4px;
+                min-height: 16px; /* 최소 높이 확보 */
+                line-height: 16px; /* 빈 경우에도 공간 유지 */
+            }
+
+            /* 원형 표시 */
+            .step .circle {
+                width: 14px;
+                height: 14px;
+                border-radius: 50%;
+                border: 2px solid #555;
+                background: #111;
+                position: relative;
+            }
+
+            /* 완료된 단계 (초록색) */
+            .step.done .circle {
+                background: #00c853;
+                border-color: #00c853;
+            }
+
+            /* 현재 단계 (흰색) */
+            .step.active .circle {
+                background: #fff;
+                border-color: #fff;
+            }
+
+            /* 텍스트 라벨 */
+            .step .label {
+                font-size: 13px;
+                margin-top: 4px;
+                color: #ddd;
+            }
+
+            /* 연결선 */
+            .step:not(:last-child)::after {
+                content: '';
+                position: absolute;
+                top: 21px;
+                left: 50%;
+                width: 100%;
+                height: 2px;
+                background: #555;
+                z-index: -1;
+            }
+
+            /* 완료된 구간 선 */
+            .step.done:not(:last-child)::after {
+                background: #00c853;
+            }
+
+            .order-card {
+                background: #1e1e1e;
+                border: 1px solid #2c2c2c;
+                color: #fff;
+                border-radius: 10px;
+                height: 120px;
+                padding: 12px;
+                margin: 10px 0;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
+            }
+            .order-card:hover {
+                cursor: pointer;
+                /* transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6); */
+            }
+
+            /* 헤더 */
+            .order-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: 13px;
+                padding-bottom: 4px;
+                border-bottom: 1px solid #333;
+                gap: 20px;
+            }
+
+            .order-no,
+            .order-status {
+                width: 100px;
+            }
+
+            .order-time {
+                width: 150px;
+            }
+
+            .order-header-left {
+                font-weight: bold;
+                color: #ffcc00; /* 주문번호 강조 */
+            }
+            .order-header-left::before {
+                content: '#';
+                color: #ff2e63;
+                margin-right: 4px;
+            }
+            .order-header-right {
+                font-size: 12px;
+                color: #bbb;
+            }
+
+            /* 바디 */
+            .order-body {
+                display: flex;
+                justify-content: space-between; /* 좌-우 나눔 */
+                flex-grow: 1;
+                padding: 8px 0;
+                font-size: 13px;
+                border-left: 3px solid #444;
+                padding-left: 10px;
+            }
+            .order-body > .d-flex:last-of-type {
+                margin-right: 10px;
+            }
+            /* 왼쪽: 주문 정보 */
+            .order-info {
+                flex: 3;
+            }
+            .order-info .payment {
+                font-weight: bold;
+            }
+            .order-no {
+                font-weight: bold;
+                font-size: 14px;
+                color: #ffcc00; /* 눈에 띄는 노란색 */
+                margin-right: 8px;
+            }
+
+            .order-time {
+                font-size: 13px;
+                color: #ccc; /* 흐린 회색 */
+                margin-right: 8px;
+            }
+
+            .order-status {
+                font-weight: bold;
+                font-size: 13px;
+                color: #4da6ff; /* 파란 계열 */
+                background: rgba(77, 166, 255, 0);
+                padding: 2px 6px;
+                border-radius: 4px;
+            }
+
+            .order-status.대기 {
+                color: #ffaa00;
+                background: rgba(255, 170, 0, 0);
+            }
+            .order-status.요청 {
+                color: #4da6ff;
+                background: rgba(77, 166, 255, 0);
+            }
+            .order-status.완료 {
+                color: #00cc66;
+                background: rgba(0, 204, 102, 0);
+            }
+
+            .address {
+                color: #ddd;
+                font-size: 12px;
+                margin-top: 4px;
+                word-wrap: break-word;
+                white-space: normal;
+            }
+
+            /* 오른쪽: 거리/금액 */
+            .order-price {
+                flex: 1;
+                text-align: right;
+                font-size: 15px;
+                font-weight: bold;
+                color: #00ff99;
+                white-space: nowrap;
+            }
+
+            .distance {
+                margin-right: 10px;
+            }
+
+            /* 푸터 */
+            .order-footer {
+                display: flex;
+                justify-content: flex-end;
+                border-top: 1px solid #333;
+                padding-top: 6px;
+            }
+
+            /* 버튼 */
+            .accept-btn,
+            .shop-btn,
+            .pickup-btn,
+            .delivery-btn,
+            .complete-btn {
+                background: linear-gradient(135deg, #ff2e63, #ff5c8a);
+                box-shadow: 0 4px 10px rgba(255, 46, 99, 0.4);
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                color: #fff;
+                font-weight: bold;
+                padding: 6px 14px;
+                transition: transform 0.15s ease;
+            }
+
+            /* 버튼 안에 내용이 없으면 자동 숨김 */
+            .accept-btn:empty,
+            .shop-btn:empty,
+            .delivery-btn:empty,
+            .complete-btn:empty,
+            .pickup-btn:empty {
+                display: none;
+            }
+
+            .accept-btn:hover,
+            .shop-btn:hover,
+            .delivery-btn:hover,
+            .complete-btn:hover,
+            .pickup-btn:hover {
+                transform: scale(1.05);
+                background: linear-gradient(135deg, #e02655, #ff2e63);
+            }
+            .active-card {
+                border: 2px solid #e7e7e7 !important;
+            }
+
+            .end-text {
+                color: #ffffff;
+                margin: 20px 0px 10px 0px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .empty_list {
+                color: #ffffff;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            /* 모달 레이어 */
+            #detail-modal {
+                position: fixed;
+                top: 50vh;
+                left: 50vw;
+                transform: translate(-50%, -50%);
+                z-index: 1010;
+                display: none;
+                min-width: 50vw;
+                max-width: 80vw;
+            }
+
+            #pickup-modal {
+                position: fixed;
+                top: 50vh;
+                left: 50vw;
+                transform: translate(-50%, -50%);
+                z-index: 1010;
+                display: none;
+                min-width: 30vw;
+                max-width: 5vw;
+            }
+
+            /* 모달 박스 */
+            .modal_box {
+                background: #2a2a2a;
+                color: #eee;
+                border-radius: 12px;
+                padding: 20px;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+                display: flex;
+                flex-direction: column;
+                box-sizing: border-box;
+                max-height: 90vh;
+                min-height: 90vh;
+                overflow: hidden;
+            }
+
+            #map {
+                width: 100%;
+                height: 500px;
+            }
+            .nomal_span {
+                font-weight: normal !important;
+            }
+
+            .dModal_title {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin: 3px 0;
+                font-size: 14px;
+            }
+        </style>
+    </th:block>
+
+    <!-- side_bar 영역 시작 -->
+    <div layout:fragment="side_bar">
+        <!-- rider의 정보 출력용 div-->
+        <div>
+            <div class="rider_Info">
+                <div class="info_time">
+                    <span class="timezone">
+                        <span class="timezone_hour"></span>
+                        :
+                        <span class="timezone_min"></span>
+                        :
+                        <span class="timezone_sec"></span>
+                    </span>
+                </div>
+                <div class="info_id">
+                    <span th:text="|#${#authentication.principal.username} 님 |"></span>
+                </div>
+            </div>
+            <div>
+                <div class="delivery_info card mt-3">
+                    <div class="step requested done">
+                        <div class="time">14:00</div>
+                        <div class="circle"></div>
+                        <div class="label">요청</div>
+                    </div>
+                    <div class="step assigned active">
+                        <div class="time">15:30</div>
+                        <div class="circle"></div>
+                        <div class="label">배차</div>
+                    </div>
+                    <div class="step pickup">
+                        <div class="time"></div>
+                        <div class="circle"></div>
+                        <div class="label">픽업</div>
+                    </div>
+                    <div class="step">
+                        <div class="time"></div>
+                        <div class="circle"></div>
+                        <div class="label">완료</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="delivery_detail card px-3 mt-3">
+            <div class="delivery_title">
+                <span>금액</span>
+                <div class="d-flex">
+                    <input type="text" name="orderPrice" id="orderPrice" class="custom-h-input order-price" value="125,000원" />
+                </div>
+            </div>
+            <div class="delivery_title">
+                <span>고객연락처</span>
+                <div class="d-flex">
+                    <input type="text" name="orderPhone" id="orderPhone" class="custom-h-input" th:value="${@stringUtil.maskPhone('01056698920')}" />
+                </div>
+            </div>
+            <div class="delivery_title">
+                <span>배달주소</span>
+                <div id="delivery_address">서울특별시 관악구 남부순환로 1820 6층 글로벌아이티 6B</div>
+            </div>
+            <div class="delivery_title flex-column">
+                <span>고객 메모</span>
+                <div>
+                    <div class="order-box order-request"></div>
+                </div>
+            </div>
+            <div class="delivery_title flex-column">
+                <span>주문 내역</span>
+                <div>
+                    <div class="order-box order-details"></div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // jQuery가 로드된 뒤 실행
+            $(function () {
+                function tickOne($box) {
+                    const tz = $box.data('tz') || Intl.DateTimeFormat().resolvedOptions().timeZone;
+                    const fmt = new Intl.DateTimeFormat('ko-KR', {
+                        timeZone: tz,
+                        hour12: false,
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                    });
+                    const parts = fmt.formatToParts(new Date());
+                    const map = {};
+                    parts.forEach((p) => (map[p.type] = p.value));
+
+                    $box.find('.timezone_hour').text(map.hour);
+                    $box.find('.timezone_min').text(map.minute);
+                    $box.find('.timezone_sec').text(map.second);
+                }
+
+                function tickAll() {
+                    $('.timezone').each(function () {
+                        tickOne($(this));
+                    });
+                }
+
+                tickAll(); // 즉시 1회
+                setInterval(tickAll, 1000); // 1초마다 갱신
+            });
+        </script>
+    </div>
+    <!-- side_bar 영역 끝 -->
+
+    <!-- content 영역 시작 -->
+    <div layout:fragment="content" class="content-start" data-order-type="all">
+        <th:block th:replace="~{rider/orderFragment :: orderList}"></th:block>
+        <th:block th:replace="~{rider/deliveryModalFragment :: deliveryModal}"></th:block>
+        <!-- <div>
+            <button type="button" id="callBtn">하하</button>
+            <button type="button" id="chackApiBtn">
+                새로고침
+                <i class="bi bi-arrow-clockwise"></i>
+            </button>
+        </div> -->
+        <script src="https://apis.openapi.sk.com/tmap/jsv2?version=1&appKey=HF54XgP4IDasImIzZ2bEPahklEFoB35z75mPPfbE"></script>
+        <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=2b3cab747d17c7336deeb3bf01f35e09&libraries=services,clusterer,drawing"></script>
+        <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.7/kakao.min.js" integrity="sha384-tJkjbtDbvoxO+diRuDtwRO9JXR7pjWnfjfRn5ePUpl7e7RJCxKCwwnfqUAdXh53p" crossorigin="anonymous"></script>
+        <script src="https://apis.openapi.sk.com/tmap/jsv2?version=1&appKey=HF54XgP4IDasImIzZ2bEPahklEFoB35z75mPPfbE"></script>
+        <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=2b3cab747d17c7336deeb3bf01f35e09&libraries=services"></script>
+        <script>
+            function getURL(startX, startY, endX, endY) {
+                // 기본 API 요청 호출 주소
+                let base = 'https://apis-navi.kakaomobility.com/v1/directions?';
+                // 필수 파라미터 (출발지, 도착지) → 경도(X), 위도(Y) 순서
+                let origin = 'origin=' + startX + ',' + startY + ',name=출발지';
+                let destination = '&destination=' + endX + ',' + endY + ',name=도착지';
+
+                // 선택 파라미터 (원하는 옵션 추가 가능)
+                // 1. 경유지 (waypoints) waypoints=경유지1의X,경유지1의Y,name=경유지1
+                // 경유지는 최대 5개 까지 지정 가능
+                // 여러 개일 경우 "|" 또는 "%7C" 로 구분
+                let waypoints = '&waypoints=127.115,37.393,name=경유지1|127.117,37.395,name=경유지2';
+
+                // 2. 경로 탐색 우선순위 (priority)
+                // 설정 안할시 RECOMMEND (기본값:추천 경로)
+                // - RECOMMEND (추천 경로)
+                // - TIME (최단 시간)
+                // - DISTANCE (최단 거리)
+                let priority = '&priority=TIME'; // 최단 시간 기준
+
+                // 3. avoid (회피 옵션)
+                // - motorway (자동차 전용 도로)
+                // - toll (유료 도로)
+                // - ferries (페리 항로)
+                // - schoolzone (어린이 보호구역)
+                // - uturn (유턴)
+                // → 여러 개는 '|' 로 연결 가능
+                let avoid = '&avoid=motorway|ferries'; // 고속도로, 페리 회피
+
+                // 4. roadevent (유고 정보 반영 여부)
+                // 설정 안할 시 0 기본값
+                // - 0 (기본값: 도로 통제 전부 반영)
+                // - 1 (출발/도착지 주변 통제는 반영 안 함)
+                // - 2 (모든 도로 통제 반영 안 함)
+                let roadevent = '&roadevent=0'; // 기본값: 도로 통제 반영
+
+                // 5. alternatives (대체 경로 제공 여부)
+                // - true (대체 경로도 함께 제공)
+                // - false (기본 경로만 제공, 기본값)
+                let alternatives = '&alternatives=true'; // 대체 경로 제공
+
+                // 6. road_details (상세 도로 정보 제공 여부)
+                // - true (상세 도로 정보 포함)
+                // - false (기본값, 포함하지 않음)
+                let road_details = '&road_details=true'; // 상세 도로 정보
+
+                // 7. car_type (차종)
+                // - 1 (승용차, 기본값)
+                // - 2 (버스)
+                // - 3 (택시)
+                // - 4 (화물차)
+                // - 5 (이륜차)
+                let car_type = '&car_type=1'; // 승용차
+
+                // 8. car_fuel (연료 종류)
+                // - GASOLINE (휘발유, 기본값)
+                // - DIESEL (경유)
+                // - LPG (LPG)
+                let car_fuel = '&car_fuel=GASOLINE'; // 휘발유
+
+                // 9. car_hipass (하이패스 장착 여부)
+                // - true (하이패스 장착)
+                // - false (미장착, 기본값)
+                let car_hipass = '&car_hipass=true'; // 하이패스 장착
+
+                // 10. summary (요약 정보만 제공 여부)
+                // - true (요약 정보만 제공)
+                // - false (상세 정보 포함, 기본값)
+                let summary = '&summary=false'; // 요약정보 X, 상세 포함
+
+                let url = base + origin + destination + waypoints + priority + avoid + roadevent + alternatives + road_details + car_type + car_fuel + car_hipass + summary;
+                return url;
+            }
+
+            $('#callBtn').on('click', async function () {
+                let shopX;
+                let shopY;
+                try {
+                    const loc = await getLoc('서울 광진구 긴고랑로13길 35-4');
+
+                    shopX = loc.x;
+
+                    shopY = loc.y;
+                } catch (err) {
+                    console.error(err);
+                }
+            });
+            var geocoder = new kakao.maps.services.Geocoder();
+
+            // 주소 -> 좌표 변환
+            var callback = function (result, status) {
+                if (status === kakao.maps.services.Status.OK) {
+                }
+            };
+            $('#chackApiBtn').on('click', function () {
+                let shopX;
+                let shopY;
+                let riderX;
+                let riderY;
+                geocoder.addressSearch('서울 구로구 경인로 390 고척동 벽산블루밍 211-503', function (result, status) {
+                    shopX = result[0].x;
+                    shopY = result[0].y;
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(
+                            function (position) {
+                                var riderLng = position.coords.longitude; // 경도
+                                var riderLat = position.coords.latitude; // 위도
+
+                                riderX = riderLng; // 경도
+                                riderY = riderLat; // 위도
+
+                                // 여기서 라이더 와 가게의 좌표로 kakaomobility를 사용해서 최적 거리 계산 및 화면 출력
+                                //fetch(`https://apis-navi.kakaomobility.com/v1/directions?origin=${riderY},${riderX},name=라이더&destination=${shopY},${shopX},name=가게&car_type=5`, {
+                                fetch(`https://apis-navi.kakaomobility.com/v1/directions?origin=${riderX},${riderY},name=라이더&destination=${shopX},${shopY},name=가게&car_type=5`, {
+                                    method: 'GET',
+                                    headers: {
+                                        Authorization: 'KakaoAK ' + '7571a89ec04aa50beea0a887b9da0519',
+                                    },
+                                })
+                                    .then((response) => response.json())
+                                    .then((data) => {
+                                        let distance = data.routes[0].summary.distance; // 미터 단위
+                                        let duration = data.routes[0].summary.duration; // 초 단위
+                                    })
+                                    .catch((err) => console.error(err));
+                            },
+                            function (error) {
+                                console.error('위치 정보를 가져올 수 없습니다.', error);
+                            }
+                        );
+                    } else {
+                        alert('이 브라우저는 Geolocation을 지원하지 않습니다.');
+                    }
+                });
+            });
+        </script>
+    </div>
+
+    <!-- content 영역 끝 -->
+</html>

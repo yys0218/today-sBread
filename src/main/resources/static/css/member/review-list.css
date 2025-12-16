@@ -1,0 +1,153 @@
+/* =====================
+   공통 레이아웃
+   ===================== */
+.content-right {
+  width: 100%;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-sizing: border-box;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.page-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0;
+  color: #333;
+}
+
+.content-area {
+  flex-grow: 1 1 auto;
+  padding: 28px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.07);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+/* =====================
+   후기 전용 스타일
+   ===================== */
+.review-card {
+  border: 1px solid #eee;
+  border-radius: 10px;
+  padding: 18px 20px;
+  background: #fff;
+  transition: background 0.2s ease;
+}
+.review-card:hover {
+  background: #fffaf8; /* 은은한 오렌지톤 hover */
+}
+
+.review-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.review-title a {
+  font-size: 1rem;
+  font-weight: 700;
+  color: inherit;
+  text-decoration: none;
+}
+.review-title a:hover { text-decoration: underline; }
+.review-date {
+  color: #6c757d;
+  font-size: .9rem;
+  white-space: nowrap;
+}
+
+.review-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;  /* 전체 가운데 정렬 */
+  gap: 20px;
+  margin-top: 10px;
+  position: relative;
+}
+
+.review-stars {
+  font-size: 1rem;
+  letter-spacing: 1px;
+  color: #ff7542;
+  position: absolute;
+  left: 0;                  /* 항상 왼쪽에 고정 */
+}
+
+.review-content {
+  text-align: center;       /* 텍스트 중앙 정렬 */
+  font-size: .95rem;
+  line-height: 1.5;
+  color: #444;
+  flex-grow: 1;             /* 가운데 영역 확장 */
+}
+
+
+.empty-state {
+  color: #6c757d;
+  text-align: center;
+  padding: 28px 16px;
+  border: 1px dashed #e9ecef;
+  border-radius: 10px;
+  background: #f8f9fa;
+}
+
+/* =====================
+   페이징 (시그니처 컬러)
+   ===================== */
+.pagination {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.pagination .page-link {
+  border: 1px solid #ff7542;
+  padding: 6px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  color: #ff7542;
+  background: #fff;
+  transition: all 0.2s ease;
+}
+.pagination .page-link:hover {
+  background: #ff7542;
+  color: #fff;
+}
+.pagination .active {
+  background: #ff7542;
+  color: #fff;
+  border-color: #ff7542;
+}
+.pagination .disabled {
+  pointer-events: none;
+  opacity: .5;
+  border-color: #eee;
+  color: #ccc;
+  background: #f9f9f9;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .main-wrapper { flex-direction: column; }
+  .sidebar { width: 100%; }
+  .review-body { flex-direction: column; align-items: flex-start; }
+}

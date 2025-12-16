@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html layout:decorate="~{common/layout}">
+
+<head>
+  <title>내 신고 목록</title>
+  <meta charset="UTF-8">
+  <meta th:name="_csrf" th:content="${_csrf.token}">
+  <meta th:name="_csrf_header" th:content="${_csrf.headerName}">
+  <link rel="stylesheet" th:href="@{/css/center/help-center.css}">
+  <link rel="stylesheet" th:href="@{/css/center/centerSidebar.css}">
+  <link rel="stylesheet" th:href="@{/css/main/main.css}" />
+  <link rel="stylesheet" th:href="@{/css/center/report.css}">
+</head>
+
+<div layout:fragment="content" class="container my-3">
+  <div class="container hc-layout">
+    <!-- 좌측 사이드바 -->
+    <div th:replace="~{center/centerSidebar :: centerMenu('report')}"></div>
+
+    <!-- 우측 본문 -->
+    <main class="hc-main">
+      <h2 class="il-title">내 신고 목록</h2>
+
+      <!-- 상단 필터 + 문의하기 -->
+      <div class="il-filter box">
+        <div class="il-tabs">
+          <a th:href="@{|/center/report/list?status=-1|}" th:classappend="${status == -1} ? 'active'">전체</a>
+          <a th:href="@{|/center/report/list?status=0|}" th:classappend="${status == 0} ? 'active'">미답변</a>
+          <a th:href="@{|/center/report/list?status=1|}"
+            th:classappend="${status == 1 or status == 2} ? 'active'">답변완료</a>
+        </div>
+        <a th:href="@{/center/report/insert}" class="il-ask">신고하기</a>
+      </div>
+
+      <!-- 목록 테이블 (원본 구조 유지, 클래스만 부여) -->
+      <table class="il-table">
+        <thead>
+          <tr>
+            <th>번호</th>
+            <th>상태</th>
+            <th>제목</th>
+            <th>작성일</th>
+            <th>관리</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="i, loop : ${paging.content}">
+            <td th:text="${paging.getTotalElements - (paging.number * paging.size) - loop.index}"></td>
+            <td>
+              <span class="il-status il-status--wait" th:if="${i.reportStatus==0}">미답변</span>
+              <span class="il-status il-status--done" th:if="${i.reportStatus==1 or i.reportStatus==2}">답변완료</span>
+            </td>
+            <td><a th:href="@{|/center/report/detail/${i.reportNo}|}" th:text="${i.reportTitle}"></a></td>
+            <td th:text="${#temporals.format(i.reportAt,'yyyy-MM-dd')}"></td>
+            <td>
+              <a th:if="${i.reportStatus==0}" th:href="@{|/center/report/update/${i.reportNo}|}">수정</a>
+              <form th:if="${i.reportStatus==0}" th:action="@{|/center/report/delete/${i.reportNo}|}" method="post"
+                style="display:inline">
+                <button type="submit">취소</button>
+              </form>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- 페이징 처리 -->
+      <div th:if="${!paging.isEmpty()}">
+        <ul class="pagination justify-content-center">
+          <span class="page-item" th:if="${paging.hasPrevious()}">
+            <a class="page-link" th:href="@{|?page=${paging.number-1}|}">
+              <span>이전</span>
+            </a>
+          </span>
+          <span th:each="page:${#numbers.sequence(0, paging.totalPages-1)}"
+            th:if="${page >= paging.number-5 and page <= paging.number+5}"
+            th:classappend="${page==paging.number} ? 'active'" class="page-item">
+            <a th:text="${page+1}" class="page-link"
+              th:href="@{/center/report/list(page=${page}, status=${stauts})}"></a>
+          </span>
+          <span class="page-item" th:if="${paging.hasNext()}">
+            <a class="page-link" th:href="@{|?page=${paging.number+1}|}">
+              <span>다음</span>
+            </a>
+          </span>
+        </ul>
+      </div>
+
+    </main>
+  </div>
+</div>

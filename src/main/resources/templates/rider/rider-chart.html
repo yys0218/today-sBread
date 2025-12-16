@@ -1,0 +1,795 @@
+<!--
+******************************************
+*  Created On : 2025. 8. 12.
+*  File : rider-all-view.html
+*******************************************
+ -->
+
+<html layout:decorate="~{rider/rider-layout1}">
+    <!-- 페이지 전용 CSS 주입 -->
+    <th:block layout:fragment="head-extra">
+        <link rel="stylesheet" th:href="@{/css/rider/riderDeleteModal.css}" />
+        <link rel="stylesheet" th:href="@{/css/rider/riderInfo.css}" />
+        <style>
+            .rider_Info {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center; /* 세로 가운데 정렬 */
+                padding: 8px 12px;
+                border-bottom: 2px solid #000;
+                background-color: #333; /* 어두운 배경 */
+                color: #fff;
+            }
+
+            .info_id,
+            .info_time {
+                margin: 5px 10px;
+                font-size: 15px;
+                font-weight: 500;
+                color: #fff; /* 글씨 흰색 */
+            }
+
+            .delivery_info {
+                padding: 12px;
+                font-weight: bold;
+                background-color: #444; /* 어두운 배경 */
+                border-radius: 8px;
+                text-align: center;
+                color: #fff;
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+            }
+
+            /* 각 섹션 (금액/연락처/주소/메모) */
+            .delivery_detail {
+                padding: 15px;
+                border-radius: 10px;
+                background: #222; /* 다크 배경 */
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.6);
+                color: #fff;
+            }
+            .delivery_title {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin: 12px 0;
+                font-size: 14px;
+            }
+            .delivery_title span {
+                font-weight: 600;
+                color: #fff;
+            }
+
+            /* input, textarea */
+            .custom-h-input {
+                color: #eee;
+                border: none;
+                text-align: right;
+                background: transparent;
+
+                margin-right: 10px;
+                width: 100%;
+                pointer-events: none; /* 읽기전용 */
+            }
+            .modal_box > .modal_content > .delivery_title > .d-flex > .custom-h-input {
+                width: 350px;
+                text-align: left;
+            }
+            .custom-r-input {
+                color: #eee;
+                /* border: none; */
+                background: transparent;
+                text-align: left;
+                margin-right: 10px;
+                width: 100%;
+                width: 350px;
+            }
+            #delivery_address {
+                padding: 6px 10px;
+                width: 100%;
+                text-align: right;
+                max-width: 250px;
+                font-size: 14px;
+                line-height: 1.5;
+                border-radius: 6px;
+                background: rgba(0, 0, 0, 0);
+                color: #fff;
+                overflow-wrap: break-word; /* 긴 주소 줄바꿈 */
+                white-space: pre-wrap; /* 줄바꿈 유지 */
+            }
+
+            /* 고객 메모 */
+            .delivery_title.flex-column {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .delivery_title.flex-column span {
+                margin-bottom: 6px;
+            }
+            .delivery_title.flex-column .card {
+                width: 100%;
+                padding: 8px;
+                background: #2a2a2a;
+                color: #fff;
+            }
+
+            .order-box {
+                background-color: #111; /* 아주 어두운 배경 */
+                color: #fff; /* 글씨 흰색 */
+                padding: 12px 16px;
+                border-radius: 12px;
+                word-break: break-word;
+                font-size: 14px;
+                line-height: 1.6;
+                max-height: 150px;
+                overflow-y: auto;
+                margin-top: 6px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+                width: 100%;
+                max-height: 100px;
+                overflow-y: auto;
+                scrollbar-gutter: stable;
+            }
+
+            /* 부모 div */
+            .delivery_title.flex-column > div {
+                width: 100%;
+            }
+            .delivery_title > div {
+                height: auto;
+            }
+
+            /* 주문 항목 */
+            .order-box p {
+                margin: 0 0 6px 0;
+                padding-left: 8px;
+                font-size: 14px;
+                position: relative;
+            }
+            .order-box p:before {
+                content: '•';
+                position: absolute;
+                left: 0;
+                color: #ffcd39; /* 노란 포인트 */
+                font-size: 14px;
+            }
+            .order-box p:last-child {
+                margin-bottom: 0;
+            }
+
+            /* 스크롤바 */
+            .order-box::-webkit-scrollbar {
+                width: 10px;
+            }
+            .order-box::-webkit-scrollbar-thumb {
+                background: #555;
+                border-radius: 12px;
+            }
+            .order-box::-webkit-scrollbar-track {
+                background: #222;
+                border-radius: 12px;
+            }
+
+            /* 로그인/로그아웃 버튼 */
+            a,
+            .btn-sub,
+            .custom-btn {
+                color: #fff !important;
+                background-color: #333 !important;
+                border-radius: 6px;
+                padding: 6px 12px;
+                text-decoration: none;
+                transition: background-color 0.2s ease;
+            }
+            a:hover,
+            .btn-sub:hover,
+            .custom-btn:hover {
+                background-color: #555 !important;
+                color: #fff !important;
+            }
+
+            .timeline {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background: #111;
+                padding: 10px 15px;
+                border-radius: 10px;
+                gap: 20px;
+            }
+
+            /* 각 단계 */
+            .step {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                position: relative;
+            }
+
+            /* 시간 */
+            .step .time {
+                font-size: 12px;
+                color: #aaa;
+                margin-bottom: 4px;
+                min-height: 16px; /* 최소 높이 확보 */
+                line-height: 16px; /* 빈 경우에도 공간 유지 */
+            }
+
+            /* 원형 표시 */
+            .step .circle {
+                width: 14px;
+                height: 14px;
+                border-radius: 50%;
+                border: 2px solid #555;
+                background: #111;
+                position: relative;
+            }
+
+            /* 완료된 단계 (초록색) */
+            .step.done .circle {
+                background: #00c853;
+                border-color: #00c853;
+            }
+
+            /* 현재 단계 (흰색) */
+            .step.active .circle {
+                background: #fff;
+                border-color: #fff;
+            }
+
+            /* 텍스트 라벨 */
+            .step .label {
+                font-size: 13px;
+                margin-top: 4px;
+                color: #ddd;
+            }
+
+            /* 연결선 */
+            .step:not(:last-child)::after {
+                content: '';
+                position: absolute;
+                top: 21px;
+                left: 50%;
+                width: 100%;
+                height: 2px;
+                background: #555;
+                z-index: -1;
+            }
+
+            /* 완료된 구간 선 */
+            .step.done:not(:last-child)::after {
+                background: #00c853;
+            }
+
+            .community_card {
+                background: #1e1e1e;
+                border: 1px solid #2c2c2c;
+                color: #fff;
+                border-radius: 10px;
+
+                padding: 12px;
+                margin: 10px 0;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
+            }
+
+            /* 헤더 */
+            .community_header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: 13px;
+                padding-bottom: 4px;
+                border-bottom: 1px solid #333;
+                gap: 20px;
+            }
+
+            .community_no {
+                width: 100px;
+            }
+
+            .community_header-left {
+                font-weight: bold;
+                color: #ffcc00; /* 주문번호 강조 */
+            }
+            .community_header-left::before {
+                content: '#';
+                color: #ff2e63;
+                margin-right: 4px;
+            }
+            .community_header-right {
+                font-size: 12px;
+                color: #bbb;
+            }
+
+            /* 바디 */
+            .community_body {
+                display: flex;
+                justify-content: space-between; /* 좌-우 나눔 */
+                flex-direction: column;
+                flex-grow: 1;
+                padding: 8px;
+                font-size: 13px;
+                border-left: 3px solid #444;
+                padding-left: 10px;
+            }
+            .community_body > .d-flex:last-of-type {
+                margin-right: 10px;
+            }
+
+            .community_content {
+                white-space: normal; /* 기본 줄바꿈 허용 */
+                word-wrap: break-word; /* 긴 단어도 강제로 줄바꿈 */
+                word-break: break-all; /* (옵션) 한글/영문 모두 강제 줄바꿈 */
+            }
+            /* 왼쪽: 주문 정보 */
+            .order-info {
+                flex: 3;
+            }
+            .order-info .payment {
+                font-weight: bold;
+            }
+            .community_no {
+                font-weight: bold;
+                font-size: 14px;
+                color: #ffcc00; /* 눈에 띄는 노란색 */
+                margin-right: 8px;
+            }
+
+            .community_time {
+                font-size: 13px;
+                color: #ccc; /* 흐린 회색 */
+                width: 150px;
+                text-align: right;
+            }
+
+            .body_top {
+                display: flex;
+                justify-content: end;
+                margin-bottom: 10px;
+            }
+
+            .address {
+                color: #ddd;
+                font-size: 12px;
+                margin-top: 4px;
+                word-wrap: break-word;
+                white-space: normal;
+            }
+
+            /* 오른쪽: 거리/금액 */
+            .order-price {
+                flex: 1;
+                text-align: right;
+                font-size: 15px;
+                font-weight: bold;
+                color: #00ff99;
+                white-space: nowrap;
+            }
+
+            .distance {
+                margin-right: 10px;
+            }
+
+            /* 푸터 */
+            .community_footer {
+                display: flex;
+                justify-content: flex-start;
+                gap: 20px;
+                border-top: 1px solid #333;
+                padding-top: 6px;
+                margin-left: 5px;
+            }
+
+            /* 버튼 */
+            .accept-btn {
+                background: linear-gradient(135deg, #ff2e63, #ff5c8a);
+                box-shadow: 0 4px 10px rgba(255, 46, 99, 0.4);
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                color: #fff;
+                font-weight: bold;
+                padding: 6px 14px;
+                transition: transform 0.15s ease;
+            }
+
+            /* 버튼 안에 내용이 없으면 자동 숨김 */
+            .accept-btn:empty {
+                display: none;
+            }
+
+            .accept-btn:hover {
+                transform: scale(1.05);
+                background: linear-gradient(135deg, #e02655, #ff2e63);
+            }
+            .active-card {
+                border: 2px solid #e7e7e7 !important;
+            }
+
+            .community_footer > div > .active-icon {
+                color: red;
+            }
+
+            .community_footer > div:hover {
+                cursor: pointer;
+            }
+
+            .community_write > .body_content {
+                display: flex;
+                flex-direction: row;
+                gap: 10px;
+            }
+
+            /* 글 입력창 */
+            #communityContent {
+                flex: 1;
+                min-height: 100px;
+                resize: none; /* 크기조절 막기 */
+                padding: 12px;
+                font-size: 14px;
+                line-height: 1.5;
+                border: 1px solid #ccc;
+                border-radius: 8px;
+                outline: none;
+                transition: border 0.2s, box-shadow 0.2s;
+            }
+
+            #communityContent:focus {
+                border: 1px solid #4a90e2;
+                box-shadow: 0 0 4px rgba(74, 144, 226, 0.4);
+            }
+
+            /* 버튼 */
+            .body_content button {
+                padding: 0 18px; /* 세로 패딩 없애고 가로만 */
+                font-size: 14px;
+                font-weight: bold;
+                color: #fff;
+                background-color: #fa9119;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: background-color 0.2s, transform 0.1s;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .body_content button:hover {
+                background-color: #b46000;
+            }
+
+            .body_content button:active {
+                transform: scale(0.97);
+            }
+            .selectDiv {
+                position: relative;
+                height: 30px;
+            }
+
+            .optionDiv {
+                position: absolute;
+                right: 0;
+                max-width: 100%; /* 부모 안에서만 표시 */
+                box-sizing: border-box;
+            }
+
+            .chartBtn {
+                background: linear-gradient(135deg, #ff771d, #ff771d);
+                box-shadow: 0 2px 3px rgba(255, 199, 29, 0.4);
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                color: #fff;
+                font-weight: bold;
+                padding: 6px 14px;
+                transition: transform 0.15s ease;
+            }
+
+            .chartBtn:hover {
+                transform: scale(1.05);
+                background: linear-gradient(135deg, #ff771d, #ff771d);
+            }
+
+            .chartBottom {
+                position: absolute; /* 또는 fixed/relative 상황에 맞게 */
+                bottom: 10px; /* ✅ 화면/부모 요소의 바닥에 붙음 */
+                width: 90%; /* 필요한 경우 가로 꽉 채우기 */
+                text-align: center; /* 가운데 정렬 */
+            }
+        </style>
+        <style>
+            /* 이메일 인증 */
+            /* 모달 전체 배경 */
+            .modal {
+                position: fixed;
+                z-index: 9999; /* 가장 위로 */
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.6); /* 반투명 검정 배경 */
+                display: flex;
+                justify-content: center;
+                align-items: center; /* 화면 중앙 정렬 */
+            }
+
+            /* 모달 내용 박스 */
+            .modal-content {
+                background: #1e1e1e;
+                color: #fff;
+                padding: 25px 30px;
+                border-radius: 12px;
+                width: 400px;
+                max-width: 90%;
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+                text-align: center;
+                position: relative;
+                animation: fadeIn 0.3s ease-in-out;
+            }
+
+            /* 닫기 버튼 */
+            .closeBtn {
+                position: absolute;
+                top: 12px;
+                right: 16px;
+                font-size: 22px;
+                color: #bbb;
+                cursor: pointer;
+                transition: color 0.2s;
+            }
+            .closeBtn:hover {
+                color: #f46f40; /* 포인트 색상 */
+            }
+
+            /* 제목 */
+            .modal-content h2 {
+                margin-bottom: 10px;
+                color: #ffcc00; /* 강조 색상 */
+            }
+
+            /* 설명 텍스트 */
+            .modal-content p {
+                font-size: 14px;
+                color: #ccc;
+                margin-bottom: 15px;
+            }
+
+            /* 인증번호 입력 */
+            #authCodeInput {
+                width: 100%;
+                padding: 10px;
+                font-size: 14px;
+                border: 1px solid #444;
+                border-radius: 6px;
+                margin-bottom: 12px;
+                background: #2b2b2b;
+                color: #fff;
+            }
+
+            /* 확인 버튼 */
+            #submitAuthCode {
+                width: 100%;
+                padding: 10px;
+                font-size: 15px;
+                font-weight: bold;
+                background: #f46f40; /* 버튼 기본색 */
+                color: #fff;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                transition: transform 0.15s ease, background 0.2s;
+            }
+            #submitAuthCode:hover {
+                transform: scale(1.05);
+                background: #d95c30; /* hover 시 조금 더 진한 톤 */
+            }
+
+            /* 인증 메시지 */
+            #authMsg {
+                margin-top: 12px;
+                font-size: 13px;
+                color: #00ff99; /* 성공 시 색상 */
+            }
+
+            /* 타이머 */
+            .modal-time {
+                margin-top: 10px;
+                font-size: 12px;
+                color: #aaa;
+            }
+
+            /* 애니메이션 */
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        </style>
+    </th:block>
+
+    <!-- side_bar 영역 시작 -->
+    <div layout:fragment="side_bar">
+        <!-- rider의 정보 출력용 div-->
+        <div>
+            <div class="rider_Info">
+                <div class="info_time">
+                    <span class="timezone">
+                        <span class="timezone_hour"></span>
+                        :
+                        <span class="timezone_min"></span>
+                        :
+                        <span class="timezone_sec"></span>
+                    </span>
+                </div>
+                <div class="info_id">
+                    <span th:text="|#${#authentication.principal.username} 님 |"></span>
+                </div>
+            </div>
+            <div>
+                <div class="delivery_info card mt-3">
+                    <div class="step">
+                        <div class="time"></div>
+                        <div class="circle"></div>
+                        <div class="label">대기</div>
+                    </div>
+                    <div class="step">
+                        <div class="time"></div>
+                        <div class="circle"></div>
+                        <div class="label">배차</div>
+                    </div>
+                    <div class="step">
+                        <div class="time"></div>
+                        <div class="circle"></div>
+                        <div class="label">픽업</div>
+                    </div>
+                    <div class="step">
+                        <div class="time"></div>
+                        <div class="circle"></div>
+                        <div class="label">완료</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="delivery_detail card px-3 mt-3">
+            <div class="delivery_title">
+                <span>아이디</span>
+                <div class="d-flex">
+                    <input type="text" name="text" id="text" class="custom-h-input" th:value="${#authentication.principal.member.memberId}" />
+                </div>
+            </div>
+            <div class="delivery_title">
+                <span>이름</span>
+                <div class="d-flex">
+                    <input type="text" name="text" id="text" class="custom-h-input" th:value="${#authentication.principal.member.memberName}" />
+                </div>
+            </div>
+            <div class="delivery_title">
+                <span>연락처</span>
+                <div class="d-flex">
+                    <input type="text" name="text" id="text" class="custom-h-input" th:value="${#authentication.principal.member.memberPhone}" />
+                </div>
+            </div>
+            <div class="delivery_title">
+                <span>이메일</span>
+                <div class="d-flex">
+                    <input type="text" name="text" id="text" class="custom-h-input" th:value="${#authentication.principal.member.memberEmail}" />
+                </div>
+            </div>
+            <div class="delivery_title">
+                <span>주소</span>
+                <div id="delivery_address" th:text="${#authentication.principal.member.memberAddress}">서울특별시 관악구 남부순환로 1820 6층 글로벌아이티 6B</div>
+            </div>
+            <div class="delivery_title">
+                <span>가입일</span>
+                <div class="d-flex">
+                    <input type="text" name="text" id="text" class="custom-h-input" th:value="${#temporals.format(#authentication.principal.member.memberReg,'yyyy년 MM월 dd일') }" />
+                </div>
+            </div>
+            <div class="delivery_title chartBottom">
+                <div class="chartBtn" id="deliveryFeeModalShow" style="width: 30%; text-align: center">금액</div>
+                <div class="chartBtn" id="infoModalShow" style="width: 30%; text-align: center">변경</div>
+                <div class="chartBtn" id="deleteModalShow" style="width: 30%; text-align: center">회원탈퇴</div>
+            </div>
+        </div>
+
+        <script>
+            // jQuery가 로드된 뒤 실행
+            $(function () {
+                function tickOne($box) {
+                    const tz = $box.data('tz') || Intl.DateTimeFormat().resolvedOptions().timeZone;
+                    const fmt = new Intl.DateTimeFormat('ko-KR', {
+                        timeZone: tz,
+                        hour12: false,
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                    });
+                    const parts = fmt.formatToParts(new Date());
+                    const map = {};
+                    parts.forEach((p) => (map[p.type] = p.value));
+
+                    $box.find('.timezone_hour').text(map.hour);
+                    $box.find('.timezone_min').text(map.minute);
+                    $box.find('.timezone_sec').text(map.second);
+                }
+
+                function tickAll() {
+                    $('.timezone').each(function () {
+                        tickOne($(this));
+                    });
+                }
+
+                tickAll(); // 즉시 1회
+                setInterval(tickAll, 1000); // 1초마다 갱신
+            });
+        </script>
+    </div>
+    <!-- side_bar 영역 끝 -->
+
+    <!-- content 영역 시작 -->
+    <div layout:fragment="content" class="mt-3" style="margin-top: 60px !important">
+        <!-- <button id="selectChk" type="button">체크</button>
+        <div th:text="${chart.thisMonthOrderCount}"></div>
+        <div th:text="${chart.thisMonthTotalFee}"></div>
+        <div th:text="${chart.lastMonthOrderCount}"></div>
+        <div th:text="${chart.lastMonthTotalFee}"></div>
+        <div th:text="${chart.twoMonthsAgoOrderCount}"></div>
+        <div th:text="${chart.twoMonthsAgoTotalFee}"></div> -->
+        <div class="selectDiv">
+            <div class="optionDiv">
+                <select class="yearSelect" name="yearSelect" id="yearSelect"></select>
+                <select class="monthSelect" name="monthSelect" id="monthSelect"></select>
+            </div>
+        </div>
+        <div class="community_card active-card">
+            <div>
+                <canvas id="myChart"></canvas>
+            </div>
+        </div>
+        <div class="community_card active-card">
+            <div style="width: 100%; max-width: 800px">
+                <canvas id="responsiveChart"></canvas>
+            </div>
+        </div>
+        <th:block th:replace="~{rider/riderInfoModalFragment :: riderInfoModal}"></th:block>
+        <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script th:inline="javascript">
+            // 모든 jQuery AJAX 요청에 CSRF 헤더 자동 첨부
+            $(function () {
+                const token = $('meta[name="_csrf"]').attr('content');
+                const header = $('meta[name="_csrf_header"]').attr('content');
+                $(document).ajaxSend(function (e, xhr) {
+                    if (token && header) xhr.setRequestHeader(header, token);
+                });
+            });
+            $('.nav_item').removeClass('active');
+            $('.nav_item').eq(6).addClass('active');
+
+            const memberDate = new Date(/*[[${#authentication.principal.member != null ? #authentication.principal.member.memberReg : ""}]]*/ '');
+            const memberMonth = memberDate.getMonth() + 1;
+            const memberYear = memberDate.getFullYear();
+
+            const today = new Date();
+            const nowMonth = today.getMonth() + 1;
+            const nowYear = today.getFullYear();
+
+            const chartData = /*[[${chart}]]*/ {};
+        </script>
+        <script th:src="@{/js/rider/riderChart.js}"></script>
+        <script th:src="@{/js/rider/riderInfoModal.js}"></script>
+    </div>
+    <!-- content 영역 끝 -->
+</html>

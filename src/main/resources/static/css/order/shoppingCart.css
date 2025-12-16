@@ -1,0 +1,85 @@
+/*장바구니*/
+
+.nav-link{/*목록 구분*/
+	color: black;
+}
+
+.nav-link:hover{
+	color: orange;
+}
+
+.nav-link.active {
+	font-weight: bold;
+}
+
+.productList{
+	min-width: 650px;
+	max-width: 850px;
+}
+.card-body{
+	min-width: 300px;
+}
+
+.cartNo {
+	width: 20px;
+}
+
+.closed, .sold-out {
+	pointer-events:none;
+}
+
+.card{ /*상품 목록*/	
+	max-width: 850px;
+	/*min-width: 550px;*/
+	height: 170px;
+}
+
+.image-wrapper { /*이미지*/
+	aspect-ratio: 1/1; /* 정방형 */
+	position: relative; /* overlay 기준 */
+	overflow: hidden; /* 넘친 이미지 잘라냄 */
+}
+
+.image-wrapper img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover; /* 꽉 채우기 */
+	display: block;
+}
+
+/*찜*/
+.bi-heart {
+	font-size: clamp(12px, 3vw, 32px);
+}
+
+.bi-heart:hover {
+	cursor: pointer;
+}
+
+.bi-heart-fill {
+	font-size: clamp(12px, 3vw, 32px);
+	color: tomato;
+}
+
+.bi-heart-fill:hover {
+	cursor: pointer;
+}
+
+/*주문 정보*/
+.sticky-wrapper { /*화면따라다니기*/
+	position: relative;
+}
+
+.order-info {
+	position: sticky;
+	top: 60px; /* 화면 상단에서 20px 떨어진 위치에 고정 */
+	max-height: calc(100vh - 40px); /* 화면 높이에서 여백 제외 */
+	overflow-y: auto; /* 내용이 길면 스크롤 */
+	z-index: 100;
+	min-width: 230px;
+	background: white;
+	border: 1px solid #ddd;
+	border-radius: 17px;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+	padding: 20px;
+}

@@ -1,0 +1,42 @@
+<!-- mypage.html -->
+<!-- 마이페이지 메인 -->
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      lang="ko"
+      layout:decorate="~{common/layout}">
+<head>
+    <link rel="stylesheet" th:href="@{/css/member/mypage.css}">
+<style>
+/* content-area 크기 사이드바와 맞춤 */
+.mypage #content-area { position: relative; min-height: 240px; }
+.mypage #content-area > p { margin: 0; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;}
+</style>
+</head>
+
+<body>
+<div layout:fragment="content" class="container my-3 mypage">
+	<div class="main-wrapper">
+		<!-- 왼쪽 사이드바 -->
+        <div class="sidebar">
+			<ul>
+				<li><a class="mypage-title" th:href="@{/member/order-list}"  aria-current="page" >마이페이지</a></li>				
+                <li><a th:href="@{/member/order-list}">주문 내역</a></li>
+                <li><a th:href="@{/member/wish-list}">찜 목록</a></li>
+                <li><a th:href="@{/member/subscription}">정기 결제 조회/해지</a></li>
+                <li><a th:href="@{/member/review-list}">상품 후기</a></li>
+                <li><a th:href="@{/member/address}">배송지 관리</a></li>
+                <li><a th:href="@{/member/account-info}">회원 정보 관리</a></li>               
+                <li><a th:href="@{/center}" >고객 센터</a></li>
+                <li><a th:href="@{/center/report/list}">신고 내역</a></li>
+                <li><a th:href="@{/center/inquiry/list}">문의 내역</a></li>
+            </ul>
+        </div>
+
+        <!-- 오른쪽 content 영역 -->
+        <div id="content-area" class="content-area" >
+        	<p>원하시는 메뉴를 선택하세요</p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

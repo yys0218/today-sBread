@@ -1,0 +1,118 @@
+<!--
+******************************************
+*  Created On : 2025. 8. 11.
+*  File : rider-register.html
+*******************************************
+ -->
+<html layout:decorate="~{rider/rider-layout}">
+    <head>
+        <meta name="_csrf" th:content="${_csrf.token}" />
+        <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" />
+        <link rel="stylesheet" th:href="@{/css/rider/riderRegister.css}" />
+        <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    </head>
+    <div layout:fragment="content" class="container" style="width: 600px; height: 80vh">
+        <h5 class="my-4 border-bottom">회원가입</h5>
+        <form th:object="${riderInsertForm}" id="form" th:action="@{/rider/insert}" method="post">
+            <th:block th:if="${#fields.hasAnyErrors()}"></th:block>
+            <div class="alert alert-danger" role="alert" th:if="${#fields.hasAnyErrors()}">
+                <div style="height: 80px; width: 100%" th:each="error , loop : ${#fields.allErrors()}" th:text="${error}+${loop.count}"></div>
+            </div>
+            <div class="mb-3 form-floating">
+                <input type="text" maxlength="15" th:field="*{memberId}" class="form-control" placeholder="아이디" />
+                <label for="memberId" class="form-label">아이디</label>
+                <i class="bi bi-person position-absolute top-50 end-0 d-none translate-middle-y me-3">아이디 중복여부</i>
+            </div>
+            <div class="mb-3 form-floating">
+                <input type="password" maxlength="15" th:field="*{memberPw}" class="form-control" placeholder="" />
+                <label for="memberPw" class="form-label">비밀번호</label>
+                <i class="bi bi-person position-absolute top-50 end-0 d-none translate-middle-y me-5">비밀번호 유효성검사</i>
+                <i class="bi bi-eye-slash-fill position-absolute top-50 end-0 translate-middle-y me-3" id="pwToggleIcon" style="cursor: pointer; font-size: 20px; color: #f46f40"></i>
+            </div>
+            <div class="mb-3 form-floating">
+                <input type="password" th:field="*{memberPwRe}" class="form-control" placeholder="" />
+                <label for="memberPwRe" class="form-label">비밀번호 확인</label>
+                <i class="bi bi-person position-absolute top-50 end-0 d-none translate-middle-y me-5">비밀번호 확인</i>
+                <i class="bi bi-eye-slash-fill position-absolute top-50 end-0 translate-middle-y me-3" id="pwReToggleIcon" style="cursor: pointer; font-size: 20px; color: #f46f40"></i>
+            </div>
+            <div class="mb-3 form-floating">
+                <input type="text" th:field="*{memberName}" class="form-control" placeholder="" />
+                <label for="memberName" class="form-label">이름</label>
+            </div>
+            <div class="mb-3 form-floating">
+                <input type="date" th:field="*{memberBirth}" class="form-control" placeholder="" />
+                <label for="memberBirth" class="form-label">생년월일</label>
+            </div>
+            <div class="mb-3 d-flex flex-row gap-3 align-items-center">
+                <!-- 이메일 앞부분 -->
+                <div class="form-floating flex-fill">
+                    <input type="text" th:field="*{emailLocal}" class="form-control memberEmailLocal" placeholder="이메일" />
+                    <label for="memberEmailLocal">이메일</label>
+                </div>
+                <span class="fw-bold">@</span>
+                <!-- 이메일 도메인 -->
+                <div class="form-floating flex-fill">
+                    <input type="text" th:field="*{emailDomain}" class="form-control memberEmailDomain" placeholder="이메일" />
+                    <label for="memberEmailDomain">도메인</label>
+                </div>
+                <select id="emailDomainSelect" class="costom-select" style="width: 150px; height: 58px">
+                    <option value="">직접 입력</option>
+                    <option value="naver.com">naver.com</option>
+                    <option value="gmail.com">gmail.com</option>
+                    <option value="daum.net">daum.net</option>
+                    <option value="nate.com">nate.com</option>
+                    <option value="hanmail.com">hanmail.com</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <button type="button" id="ckEmail" class="btn custom-btn">중복확인</button>
+            </div>
+            <div class="mb-3">
+                <div class="form-floating">
+                    <input type="text" th:field="*{roadAddress}" class="form-control" readonly placeholder="" />
+                    <label for="roadAddress" class="form-label">주소</label>
+                </div>
+            </div>
+            <div class="mb-3">
+                <div class="mb-3 form-floating">
+                    <input type="text" th:field="*{detailAddress}" class="form-control" placeholder="" />
+                    <label for="memberAddress" class="form-label">상세주소</label>
+                </div>
+            </div>
+
+            <div class="mb-3 form-floating">
+                <input type="text" th:field="*{memberPhone}" t:format class="form-control" placeholder="" />
+                <label for="memberPhone" class="form-label">전화번호</label>
+                <i class="bi bi-person position-absolute top-50 end-0 d-none translate-middle-y me-3">전화번호 중복검사</i>
+            </div>
+            <div class="mb-3 d-flex justify-content-end">
+                <button type="button" id="backBtn" class="btn btn-primary mx-3">뒤로</button>
+                <button type="submit" id="ckInput" class="btn btn-primary">회원가입</button>
+            </div>
+        </form>
+        <!-- 모달 배경 -->
+        <div id="emailModal" class="modal" style="display: none">
+            <div class="modal-content">
+                <span class="closeBtn">&times;</span>
+                <h2>이메일 인증</h2>
+                <p>메일로 전송된 인증번호를 입력해 주세요.</p>
+                <input type="text" id="authCodeInput" placeholder="인증번호 입력" />
+                <button id="submitAuthCode">확인</button>
+                <div id="authMsg"></div>
+                <div class="modal-time"></div>
+            </div>
+        </div>
+        <script layout:fragment="script" th:inline="javascript">
+            // 모든 jQuery AJAX 요청에 CSRF 헤더 자동 첨부
+            $(function () {
+                const token = $('meta[name="_csrf"]').attr('content');
+                const header = $('meta[name="_csrf_header"]').attr('content');
+                $(document).ajaxSend(function (e, xhr) {
+                    if (token && header) xhr.setRequestHeader(header, token);
+                });
+            });
+        </script>
+        <script th:src="@{/js/rider/riderRegister.js}"></script>
+    </div>
+</html>

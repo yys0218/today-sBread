@@ -1,0 +1,129 @@
+/* ===========================
+   공통 레이아웃
+   =========================== */
+.content-right {
+  width: 100%;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-sizing: border-box;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.page-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+}
+.content-area {
+  flex-grow: 1 1 auto;
+  padding: 32px 40px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.07);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  max-height: 600px;
+}
+
+/* ===========================
+   정기결제 전용 스타일
+   =========================== */
+.note {
+  color: #666;
+  font-size: 0.95rem;
+}
+.subs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-right: 6px;
+}
+.subs-item {
+  border: 1px solid #eee;
+  border-radius: 10px;
+  padding: 14px;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+}
+.subs-item .row {
+  display: flex;
+  justify-content: space-between; /* 왼쪽 info / 오른쪽 actions */
+  align-items: center;
+  gap: 16px;
+}
+
+.subs-item .info {
+  display: flex;
+  flex-direction: column; /* 상품명, 상점명, 날짜를 세로로 */
+  gap: 4px;
+}
+
+.subs-item .actions {
+  display: flex;
+  align-items: center;
+  margin-left: auto; /* 오른쪽 끝으로 밀기 */
+}
+
+/* 텍스트 스타일 */
+.subs-title {
+  font-weight: 600;
+  color: #333;
+  text-decoration: none;
+}
+.subs-title:hover { text-decoration: underline; }
+.subs-shop a {
+  font-size: 0.9rem;
+  color: #666;
+  text-decoration: none;
+}
+.subs-date {
+  font-size: 0.9rem;
+  color: #444;
+  margin-top: 4px;
+}
+
+/* 버튼 */
+.btn {
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+.btn-danger {
+  border: 1px solid #e65c4f;
+  background: #f26d5b;
+  color: #fff;
+  font-weight: 600;
+}
+.btn-danger:hover {
+  background: #d9534f;
+  border-color: #c9302c;
+}
+.pagination-wrapper {
+  margin-top: 20px;
+}
+.pagination .page-item.active .page-link {
+  background-color: #ff7542;
+  border-color: #ff7542;
+  color: #fff;
+}
+.pagination .page-link {
+  color: #333;
+}
+.pagination .page-link:hover {
+  color: #ff7542;
+}

@@ -1,0 +1,104 @@
+<!-- 마이페이지 - 후기 -->
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="ko"
+	layout:decorate="~{common/layout}">
+<head>
+<link rel="stylesheet" th:href="@{/css/member/mypage.css}">
+<link rel="stylesheet" th:href="@{/css/member/review-list.css}">
+</head>
+
+<body>
+	<div layout:fragment="content" class="container my-3 mypage">
+		<div class="main-wrapper">
+
+			<!-- 왼쪽 사이드바 -->
+			<div class="sidebar">
+				<ul>
+					<li><a class="mypage-title" th:href="@{/member/mypage}">마이페이지</a></li>
+					<li><a th:href="@{/member/order-list}">주문 내역</a></li>
+					<li><a th:href="@{/member/wish-list}">찜 목록</a></li>
+					<li><a th:href="@{/member/subscription}">정기 결제 조회/해지</a></li>
+					<li><a th:href="@{/member/review-list}" class="is-active"
+						aria-current="page">상품 후기</a></li>
+					<li><a th:href="@{/member/address}">배송지 관리</a></li>
+					<li><a th:href="@{/member/account-info}">회원 정보 관리</a></li>
+					<li><a th:href="@{/center}">고객 센터</a></li>
+					<li><a th:href="@{/center/report/list}">신고 내역</a></li>
+					<li><a th:href="@{/center/inquiry/list}">문의 내역</a></li>
+				</ul>
+			</div>
+
+			<!-- 오른쪽 전체 래퍼 -->
+			<div class="content-right">
+				<div class="page-header">
+					<h2 class="page-title">내 후기</h2>
+				</div>
+
+				<!-- 본문 컨텐츠 -->
+				<div id="content-area" class="content-area">
+
+					<!-- 빈 상태 -->
+					<div th:if="${reviews == null or #lists.isEmpty(reviews.content)}"
+						class="empty-state">등록된 후기가 없습니다.</div>
+
+					<!-- 후기 카드 컨테이너 -->
+					<div class="review-list">
+						<!-- 후기 카드 -->
+						<div th:each="rv : ${reviews.content}" class="review-card mb-3">
+							<div class="review-title">
+								<a th:if="${rv.productNo != null}"
+									th:href="@{|/product/detail/${rv.productNo}|}"
+									class="review-product-link"
+									th:text="${rv.productName} ?: '상품명'">상품명</a> <span
+									class="review-date"
+									th:text="${rv.createDate != null ? #temporals.format(rv.createDate, 'yyyy-MM-dd') : ''}"></span>
+							</div>
+							<div class="review-body">
+								<!-- 별점 -->
+								<div class="review-stars"
+									th:with="stars=${#numbers.sequence(1, rv.rating)}">
+									<span th:each="s : ${stars}">★</span> <span
+										th:if="${rv.rating < 5}"
+										th:each="s : ${#numbers.sequence(1, 5 - rv.rating)}">☆</span>
+								</div>
+
+								<!-- 내용 -->
+								<div class="review-content" th:text="${rv.reviewContent}">내용</div>
+							</div>
+						</div>
+					</div>
+					<!-- /review-list -->
+
+					<!-- 페이징 -->
+					<nav th:if="${reviews != null and reviews.totalPages > 5}"
+						aria-label="pagination">
+						<div class="pagination mt-3">
+							<!-- 이전 -->
+							<a class="page-link"
+								th:classappend="${reviews.first} ? ' disabled' : ''"
+								th:href="@{|/member/review-list?page=${reviews.number} &size=${reviews.size}|}">이전</a>
+
+							<!-- 숫자 -->
+							<a class="page-link"
+								th:each="p : ${#numbers.sequence(1, reviews.totalPages)}"
+								th:classappend="${p == reviews.number + 1} ? ' active' : ''"
+								th:href="@{|/member/review-list?page=${p} &size=${reviews.size}|}"
+								th:text="${p}">1</a>
+
+							<!-- 다음 -->
+							<a class="page-link"
+								th:classappend="${reviews.last} ? ' disabled' : ''"
+								th:href="@{|/member/review-list?page=${reviews.number + 2} &size=${reviews.size}|}">다음</a>
+						</div>
+					</nav>
+				</div>
+			</div>
+			<!-- /content-right -->
+		</div>
+		<!-- /main-wrapper -->
+	</div>
+
+	<!-- 공용 무한 스크롤 스크립트 (body 제일 하단에 둬야 함) -->
+	<script th:src="@{/js/member/mypage.js}"></script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html layout:decorate="~{/common/layout}" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/css/shop/shopmain.css">
+	<link rel="stylesheet" href="/css/shop/totalsales.css">
+
+</head>
+<body>
+<div layout:fragment="content" class="container my-3" style="font-family: 'Noto Sans KR', sans-serif;">
+
+    <!-- 제목 -->
+    <h1 class="jua-regular mt-3">모든 판매 내역</h1>
+
+    <!-- 구분선 -->
+	<hr style="border: 1px solid #d1d5db; margin: 20px 0;">
+
+    <!-- 매출 내역 컨테이너 -->
+    <div class="sales-container box">
+	    <!-- 버튼 -->
+	    <div class="button-container" style="text-align: right; margin-bottom: 20px;">
+	        <button onclick="location.href='/shop/shopmain'" style="
+	            padding: 8px 14px;
+	            background: #ff6600; 
+	            color: #fff; 
+	            border-radius: 6px; 
+	            border: none; 
+	            cursor: pointer;
+	            transition: background 0.2s;">
+	            내 상점으로
+	        </button>
+	    </div>
+    
+        <!-- Debug: allSales 크기 확인 -->
+        <p class="debug">총 주문 건수: <span th:text="${allSales != null ? allSales.size() : 0}"></span></p>
+
+        <!-- 매출 내역 테이블 -->
+        <table class="sales-table" th:if="${allSales != null and !#lists.isEmpty(allSales)}">
+            <thead>
+                <tr>
+                    <th width="100px">매출번호</th>
+                    <th>상품 정보</th>
+                    <th width="200px">결제금액</th>
+                    <th width="200px">주문 상태</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="sale : ${allSales}">
+                    <td th:text="${sale.orderNo}"></td>
+                    <td>
+					 	<div th:if="${sale.orderDetail != null && !sale.orderDetail.isEmpty()}">
+	                    	<div th:each ="detail : ${sale.orderDetail}">
+	                    		<span th:text="${detail.product.productName}"></span>
+	                    		<span th:text=${detail.quantity}></span>pcs &nbsp;
+	                    		<span th:text="${#numbers.formatInteger(detail.product.price * detail.quantity, 3, 'COMMA')} + '원'"></span>
+	                    	</div>
+                    	</div>
+                    	
+                    </td>
+                    <td th:text="${#numbers.formatInteger(sale.orderPrice, 3, 'COMMA')} + ' 원'"></td>
+                    <td>
+                        <span th:if="${sale.status==-1}" class="status-cancel">주문취소</span>
+                        <span th:if="${sale.status==0}" class="status-wait">수락대기</span>
+                        <span th:if="${sale.status==1}" class="status-reject">거절</span>
+                        <span th:if="${sale.status==2}" class="status-ship">배송요청</span>
+                        <span th:if="${sale.status==3}" class="status-pick">픽업대기</span>
+                        <span th:if="${sale.status==4}" class="status-ship">픽업</span>
+                        <span th:if="${sale.status==5}" class="status-done">배송완료</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- 내역 없을 때 -->
+        <div th:if="${allSales == null or #lists.isEmpty(allSales)}"
+             class="text-gray-500 text-center p-5 border rounded">
+            매출 내역이 없습니다.
+        </div>
+    </div>   
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html layout:decorate="~{/common/layout}">
+<head>
+    <meta charset="UTF-8">   
+<link rel="stylesheet" href="/css/shop/shopUpdate.css"> 
+</head>
+
+<body>
+<!-- 판매자가 판매자 정보 탭에서 본인의 상점에 대한 정보를 수정하고 올릴수 있는 곳  -->
+<div layout:fragment="content" class="container my-3" >
+    <h2>판매자 정보 수정</h2>
+
+    <form th:action="@{/shop/update}" method="post">
+        <div>
+            <label>가게 이름</label>
+            <input type="text" name="shopName" th:value="${shop.shopName}" placeholder="실제 가게명과 동일하게 입력해주세요."
+            required>
+        </div>
+
+        <div>
+            <label>주소</label>
+            <input type="text" name="shopFullAdd" th:value="${shop.shopFullAdd}" placeholder="실제 가게주소지와 동일하게 입력해주세요."
+            required>
+        </div>
+
+        <div>
+            <label>연락처</label>
+            <input type="text" name="shopContact" th:value="${shop.shopContact}" placeholder="실제 가게 연락전화번호와 동일하게 입력해주세요."
+            required>
+        </div>
+
+        <div>
+            <label>영업 오픈시간</label>
+            <input type="text" name="openTime" th:value="${shop.openTime}" placeholder="예: 09:00">
+        </div>
+
+        <div>
+            <label>영업 마감시간</label>
+            <input type="text" name="closeTime" th:value="${shop.closeTime}" placeholder="예: 21:00">
+        </div>
+
+        <div>
+            <button type="submit">저장</button>
+            <a th:href="@{shop/shopmain}" class="button-link">취소</a>
+        </div>
+    </form>
+    
+     <!-- 판매자 통계 영역 -->
+    <div class="shop-stats">
+        <h3>상점 통계</h3>
+        <div class="stats-grid">
+            <div class="stats-card">
+                <h4>총 주문 건수</h4>
+                <p th:text="${stats.totalOrders}">0</p>
+            </div>
+            <div class="stats-card">
+                <h4>리뷰 수 / 평균 평점</h4>
+                <p th:text="${stats.totalReviews} + ' / ' + ${stats.avgRating}">0 / 0.0</p>
+            </div>
+            <div class="stats-card">
+                <h4>총 매출액</h4>
+                <p th:text="${stats.totalSales} + '원'">0원</p>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

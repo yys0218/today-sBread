@@ -1,0 +1,47 @@
+/* templates/product/search.html 전용 스타일 */
+/* list.css 톤앤매너와 일치하도록 최소 보강 */
+
+/* 상단 영역 */
+.search-title { margin: 0; font-weight: 800; }
+.result-meta  { color: #666; }
+
+/* 연관검색어 칩 */
+.related-keywords { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 20px; }
+.related-keywords .chip {
+  display: inline-block; padding: 6px 12px; background: #f4f4f5; border: 1px solid #e5e7eb;
+  border-radius: 999px; cursor: pointer; font-size: 14px;
+  transition: background .15s, border-color .15s;
+}
+.related-keywords .chip:hover { background: #eee; border-color: #d1d5db; }
+
+/* 그리드: list.css 카드와 조화되도록 */
+.product-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
+.product-cell { grid-column: span 3; }      /* 4열 */
+@media (max-width: 1200px){ .product-cell { grid-column: span 4; } } /* 3열 */
+@media (max-width: 992px){  .product-cell { grid-column: span 6; } } /* 2열 */
+@media (max-width: 576px){  .product-cell { grid-column: span 12; } }/* 1열 */
+
+/* 빈 상태 */
+.empty-state { text-align: center; padding: 48px 12px; color: #666; }
+.empty-state img { max-width: 360px; width: 60%; height: auto; opacity: .9; }
+.empty-state .msg { margin-top: 18px; font-weight: 700; font-size: 1.25rem; }
+
+/* 사이드(필터 영역과 동일한 박스 톤을 유지 - 안내 전용) */
+.sticky-wrapper { position: sticky; }
+.filtering {
+  position: sticky;
+  top: 210px;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  z-index: 100;
+  min-width: 230px;
+  max-width: 270px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 17px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+/* 하트 아이콘 크기(list.css와 동일) */
+.bi-heart { font-size: clamp(12px, 3vw, 32px); }

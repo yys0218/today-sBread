@@ -1,0 +1,154 @@
+/* 공통 form-floating 높이 설정 */
+.form-floating {
+    --fld-h: calc(3.5rem + 2px); /* Bootstrap form-floating 기본 높이 */
+}
+
+/* select 스타일 */
+.costom-select {
+    height: var(--fld-h);
+    padding: 0 0.75rem;
+    border: 1px solid #555;
+    border-radius: 0.5rem;
+    background-color: #2b2b2b; /* 배경색 */
+    color: #fff; /* 글자색 */
+    outline: none;
+
+    /* 화살표 커스텀 */
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white'><path d='M4 6l4 4 4-4'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+}
+
+.costom-select:hover {
+    border-color: #777;
+}
+.costom-select:focus {
+    border-color: #f46f40;
+    box-shadow: 0 0 0 0.2rem rgba(244, 111, 64, 0.25);
+}
+
+/* 옵션 배경 */
+.custom-select option {
+    background-color: #2b2b2b;
+    color: #fff;
+}
+
+.feedback-t {
+    color: #29eb02ea;
+}
+
+/* 이메일 인증 */
+/* 모달 전체 배경 */
+.modal {
+    position: fixed;
+    z-index: 9999; /* 가장 위로 */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* 반투명 검정 배경 */
+    display: flex;
+    justify-content: center;
+    align-items: center; /* 화면 중앙 정렬 */
+}
+
+/* 모달 내용 박스 */
+.modal-content {
+    background: #1e1e1e;
+    color: #fff;
+    padding: 25px 30px;
+    border-radius: 12px;
+    width: 400px;
+    max-width: 90%;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+    text-align: center;
+    position: relative;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* 닫기 버튼 */
+.closeBtn {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    font-size: 22px;
+    color: #bbb;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.closeBtn:hover {
+    color: #f46f40; /* 포인트 색상 */
+}
+
+/* 제목 */
+.modal-content h2 {
+    margin-bottom: 10px;
+    color: #ffcc00; /* 강조 색상 */
+}
+
+/* 설명 텍스트 */
+.modal-content p {
+    font-size: 14px;
+    color: #ccc;
+    margin-bottom: 15px;
+}
+
+/* 인증번호 입력 */
+#authCodeInput {
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #444;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    background: #2b2b2b;
+    color: #fff;
+}
+
+/* 확인 버튼 */
+#submitAuthCode {
+    width: 100%;
+    padding: 10px;
+    font-size: 15px;
+    font-weight: bold;
+    background: #f46f40; /* 버튼 기본색 */
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.2s;
+}
+#submitAuthCode:hover {
+    transform: scale(1.05);
+    background: #d95c30; /* hover 시 조금 더 진한 톤 */
+}
+
+/* 인증 메시지 */
+#authMsg {
+    margin-top: 12px;
+    font-size: 13px;
+    color: #00ff99; /* 성공 시 색상 */
+}
+
+/* 타이머 */
+.modal-time {
+    margin-top: 10px;
+    font-size: 12px;
+    color: #aaa;
+}
+
+/* 애니메이션 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

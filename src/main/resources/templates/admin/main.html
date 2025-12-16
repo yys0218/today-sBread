@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{admin/adminLayout}">
+
+<head>
+  <meta charset="UTF-8">
+  <title>관리자 대시보드</title>
+  <!-- 대시보드 전용 CSS -->
+  <link rel="stylesheet" th:href="@{/css/admin/main.css}">
+  <link rel="stylesheet" th:href="@{/css/admin/admin.css}">
+  <!-- Chart.js 라이브러리 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- jQuery UI -->
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+
+</head>
+
+<div layout:fragment="content" class="admin-content">
+
+  <div class="dashboard-container">
+    <h2>관리자 대시보드</h2>
+
+    <div class="dashboard-kpi">
+      <!-- 오늘 주문 수 -->
+      <div class="dashboard-card">
+        <div class="title">오늘 주문 수</div>
+        <div class="value"><b th:text="${orders.todayCount}">0</b> 건</div>
+        <div class="subtitle">어제: <span th:text="${orders.yesterdayCount}">0</span> 건</div>
+        <div>
+          증감:
+          <span th:class="${orders.diff > 0 ? 'increase' : 'decrease'}"
+            th:text="${(orders.diff > 0 ? '▲ +' : '▼ ') + #numbers.formatInteger(orders.diff, 0, 'COMMA') + '건 (' + #numbers.formatDecimal(orders.percent, 1, 1) + '%)'}">▲
+            +0건 (0%)</span>
+        </div>
+        <canvas id="ordersChart" height="80"></canvas>
+      </div>
+
+      <!-- 오늘 매출 -->
+      <div class="dashboard-card">
+        <div class="title">오늘 매출</div>
+        <div class="value"><b th:text="${#numbers.formatInteger(sales.todaySales, 0, 'COMMA')}">0</b> 원</div>
+        <div class="subtitle">어제: <span th:text="${#numbers.formatInteger(sales.yesterdaySales, 0, 'COMMA')}">0</span> 원</div>
+        <div>
+          증감:
+          <span th:class="${sales.diff > 0 ? 'increase' : 'decrease'}"
+            th:text="${(sales.diff > 0 ? '▲ +' : '▼ ') + #numbers.formatInteger(sales.diff, 0, 'COMMA') + '원 (' + #numbers.formatDecimal(sales.percent, 1, 1) + '%)'}">▲
+            +0원 (0%)</span>
+        </div>
+        <canvas id="salesChart" height="80"></canvas>
+      </div>
+
+      <!-- 신규 회원 -->
+      <div class="dashboard-card">
+        <div class="title">신규 회원</div>
+        <div class="value">이번 주: <b th:text="${members.thisWeekCount}">0</b> 명</div>
+        <div class="subtitle">지난 주: <span th:text="${members.lastWeekCount}">0</span> 명</div>
+        <div>
+          증감:
+          <span th:class="${members.diff > 0 ? 'increase' : 'decrease'}"
+            th:text="${(members.diff > 0 ? '▲ +' : '▼ ') + #numbers.formatInteger(members.diff, 0, 'COMMA') + '명 (' + #numbers.formatDecimal(members.percent, 1, 1) + '%)'}">▲
+            +0명 (0%)</span>
+        </div>
+        <canvas id="membersChart" height="80"></canvas>
+      </div>
+
+      <!-- 신규 입점 -->
+      <div class="dashboard-card">
+        <div class="title">신규 입점</div>
+        <div class="value">이번 주: <b th:text="${newShops.thisWeekCount}">0</b> 건</div>
+        <div class="subtitle">지난 주: <span th:text="${newShops.lastWeekCount}">0</span> 건</div>
+        <div>
+          증감:
+          <span th:class="${newShops.diff > 0 ? 'increase' : 'decrease'}"
+            th:text="${(newShops.diff > 0 ? '▲ +' : '▼ ') + #numbers.formatInteger(newShops.diff, 0, 'COMMA') + '건 (' + #numbers.formatDecimal(newShops.percent, 1, 1) + '%)'}">▲
+            +0건 (0%)</span>
+        </div>
+        <canvas id="shopsChart" height="80"></canvas>
+      </div>
+
+      <!-- 폐점 -->
+      <div class="dashboard-card">
+        <div class="title">폐점</div>
+        <div class="value">이번 주: <b th:text="${closedShops.thisWeekCount}">0</b> 건</div>
+        <div class="subtitle">지난 주: <span th:text="${closedShops.lastWeekCount}">0</span> 건</div>
+        <div>
+          증감:
+          <span th:class="${closedShops.diff > 0 ? 'increase' : 'decrease'}"
+            th:text="${(closedShops.diff > 0 ? '▲ +' : '▼ ') + #numbers.formatInteger(closedShops.diff, 0, 'COMMA') + '건 (' + #numbers.formatDecimal(closedShops.percent, 1, 1) + '%)'}">▲
+            +0건 (0%)</span>
+        </div>
+        <canvas id="closedChart" height="80"></canvas>
+      </div>
+
+    </div> <!-- /dashboard-kpi -->
+
+    <hr>
+
+    <!-- 정산 통계 차트 -->
+    <div class="settle-chart-container">
+      <h2>정산 통계 조회</h2>
+
+      <!-- 서브 탭 -->
+      <div class="sub-tabs">
+        <!-- 기간 탭 -->
+        <ul class="sub-tab-menu" id="settlePeriodTabs">
+          <li data-type="daily" class="active">최근 10일</li>
+          <li data-type="weekly">최근 8주</li>
+          <li data-type="monthly">최근 12개월</li>
+        </ul>
+
+        <!-- 대상 탭 -->
+        <ul class="sub-tab-menu" id="settleTargetTabs">
+          <li data-target="all" class="active">전체</li>
+          <li data-target="seller">판매자</li>
+          <li data-target="rider">라이더</li>
+        </ul>
+      </div>
+
+      <div style="max-width: 1000px; margin: 20px auto;">
+        <canvas id="settleChart"></canvas>
+      </div>
+    </div>
+
+  </div> <!-- /dashboard-container -->
+
+  <!-- 차트 초기화 구조 -->
+  <script th:inline="javascript">
+    // 한 5분 정도 간격으로 페이지가 리프레쉬되게
+
+    // KPI 미니 차트
+    new Chart(document.getElementById("ordersChart"), {
+      type: "line",
+      data: { labels: /*[[${orderLabels}]]*/[], datasets: [{ label: "주문 수", data: /*[[${orderData}]]*/[], borderColor: "#c67c4e", backgroundColor: "rgba(198,124,78,0.2)", tension: 0.3 }] },
+      options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+    });
+
+    new Chart(document.getElementById("salesChart"), {
+      type: "bar",
+      data: { labels: /*[[${salesLabels}]]*/[], datasets: [{ label: "매출", data: /*[[${salesData}]]*/[], backgroundColor: "#c67c4e" }] },
+      options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+    });
+
+    new Chart(document.getElementById("membersChart"), {
+      type: "bar",
+      data: { labels: /*[[${members.chartLabels}]]*/[], datasets: [{ label: "신규 회원", data: /*[[${members.chartData}]]*/[], backgroundColor: "#c67c4e" }] },
+      options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+    });
+
+    new Chart(document.getElementById("shopsChart"), {
+      type: "line",
+      data: { labels: /*[[${newShops.chartLabels}]]*/[], datasets: [{ label: "신규 입점", data: /*[[${newShops.chartData}]]*/[], borderColor: "#c67c4e", backgroundColor: "rgba(198,124,78,0.2)", tension: 0.3 }] },
+      options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+    });
+
+    new Chart(document.getElementById("closedChart"), {
+      type: "line",
+      data: { labels: /*[[${closedShops.chartLabels}]]*/[], datasets: [{ label: "폐점", data: /*[[${closedShops.chartData}]]*/[], borderColor: "#dc3545", backgroundColor: "rgba(220,53,69,0.2)", tension: 0.3 }] },
+      options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+    });
+
+
+    // 정산 통계 차트
+    $(document).ready(function () {
+      let currentTarget = "all";
+      let currentPeriod = "daily";
+      let settleChart = null;
+
+      function loadSettleChart(type, target) {
+        $.ajax({
+          url: "/admin/site/settle/chart/unified",
+          data: { type: type, target: target },
+          success: function (data) {
+            const ctx = document.getElementById("settleChart").getContext("2d");
+            if (settleChart) settleChart.destroy();
+
+            const expenseData = data.expense.map(value => -value);
+
+            const isMonthly = (type === 'monthly');
+            const divisor = isMonthly ? 10000 : 1000;
+            const unitText = isMonthly ? '만원' : '천원';
+
+            const allValues = [...data.sales, ...data.revenue, ...expenseData];
+            const maxAbsValue = Math.max(...allValues.map(v => Math.abs(v)));
+            const paddedMax = maxAbsValue * 1.1;
+            const yMax = (paddedMax === 0) ? (isMonthly ? 100000 : 10000) : paddedMax;
+
+            settleChart = new Chart(ctx, {
+              type: "bar",
+              data: {
+                labels: data.labels,
+                datasets: [
+                  {
+                    label: '수수료 수익 (원)',
+                    data: data.revenue,
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    order: 2
+                  },
+                  {
+                    label: '총 매출 (원)',
+                    data: data.sales,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'transparent',
+                    type: 'line',
+                    tension: 0.3,
+                    order: 1
+                  },
+                  {
+                    label: '정산 지출 (원)',
+                    data: expenseData,
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: 'transparent',
+                    type: 'line',
+                    tension: 0.3,
+                    order: 1
+                  }
+                ]
+              },
+              options: {
+                responsive: true,
+                scales: {
+                  y: {
+                    min: -yMax,
+                    max: yMax,
+                    title: {
+                      display: true,
+                      text: `금액 (단위: ${unitText})`
+                    },
+                    ticks: {
+                      precision: 0, // 눈금을 정수로만 표시하도록 강제
+                      callback: function(value, index, values) {
+                        return Math.round(value / divisor);
+                      }
+                    }
+                  }
+                }
+              }
+            });
+          }
+        });
+      }
+
+      $("#settleTargetTabs li").on("click", function () {
+        $("#settleTargetTabs li").removeClass("active");
+        $(this).addClass("active");
+        currentTarget = $(this).data("target");
+        loadSettleChart(currentPeriod, currentTarget);
+      });
+
+      $("#settlePeriodTabs li").on("click", function () {
+        $("#settlePeriodTabs li").removeClass("active");
+        $(this).addClass("active");
+        currentPeriod = $(this).data("type");
+        loadSettleChart(currentPeriod, currentTarget);
+      });
+
+      // 초기 로딩
+      loadSettleChart(currentPeriod, currentTarget);
+    });
+
+    /*]]>*/
+  </script>
+  <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+
+</div>
+</html>

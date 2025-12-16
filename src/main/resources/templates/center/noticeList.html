@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{common/layout}">
+
+<head>
+  <title>공지사항 목록</title>
+  <meta charset="UTF-8">
+  <meta th:name="_csrf" th:content="${_csrf.token}">
+  <meta th:name="_csrf_header" th:content="${_csrf.headerName}">
+  <link rel="stylesheet" th:href="@{/css/center/help-center.css}">
+  <link rel="stylesheet" th:href="@{/css/center/centerSidebar.css}">
+  <link rel="stylesheet" th:href="@{/css/main/main.css}" />
+  <link rel="stylesheet" th:href="@{/css/center/notice.css}">
+</head>
+
+<div layout:fragment="content" class="container my-3">
+  <div class="container hc-layout">
+    <!-- 좌측 사이드바 -->
+    <div th:replace="~{center/centerSidebar :: centerMenu('notice')}"></div>
+    
+    <!-- 우측 본문 -->
+    <main class="hc-main">
+      <h1 class="nl-title">공지사항 목록</h1>
+      <!-- 검색/필터 폼 (GET) -->
+      <form th:action="@{/center/notice/list}" method="get" id="searchForm">
+        <label for="category">카테고리</label>
+        <select name="category" th:value="${category}" onchange="this.form.submit()">
+          <option value="" th:selected="${category==''}" selected>(전체)</option>
+          <option value="공지" th:selected="${category=='공지'}">공지</option>
+          <option value="점검" th:selected="${category=='점검'}">점검</option>
+          <option value="이벤트" th:selected="${category=='이벤트'}">이벤트</option>
+          <option value="업데이트" th:selected="${category=='업데이트'}">업데이트</option>
+        </select>
+        <input type="text" name="kw" th:value="${kw}" placeholder="검색어">
+        <button type="submit">검색</button>
+      </form>
+      <!-- 리스트 테이블 -->
+      <table class="nl-table">
+        <thead>
+          <tr>
+            <th>번호</th>
+            <th>카테고리</th>
+            <th>제목</th>
+            <th>작성일</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:if="${paging.empty}">
+            <td colspan="4">게시글이 없습니다.</td>
+          </tr>
+          <!-- div 대신 tr에 th:if 부여 (구조 유효화) -->
+          <tr th:each="n, loop : ${paging}" th:if="${n.noticeStatus == 0}">
+            <td th:text="${paging.getTotalElements - (paging.number * paging.size) - loop.index}"></td>
+            <td th:text="${n.noticeCategory}"></td>
+            <td>
+              <a th:href="@{|/center/notice/detail/${n.noticeNo}|}">[[${n.noticeTitle}]]</a>
+            </td>
+            <td th:if="${n.noticeUpdateAt == null}" th:text="${#temporals.format(n.noticeAt, 'yyyy-MM-dd HH:mm')}">
+            </td>
+            <td th:if="${n.noticeUpdateAt != null}"
+              th:text="${#temporals.format(n.noticeUpdateAt, 'yyyy-MM-dd HH:mm')}"></td>
+          </tr>
+        </tbody>
+      </table>
+      <!-- 페이징 처리 -->
+      <div th:if="${!paging.isEmpty()}">
+        <ul class="pagination justify-content-center">
+          <span class="page-item" th:if="${paging.hasPrevious()}">
+            <a class="page-link" th:href="@{|?page=${paging.number-1}|}">
+              <span>이전</span>
+            </a>
+          </span>
+          <span th:each="page:${#numbers.sequence(0, paging.totalPages-1)}"
+            th:if="${page >= paging.number-5 and page <= paging.number+5}"
+            th:classappend="${page==paging.number} ? 'active'" class="page-item">
+            <a th:text="${page+1}" class="page-link"
+              th:href="@{/center/notice/list(page=${page}, kw=${kw}, category=${category})}"></a>
+          </span>
+          <span class="page-item" th:if="${paging.hasNext()}">
+            <a class="page-link" th:href="@{|?page=${paging.number+1}|}">
+              <span>다음</span>
+            </a>
+          </span>
+        </ul>
+      </div>
+      <!-- 페이징 처리 끝 -->
+    </main>
+  </div>
+</div>

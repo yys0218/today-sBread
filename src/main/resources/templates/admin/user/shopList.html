@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{admin/adminLayout}">
+
+<head>
+  <link rel="stylesheet" th:href="@{/css/admin/shop.css}">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script th:src="@{/js/comm/sweetalert.noah.js}"></script>
+</head>
+<div layout:fragment="content">
+
+  <h2 class="sl-title">상점 관리</h2>
+
+  <!-- 상태 필터 -->
+
+  <form id="shopSortForm" th:action="@{/admin/user/shop/list}" method="get">
+    <input type="hidden" name="sortDir" id="sortDir" th:value="${sortDir}" />
+    <input type="hidden" name="roleValue" id="roleValue" th:value="${roleValue}" />
+    <div name="keyword">
+      <input type="text" name="keyword" th:value="${keyword}" placeholder="검색어 입력" />
+      <button type="submit">검색</button>
+    </div>
+    <div class="role-filter">
+      <button type="button" th:classappend="${roleValue==null} ? 'active'" onclick="filterByRole('')">전체</button>
+      <button type="button" th:classappend="${roleValue==0} ? 'active'" onclick="filterByRole(0)">정상운영</button>
+      <button type="button" th:classappend="${roleValue==1} ? 'active'" onclick="filterByRole(1)">정지</button>
+      <button type="button" th:classappend="${roleValue==2} ? 'active'" onclick="filterByRole(2)">폐점</button>
+    </div>
+    <!-- 정렬 선택 -->
+    <div name="sortField">
+      <button type="button" onclick="setSort('shopName')">매장명</button>
+      <button type="button" onclick="setSort('shopCreatedAt')">등록일</button>
+    </div>
+  </form>
+
+
+  <!-- 레이아웃: 왼쪽 목록 / 오른쪽 상세 -->
+  <div class="shop-layout">
+
+    <!-- 상점 목록 -->
+    <table class="sl-table">
+      <thead>
+        <tr>
+          <th>번호</th>
+          <th>매장명</th>
+          <th>사업자명</th>
+          <th>연락처</th>
+          <th>상태</th>
+          <th>등록일</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="s : ${paging}" th:data-id="${s.shopNo}" class="shop-row" style="cursor:pointer;">
+          <td th:text="${s.shopNo}"></td>
+          <td th:text="${s.shopName}"></td>
+          <td th:text="${s.businessName}"></td>
+          <td th:text="${s.shopContact}"></td>
+          <td class="list-status" th:text="${s.shopStatus}"></td>
+          <td th:text="${#temporals.format(s.shopCreatedAt, 'yy-MM-dd')}"></td>
+        </tr>
+        <tr th:if="${paging.isEmpty()}">
+          <td colspan="6" style="text-align:center; color:#999;">
+            검색 결과가 없습니다.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- 상점 상세 -->
+    <div id="shop-detail" class="sl-detail">
+      <h3>상점 상세</h3>
+      <div id="detail-content">
+        왼쪽 목록에서 상점을 선택하세요.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 페이징 처리 -->
+  <div th:if="${!paging.isEmpty()}">
+    <ul class="pagination justify-content-center">
+
+      <!-- 이전 -->
+      <span class="page-item" th:if="${paging.hasPrevious()}">
+        <a class="page-link"
+          th:href="@{|/admin/user/shop/list?page=${paging.number-1}&sortField=${sortField}&sortDir=${sortDir}&keyword=${keyword}|}">
+          <span>이전</span>
+        </a>
+      </span>
+
+      <!-- 번호 -->
+      <span th:each="page : ${#numbers.sequence(0, paging.totalPages-1)}"
+        th:if="${page >= paging.number-5 and page <= paging.number+5}"
+        th:classappend="${page==paging.number} ? 'active'" class="page-item">
+        <a th:text="${page+1}" class="page-link"
+          th:href="@{|/admin/user/shop/list?page=${page}&sortField=${sortField}&sortDir=${sortDir}&keyword=${keyword}|}"></a>
+      </span>
+
+      <!-- 다음 -->
+      <span class="page-item" th:if="${paging.hasNext()}">
+        <a class="page-link"
+          th:href="@{|/admin/user/shop/list?page=${paging.number+1}&sortField=${sortField}&sortDir=${sortDir}&keyword=${keyword}|}">
+          <span>다음</span>
+        </a>
+      </span>
+
+    </ul>
+  </div>
+  <!-- 페이징 처리 끝 -->
+
+  <!-- 제재 모달 -->
+  <div id="restrict-modal">
+    <h4>상점 제재</h4>
+    <form id="restrict-form">
+      <input type="hidden" id="restrict-shopNo" name="shopNo" />
+      <input type="hidden" name="_csrf" th:value="${_csrf.token}" th:name="${_csrf.parameterName}" />
+      <label>사유</label>
+      <select id="restrict-reason" name="reason" required>
+        <option value="5">위생 및 품질 문제</option>
+        <option value="6">배송·운영 불성실</option>
+        <option value="7">허위·과장 광고</option>
+        <option value="8">정산·계약 위반</option>
+        <option value="9">소비자 피해 누적</option>
+      </select><br />
+      <label>기간</label>
+      <select id="restrict-type" name="type">
+        <option value="3일" data-day="3">3일</option>
+        <option value="1주일" data-day="7">1주일</option>
+        <option value="1달" data-day="30">1달</option>
+        <option value="영구정지" data-day="65536">영구정지</option>
+      </select><br />
+      <button type="button" onclick="submitRestrict()">확인</button>
+      <button type="button" onclick="closeRestrictModal()">취소</button>
+    </form>
+  </div>
+
+</div>
+
+<th:block layout:fragment="script">
+  <script th:src="@{/js/admin/admin.js}"></script>
+  <script>
+    function filterByRole(role) {
+      const form = document.getElementById("shopSortForm");
+      document.getElementById("roleValue").value = role; // 선택된 role 값 반영
+      form.submit();
+    }
+    function setSort(field) {
+      const form = document.getElementById("shopSortForm");
+      const dirInput = document.getElementById("sortDir");
+      const currentDir = dirInput.value || "desc";
+
+      // 현재 방향 값 읽기
+      // 토글 asc/desc
+      const newDir = (currentDir === "desc") ? "asc" : "desc";
+      dirInput.value = newDir;
+
+      // sortField 반영
+      let fieldInput = document.getElementById("sortFieldInput");
+      if (!fieldInput) {
+        fieldInput = document.createElement("input");
+        fieldInput.type = "hidden";
+        fieldInput.name = "sortField";
+        fieldInput.id = "sortFieldInput";
+        form.appendChild(fieldInput);
+      }
+      fieldInput.value = field;
+
+      form.submit();
+    }
+  </script>
+
+  <script>
+    const statusMap = {
+      "0": "정상운영",
+      "1": "정지",
+      "2": "폐점"
+    };
+
+    const reasonMap = {
+      "5": "위생 및 품질 문제",
+      "6": "배송·운영 불성실",
+      "7": "허위·과장 광고",
+      "8": "정산·계약 위반",
+      "9": "소비자 피해 누적"
+    };
+
+    function applyListStatusMappings() {
+      document.querySelectorAll(".list-status").forEach(cell => {
+        const code = cell.textContent.trim();
+        cell.textContent = statusMap[code] ?? code;
+      });
+    }
+
+    function applyDetailMappings() {
+      const statusSpan = document.getElementById("detail-status");
+      if (statusSpan) {
+        const code = statusSpan.textContent.trim();
+        statusSpan.textContent = statusMap[code] ?? code;
+      }
+      const reasonSpan = document.getElementById("detail-reason");
+      if (reasonSpan) {
+        const code = reasonSpan.textContent.trim();
+        reasonSpan.textContent = reasonMap[code] ?? code;
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      applyListStatusMappings();
+      document.querySelectorAll(".shop-row").forEach(row => {
+        row.addEventListener("click", () => {
+          const shopNo = row.getAttribute("data-id");
+          fetch(`/admin/user/shop/detail/${shopNo}`)
+            .then(res => res.text())
+            .then(html => {
+              document.getElementById("detail-content").innerHTML = html;
+              applyDetailMappings();
+            });
+        });
+      });
+    });
+
+    function openRestrictModal(shopNo) {
+      document.getElementById("restrict-shopNo").value = shopNo;
+      document.getElementById("restrict-modal").style.display = "block";
+    }
+
+    function closeRestrictModal() {
+      document.getElementById("restrict-modal").style.display = "none";
+      const form = document.getElementById("restrict-form").reset();
+      document.getElementById("restrict-shopNo").value = "";
+    }
+
+    function submitRestrict() {
+      const shopNo = document.getElementById("restrict-shopNo").value;
+      const reason = document.getElementById("restrict-reason").value;
+      const typeSelect = document.getElementById("restrict-type");
+      const type = typeSelect.value;
+      const day = typeSelect.options[typeSelect.selectedIndex].getAttribute("data-day");
+
+      const token = document.querySelector("meta[name='_csrf']").getAttribute("content");
+      const header = document.querySelector("meta[name='_csrf_header']").getAttribute("content");
+
+      showConfirmTitleAlert(
+        '상점을 제재하시겠습니까?',             // 제목
+        `${day}일 동안 제재 처리됩니다.`,       // 메시지
+        () => { // 확인(제재) 클릭 시
+          fetch(`/admin/user/shop/restrict/${shopNo}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+              [header]: token
+            },
+            body: `reason=${encodeURIComponent(reason)}&type=${encodeURIComponent(type)}&day=${day}`
+          })
+            .then(res => res.text())
+            .then(newStatus => {
+              showSuccessTitleAlert(
+                '제재 완료',
+                '상점이 제재되었습니다.'
+              );
+
+              // 모달 닫기
+              closeRestrictModal();
+
+              // 리스트 값 갱신
+              updateShopStatusInList(shopNo, parseInt(newStatus));
+
+              // 상세 정보 최신화
+              fetch(`/admin/user/shop/detail/${shopNo}`)
+                .then(res => res.text())
+                .then(html => {
+                  document.getElementById("detail-content").innerHTML = html;
+                  applyDetailMappings();
+                });
+            })
+            .catch(err => {
+              showErrorTitleAlert(
+                '오류 발생',
+                '제재 처리 중 문제가 발생했습니다.'
+              );
+            });
+        },
+        () => { // 취소 클릭 시
+          showToast('상점 제재가 취소되었습니다.', 'info');
+        }
+      );
+
+    }
+
+    function releaseShop(shopNo) {
+      const token = document.querySelector("meta[name='_csrf']").getAttribute("content");
+      const header = document.querySelector("meta[name='_csrf_header']").getAttribute("content");
+
+      showConfirmTitleAlert(
+        '제재를 취소하시겠습니까?',            // 제목
+        '해당 상점의 제재 상태가 해제됩니다.',  // 메시지
+        () => { // 확인(취소 해제) 클릭 시
+          fetch(`/admin/user/shop/release/${shopNo}`, {
+            method: "POST",
+            headers: { [header]: token }
+          })
+            .then(res => res.text())
+            .then(newStatus => {
+              showSuccessTitleAlert(
+                '해제 완료',
+                '제재가 취소되었습니다.'
+              );
+
+              // 리스트 값 갱신
+              updateShopStatusInList(shopNo, parseInt(newStatus));
+
+              // 상세 정보 최신화
+              fetch(`/admin/user/shop/detail/${shopNo}`)
+                .then(res => res.text())
+                .then(html => {
+                  document.getElementById("detail-content").innerHTML = html;
+                  applyDetailMappings();
+                });
+            })
+            .catch(err => {
+              showErrorTitleAlert(
+                '오류 발생',
+                '제재 취소 중 오류가 발생했습니다.'
+              );
+            });
+        },
+        () => { // 취소 버튼 클릭 시
+          showToast('상점 제재 취소가 중단되었습니다.', 'info');
+        }
+      );
+
+    }
+
+    function updateShopStatusInList(shopNo, newStatus) {
+      const row = document.querySelector(`.shop-row[data-id='${shopNo}']`);
+      if (row) {
+        const statusCell = row.querySelector(".list-status");
+        statusCell.textContent = statusMap[String(newStatus)] ?? newStatus;
+      }
+    }
+  </script>
+</th:block>
+
+</html>

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{admin/adminLayout}">
+
+<head>
+  <meta charset="UTF-8">
+  <title>정산 통계 조회</title>
+  <style>
+    /* 메인 탭 */
+    .main-tab-menu {
+      list-style: none;
+      display: flex;
+      gap: 15px;
+      padding: 0;
+      margin: 0 0 15px 0;
+    }
+
+    .main-tab-menu li {
+      padding: 10px 20px;
+      border: 2px solid #007bff;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .main-tab-menu li.active {
+      background-color: #007bff;
+      color: #fff;
+      font-weight: bold;
+    }
+
+    /* 서브 탭 */
+    .sub-tabs {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .sub-tab-menu {
+      list-style: none;
+      display: flex;
+      gap: 8px;
+      padding: 0;
+      margin: 0;
+    }
+
+    .sub-tab-menu li {
+      padding: 5px 10px;
+      border: 1px solid #ccc;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .sub-tab-menu li.active {
+      background-color: #f0f0f0;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<div layout:fragment="content">
+  <h2>정산 통계 조회</h2>
+
+  <!-- 메인 탭 -->
+  <ul class="main-tab-menu" id="chartTabs">
+    <li data-chart="charge" class="active">수익 조회</li>
+    <li data-chart="amount">지출 추이</li>
+    <!-- <li data-chart="ratio">판매자/라이더 비중</li> -->
+  </ul>
+
+  <!-- 서브 탭 -->
+  <div class="sub-tabs">
+    <!-- 대상 탭 -->
+    <ul class="sub-tab-menu" id="targetTabs">
+      <li data-target="all" class="active">전체</li>
+      <li data-target="seller">판매자 수수료</li>
+      <li data-target="rider">라이더 수수료</li>
+    </ul>
+
+    <!-- 기간 탭 -->
+    <ul class="sub-tab-menu" id="periodTabs">
+      <li data-type="daily" class="active">최근 10일</li>
+      <li data-type="weekly">최근 8주</li>
+      <li data-type="monthly">최근 12개월</li>
+    </ul>
+
+    <!-- ratio 기간 탭
+    <ul class="sub-tab-menu" id="ratioTabs" style="display:none;">
+      <li data-range="1m" class="active">최근 1개월</li>
+      <li data-range="3m">최근 3개월</li>
+      <li data-range="12m">최근 1년</li>
+    </ul> -->
+  </div>
+
+  <!-- 검색창 -->
+  <div>
+    <input type="text" id="memberSearch" placeholder="판매자/라이더 검색">
+    <button onclick="searchMemberChart()">조회</button>
+  </div>
+
+  <div style="max-width: 1000px; margin: 20px auto;">
+    <canvas id="chargeChart"></canvas>
+  </div>
+</div>
+
+<div layout:fragment="script">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+  <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+
+  <script>
+    let selectedMemberNo = null;
+    let currentTarget = "all";
+    let currentPeriod = "daily";
+    let currentChart = "charge";
+    let currentRatioRange = "1m";
+    let chargeChart = null;
+
+    // 메인 탭 클릭
+    $("#chartTabs li").on("click", function () {
+      $("#chartTabs li").removeClass("active");
+      $(this).addClass("active");
+      currentChart = $(this).data("chart");
+
+      // if (currentChart === "ratio") {
+      //   $("#ratioTabs").show();
+      //   $("#targetTabs, #periodTabs").hide();
+      //   loadChart(null, null, currentRatioRange);
+      // } else {
+      //   $("#ratioTabs").hide();
+      //   $("#targetTabs, #periodTabs").show();
+      //   loadChart(currentPeriod, selectedMemberNo);
+      // }
+    });
+
+    // 대상 탭
+    $("#targetTabs li").on("click", function () {
+      $("#targetTabs li").removeClass("active");
+      $(this).addClass("active");
+      currentTarget = $(this).data("target");
+      selectedMemberNo = null;
+      $("#memberSearch").val("");
+      loadChart(currentPeriod);
+    });
+
+    // 기간 탭
+    $("#periodTabs li").on("click", function () {
+      $("#periodTabs li").removeClass("active");
+      $(this).addClass("active");
+      currentPeriod = $(this).data("type");
+      loadChart(currentPeriod);
+    });
+
+    // ratio 전용 기간 탭
+    // $("#ratioTabs li").on("click", function () {
+    //   $("#ratioTabs li").removeClass("active");
+    //   $(this).addClass("active");
+    //   currentRatioRange = $(this).data("range");
+    //   loadChart(null, null, currentRatioRange);
+    // });
+
+    // 자동완성
+    $("#memberSearch").autocomplete({
+      source: function (request, response) {
+        $.ajax({
+          url: "/admin/site/settle/chart/search",
+          data: { keyword: request.term },
+          success: function (data) {
+            response($.map(data, function (item) {
+              return {
+                label: item.label,
+                value: item.label,
+                memberNo: item.memberNo
+              };
+            }));
+          }
+        });
+      },
+      select: function (event, ui) {
+        selectedMemberNo = ui.item.memberNo;
+      },
+      minLength: 1
+    });
+
+    // 개별 검색
+    function searchMemberChart() {
+      if (!selectedMemberNo) {
+        alert("검색에서 판매자 또는 라이더를 선택하세요.");
+        return;
+      }
+      loadChart(currentPeriod, selectedMemberNo);
+    }
+
+    // 차트 로딩
+    function loadChart(type = null, memberNo = null, range = null) {
+      $.ajax({
+        url: "/admin/site/settle/chart/charge",
+        data: {
+          type: type,
+          memberNo: memberNo,
+          target: currentTarget,
+          chart: currentChart,
+          range: range
+        },
+        success: function (data) {
+          const ctx = document.getElementById("chargeChart").getContext("2d");
+          if (chargeChart !== null) chargeChart.destroy();
+
+          let chartConfig;
+
+          if (currentChart === "charge" || currentChart === "amount") {
+            // 값이 전부 0일 때 대비
+            let values = data.values;
+            let yMax = Math.max(...values);
+            if (yMax === 0) yMax = 10;
+
+            chartConfig = {
+              type: "line",
+              data: {
+                labels: data.labels,
+                datasets: [{
+                  label: currentChart === "charge" ? "수수료 수익 (원)" : "정산 금액 (원)",
+                  data: values,
+                  borderColor: "rgba(75, 192, 192, 1)",
+                  backgroundColor: "rgba(75, 192, 192, 0.2)",
+                  fill: true,
+                  tension: 0.3
+                }]
+              },
+              options: {
+                responsive: true,
+                scales: {
+                  y: {
+                    beginAtZero: true, // 0을 기준선으로
+                    min: 0,            // y축 바닥을 항상 0으로 고정
+                    max: yMax          // 값이 모두 0이면 자동으로 10까지 확보
+                  }
+                }
+              }
+            };
+          } else if (currentChart === "ratio") {
+            chartConfig = {
+              type: "pie",
+              data: {
+                labels: data.labels,
+                datasets: [{
+                  data: data.values,
+                  backgroundColor: ["#007bff", "#28a745"]
+                }]
+              }
+            };
+          }
+
+          chargeChart = new Chart(ctx, chartConfig);
+        }
+      });
+    }
+
+
+    // 초기 로딩
+    $(document).ready(function () {
+      loadChart(currentPeriod);
+    });
+  </script>
+  <script th:src="@{/js/admin/admin.js}"></script>
+</div>
+
+</html>

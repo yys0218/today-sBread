@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html layout:decorate="~{/common/layout}">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/css/shop/shopmain.css"> 
+</head>
+<body>
+<div layout:fragment="content" class="container my-3">
+
+    <!-- 알림사항 제목/내용/작성일 (공통) -->
+    <h2 th:text="${notice.shopNoticeTitle}">알림사항 제목</h2>
+    <p th:text="${notice.shopNoticeContent}">알림사항 내용</p>
+    <small th:text="${#temporals.format(notice.createdAt,'yyyy-MM-dd HH:mm')}">2025-08-27</small>
+
+    <hr style="margin: 20px 0;">
+
+	<!-- (판매자, memberRole == 1)만 수정/삭제 가능 -->
+	<div th:if="${member != null and member.memberRole == 1}">
+	    <h3>알림사항 수정</h3>
+	    <form th:action="@{/shop/notice/update}" method="post">
+	        <!-- 알림사항 번호 숨김 -->
+	        <input type="hidden" name="shopNoticeNo" th:value="${notice.shopNoticeNo}" />
+
+	        <div class="form-group">
+	            <label for="title">제목</label>
+	            <input type="text" id="title" name="shopNoticeTitle" class="form-control" 
+	                   th:value="${notice.shopNoticeTitle}" required>
+	        </div>
+
+	        <div class="form-group">
+	            <label for="content">내용</label>
+	            <textarea id="content" name="shopNoticeContent" class="form-control" rows="5" 
+	                      required th:text="${notice.shopNoticeContent}"></textarea>
+	        </div>
+
+	        <button type="submit" class="btn mt-3" style="background-color: #f46f40; color: white; border: none;">수정 완료</button>
+	        <a th:href="@{/shop/shopmain}" class="btn btn-secondary mt-3">취소</a>
+	        <a th:href="@{|/shop/notice/delete/confirm/${notice.shopNoticeNo}|}" 
+	           class="btn btn-danger mt-3">삭제</a>       
+	    </form>
+	</div>
+
+	<!-- 일반 유저/관리자는 읽기 전용 -->
+	<div th:if="${member == null or member.memberRole != 1}">
+	    <p class="text-muted mt-3">※ 이 알림사항은 읽기 전용입니다.</p>
+	    <a th:href="@{/shop/shopmain}" class="btn btn-secondary mt-3">목록으로 돌아가기</a>
+	</div>
+</div>
+</body>
+</html>
+

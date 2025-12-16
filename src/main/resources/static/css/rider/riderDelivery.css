@@ -1,0 +1,498 @@
+.rider_Info {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center; /* 세로 가운데 정렬 */
+    padding: 8px 12px;
+    border-bottom: 2px solid #000;
+    background-color: #333; /* 어두운 배경 */
+    color: #fff;
+}
+
+.info_id,
+.info_time {
+    margin: 5px 10px;
+    font-size: 15px;
+    font-weight: 500;
+    color: #fff; /* 글씨 흰색 */
+}
+
+.delivery_info {
+    padding: 12px;
+    font-weight: bold;
+    background-color: #444; /* 어두운 배경 */
+    border-radius: 8px;
+    text-align: center;
+    color: #fff;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+/* 각 섹션 (금액/연락처/주소/메모) */
+.delivery_detail {
+    padding: 15px;
+    min-height: 490px;
+    max-height: 700px;
+    border-radius: 10px;
+    background: #222; /* 다크 배경 */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.6);
+    color: #fff;
+}
+.delivery_title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 12px 0;
+    font-size: 14px;
+}
+.delivery_title span {
+    font-weight: 600;
+    color: #fff;
+}
+
+/* input, textarea */
+.custom-h-input {
+    color: #eee;
+    border: none;
+    background: transparent;
+    text-align: right;
+    margin-right: 10px;
+    width: 100%;
+    pointer-events: none; /* 읽기전용 */
+}
+#delivery_address {
+    padding: 6px 10px;
+    width: 100%;
+    text-align: right;
+    max-width: 250px;
+    font-size: 14px;
+    line-height: 1.5;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0);
+    color: #fff;
+    overflow-wrap: break-word; /* 긴 주소 줄바꿈 */
+    white-space: pre-wrap; /* 줄바꿈 유지 */
+}
+
+/* 고객 메모 */
+.delivery_title.flex-column {
+    flex-direction: column;
+    align-items: flex-start;
+}
+.delivery_title.flex-column span {
+    margin-bottom: 6px;
+}
+.delivery_title.flex-column .card {
+    width: 100%;
+    padding: 8px;
+    background: #2a2a2a;
+    color: #fff;
+}
+
+.order-box {
+    background-color: #111; /* 아주 어두운 배경 */
+    color: #fff; /* 글씨 흰색 */
+    padding: 12px 16px;
+    border-radius: 12px;
+    word-break: break-word;
+    font-size: 14px;
+    line-height: 1.6;
+
+    overflow-y: auto;
+    margin-top: 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+    width: 100%;
+    max-height: 90px;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+}
+
+/* 부모 div */
+.delivery_title.flex-column > div {
+    width: 100%;
+}
+.delivery_title > div {
+    height: auto;
+}
+
+/* 주문 항목 */
+.order-box p {
+    margin: 0 0 6px 0;
+    padding-left: 8px;
+    font-size: 14px;
+    position: relative;
+}
+.order-box p:before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: #ffcd39; /* 노란 포인트 */
+    font-size: 14px;
+}
+.order-box p:last-child {
+    margin-bottom: 0;
+}
+
+/* 스크롤바 */
+.order-box::-webkit-scrollbar {
+    width: 10px;
+}
+.order-box::-webkit-scrollbar-thumb {
+    background: #555;
+    border-radius: 12px;
+}
+.order-box::-webkit-scrollbar-track {
+    background: #222;
+    border-radius: 12px;
+}
+
+/* 로그인/로그아웃 버튼 */
+a,
+.btn-sub,
+.custom-btn {
+    color: #fff !important;
+    background-color: #333 !important;
+    border-radius: 6px;
+    padding: 6px 12px;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+}
+a:hover,
+.btn-sub:hover,
+.custom-btn:hover {
+    background-color: #555 !important;
+    color: #fff !important;
+}
+
+.timeline {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #111;
+    padding: 10px 15px;
+    border-radius: 10px;
+    gap: 20px;
+}
+
+/* 각 단계 */
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+/* 시간 */
+.step .time {
+    font-size: 12px;
+    color: #aaa;
+    margin-bottom: 4px;
+    min-height: 16px; /* 최소 높이 확보 */
+    line-height: 16px; /* 빈 경우에도 공간 유지 */
+}
+
+/* 원형 표시 */
+.step .circle {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid #555;
+    background: #111;
+    position: relative;
+}
+
+/* 완료된 단계 (초록색) */
+.step.done .circle {
+    background: #00c853;
+    border-color: #00c853;
+}
+
+/* 현재 단계 (흰색) */
+.step.active .circle {
+    background: #fff;
+    border-color: #fff;
+}
+
+/* 텍스트 라벨 */
+.step .label {
+    font-size: 13px;
+    margin-top: 4px;
+    color: #ddd;
+}
+
+/* 연결선 */
+.step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 21px;
+    left: 50%;
+    width: 100%;
+    height: 2px;
+    background: #555;
+    z-index: -1;
+}
+
+/* 완료된 구간 선 */
+.step.done:not(:last-child)::after {
+    background: #00c853;
+}
+
+.order-card {
+    background: #1e1e1e;
+    border: 1px solid #2c2c2c;
+    color: #fff;
+    border-radius: 10px;
+    height: 120px;
+    padding: 12px;
+    margin: 10px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.order-card:hover {
+    cursor: pointer;
+    /* transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6); */
+}
+
+/* 헤더 */
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #333;
+    gap: 20px;
+}
+
+.order-no,
+.order-status {
+    width: 100px;
+}
+
+.order-time {
+    width: 150px;
+}
+
+.order-header-left {
+    font-weight: bold;
+    color: #ffcc00; /* 주문번호 강조 */
+}
+.order-header-left::before {
+    content: '#';
+    color: #ff2e63;
+    margin-right: 4px;
+}
+.order-header-right {
+    font-size: 12px;
+    color: #bbb;
+}
+
+/* 바디 */
+.order-body {
+    display: flex;
+    justify-content: space-between; /* 좌-우 나눔 */
+    flex-grow: 1;
+    padding: 8px 0;
+    font-size: 13px;
+    border-left: 3px solid #444;
+    padding-left: 10px;
+}
+.order-body > .d-flex:last-of-type {
+    margin-right: 10px;
+}
+/* 왼쪽: 주문 정보 */
+.order-info {
+    flex: 3;
+}
+.order-info .payment {
+    font-weight: bold;
+}
+.order-no {
+    font-weight: bold;
+    font-size: 14px;
+    color: #ffcc00; /* 눈에 띄는 노란색 */
+    margin-right: 8px;
+}
+
+.order-time {
+    font-size: 13px;
+    color: #ccc; /* 흐린 회색 */
+    margin-right: 8px;
+}
+
+.order-status {
+    font-weight: bold;
+    font-size: 13px;
+    color: #4da6ff; /* 파란 계열 */
+    background: rgba(77, 166, 255, 0);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.order-status.대기 {
+    color: #ffaa00;
+    background: rgba(255, 170, 0, 0);
+}
+.order-status.요청 {
+    color: #4da6ff;
+    background: rgba(77, 166, 255, 0);
+}
+.order-status.완료 {
+    color: #00cc66;
+    background: rgba(0, 204, 102, 0);
+}
+
+.address {
+    color: #ddd;
+    font-size: 12px;
+    margin-top: 4px;
+    word-wrap: break-word;
+    white-space: normal;
+}
+
+/* 오른쪽: 거리/금액 */
+.order-price {
+    flex: 1;
+    text-align: right;
+    font-size: 15px;
+    font-weight: bold;
+    color: #00ff99;
+    white-space: nowrap;
+}
+
+.distance {
+    margin-right: 10px;
+}
+
+/* 푸터 */
+.order-footer {
+    display: flex;
+    justify-content: flex-end;
+    border-top: 1px solid #333;
+    padding-top: 6px;
+}
+
+/* 버튼 */
+.accept-btn {
+    background: linear-gradient(135deg, #ff2e63, #ff5c8a);
+    box-shadow: 0 4px 10px rgba(255, 46, 99, 0.4);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #fff;
+    font-weight: bold;
+    padding: 6px 14px;
+    transition: transform 0.15s ease;
+}
+
+/* 버튼 안에 내용이 없으면 자동 숨김 */
+.accept-btn:empty {
+    display: none;
+}
+
+.accept-btn:hover {
+    transform: scale(1.05);
+    background: linear-gradient(135deg, #e02655, #ff2e63);
+}
+
+/* 버튼 */
+.accept-btn,
+.shop-btn,
+.pickup-btn,
+.delivery-btn,
+.complete-btn {
+    background: linear-gradient(135deg, #ff2e63, #ff5c8a);
+    box-shadow: 0 4px 10px rgba(255, 46, 99, 0.4);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #fff;
+    font-weight: bold;
+    padding: 6px 14px;
+    transition: transform 0.15s ease;
+}
+
+/* 버튼 안에 내용이 없으면 자동 숨김 */
+.accept-btn:empty,
+.shop-btn:empty,
+.delivery-btn:empty,
+.complete-btn:empty,
+.pickup-btn:empty {
+    display: none;
+}
+
+.accept-btn:hover,
+.shop-btn:hover,
+.delivery-btn:hover,
+.complete-btn:hover,
+.pickup-btn:hover {
+    transform: scale(1.05);
+    background: linear-gradient(135deg, #e02655, #ff2e63);
+}
+
+.active-card {
+    border: 2px solid #e7e7e7 !important;
+}
+
+.end-text {
+    color: #ffffff;
+    margin: 20px 0px 10px 0px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.empty_list {
+    color: #ffffff;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close_modal {
+    display: flex;
+    justify-content: end;
+}
+.close_modal > i {
+    font-size: 20px;
+    cursor: pointer;
+}
+
+/* 모달 레이어 */
+.modal_layer {
+    position: fixed;
+    top: 50vh;
+    left: 50vw;
+    transform: translate(-50%, -50%);
+    z-index: 1010;
+    display: none;
+
+    min-width: 50vw;
+    max-width: 80vw;
+}
+
+/* 모달 박스 */
+.modal_box {
+    background: #2a2a2a;
+    color: #eee;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    max-height: 90vh;
+    min-height: 90vh;
+    overflow: hidden;
+}
+
+#map {
+    width: 100%;
+    height: 500px;
+}

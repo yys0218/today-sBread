@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ex.product.model.repository.QnaMapper">
+
+  	<!-- 공통 컬럼 목록 -->
+  	<sql id="cols">
+    	BOARD_NO, BOARD_TITLE, BOARD_CONTENT, MEMBER_ID, MEMBER_NO, REG, STATUS, IS_ANSWERED, SHOP_NO, PRODUCT_NO
+  	</sql>
+  	
+  	<!-- ResultMap: LocalDateTime 매핑 -->
+  	<resultMap id="QnaMap" type="com.ex.product.model.data.QnaDTO">
+    	<id     property="boardNo"     column="BOARD_NO"/>
+    	<result property="boardTitle"  column="BOARD_TITLE"/>
+    	<result property="boardContent" column="BOARD_CONTENT"/>
+    	<result property="memberId"    column="MEMBER_ID"/>
+    	<result property="memberNo"    column="MEMBER_NO"/>
+    	<result property="reg"         column="REG"/>
+    	<result property="status"      column="STATUS"/>
+    	<result property="isAnswered"  column="IS_ANSWERED"/>
+    	<result property="shopNo"      column="SHOP_NO"/>
+    	<result property="productNo"   column="PRODUCT_NO"/>
+  	</resultMap>
+
+  	<!-- INSERT -->
+  	<insert id="insert" parameterType="com.ex.product.model.data.QnaDTO" useGeneratedKeys="false">
+    	<!-- 트리거 없이도 boardNo를 애플리케이션에서 확보하려면 BEFORE selectKey 사용 -->
+    	<selectKey keyProperty="boardNo" resultType="int" order="BEFORE">
+      		select seq_qna.nextval from dual
+    	</selectKey>
+   		insert into QNA ( board_no, board_title, board_content, member_id, member_no, reg, status, is_answered, shop_no, product_no) 
+   		values (#{boardNo}, #{boardTitle}, #{boardContent, jdbcType=CLOB}, #{memberId}, #{memberNo},SYSTIMESTAMP, #{status, jdbcType=NUMERIC},
+     			#{isAnswered, jdbcType=NUMERIC}, #{shopNo}, #{productNo})
+  	</insert>
+
+  	<!-- 단건 조회 -->
+  	<select id="findById" resultMap="QnaMap">
+    	select <include refid="cols"/> from QNA where board_no = #{boardNo}
+  	</select>
+
+  	<!-- 상품별 목록 (최신순) : 비공개(STATUS=3)는 서비스 단에서 권한체크로 필터링 가능 -->
+  	<select id="findByProduct" resultMap="QnaMap">
+    	select <include refid="cols"/> from QNA where product_no = #{productNo} and status in (1,3) order by board_no DESC offset #{offset} rows fetch next #{size} rows only
+  	</select>
+
+  	<select id="countByProduct" resultType="int">
+    	select count(*) from QNA where product_no = #{productNo} and status in (1,3)
+  	</select>
+
+  	<!-- 상점별 목록 (판매자 페이지) -->
+  	<select id="findByShop" resultMap="QnaMap">
+    	select <include refid="cols"/> from QNA where shop_no = #{shopNo} and status in (1,3) order by board_no DESC offset #{offset} rows fetch next #{size} rows only
+  	</select>
+
+  	<select id="countByShop" resultType="int">
+    	select count(*) from QNA where shop_no = #{shopNo} and status in (1,3)
+  	</select>
+
+  	<!-- 상태 변경 -->
+  	<!-- 글 삭제 -->
+  	<update id="delete">
+    	update QNA set status = 2 where board_no = #{boardNo}
+  	</update>
+
+	<!-- 비밀글 -->
+  	<update id="secret">
+    	update QNA set status = 3 where board_no = #{boardNo}
+  	</update>
+
+  	<!-- 답변 여부 변경 (1:미답변, 2:답변완료) -->
+  	<update id="updateAnswered">
+    	update QNA set is_answered = #{isAnswered} where board_no = #{boardNo}
+  	</update>
+  	
+ 	<!-- 내 문의 목록 (심플) -->
+  	<select id="findMyQna" resultMap="QnaMap">
+    	select <include refid="cols"/> from QNA where member_no = #{memberNo} and status != 2 <!-- 삭제글 제외 -->
+      		<!-- 상태 필터: wait=미답변(1), done=답변완료(2), 그 외(all/빈값)=전체 -->
+      		<if test="status == 'WAIT'"> and is_answered = 1 </if>
+      		<if test="status == 'DONE'"> and is_answered = 2 </if>
+      		<!-- 제목 검색 (내용은 clob 이슈 때문에 제외) -->
+      		<if test="q != null and q != ''"> and board_title like '%' || #{q} || '%' </if>
+    	order by board_no DESC offset #{offset} rows fetch next #{size} rows only
+  	</select>
+
+  	<!-- 내 문의 총 건수 (심플) -->
+  	<select id="countMyQna" resultType="int">
+    	select count(1) from QNA where member_no = #{memberNo} and status != 2
+      		<if test="status == 'WAIT'"> and is_answered = 1 </if>
+      		<if test="status == 'DONE'"> and is_answered = 2 </if>
+      		<if test="q != null and q != ''"> and board_title like '%' || #{q} || '%' </if>
+  	</select>
+</mapper>

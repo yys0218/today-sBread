@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{common/layout}">
+
+<head>
+  <title>신고 상세</title>
+  <meta charset="UTF-8">
+  <meta th:name="_csrf" th:content="${_csrf.token}">
+  <meta th:name="_csrf_header" th:content="${_csrf.headerName}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" th:href="@{/css/center/report.css}">
+  <link rel="stylesheet" th:href="@{/css/center/help-center.css}">
+  <link rel="stylesheet" th:href="@{/css/center/centerSidebar.css}">
+</head>
+
+<div layout:fragment="content" class="container my-3">
+  <div class="container hc-layout">
+    <!-- 좌측 사이드바 -->
+    <div th:replace="~{center/centerSidebar :: centerMenu('report')}"></div>
+    <!-- 본문 -->
+    <main class="hc-main">
+      <div class="rd-wrap">
+        <h2 class="rd-title">신고 내용</h2>
+
+        <section th:if="${report != null}">
+          <div class="rd-meta">
+            <div><b>제목:</b> <span th:text="${report.reportTitle}"></span></div>
+            <div><b>신고자:</b> <span th:text="${memberNick}"></span></div>
+
+            <div><b>신고 대상:</b> <span th:text="${report.reportRef}"></span></div>
+            <div><b>신고 유형:</b> 
+              <span th:if="${report.reportType==0}">회원 관련 신고</span>
+              <span th:if="${report.reportType==1}">매장 관련 신고</span>
+              <span th:if="${report.reportType==2}">기타</span>
+            </div>
+            <div><b>신고 사유:</b> 
+              <span th:if="${report.reportReason==0}">별점 테러(악성 리뷰)</span>
+              <span th:if="${report.reportReason==1}">허위주문, 노쇼(허위 주문)</span>
+              <span th:if="${report.reportReason==2}">악성 행위(욕설 비방)</span>
+              <span th:if="${report.reportReason==3}">부정 이용(다계정 이용)</span>
+              <span th:if="${report.reportReason==4}">위생 문제(유통기한 도과, 위생상태 불량)</span>
+              <span th:if="${report.reportReason==5}">상품 문제(불량 제품)</span>
+              <span th:if="${report.reportReason==6}">배송 문제(배달 지연, 누락)</span>
+              <span th:if="${report.reportReason==7}">불친절(고객 응대 불만)</span>
+              <span th:if="${report.reportReason==8}">기타</span>
+            </div>
+            <div th:if="${report.reportEtc!=null}"><span th:text="report.reportEtc"></span></div>
+
+            <div><b>작성일:</b> <span th:text="${#temporals.format(report.reportAt,'yyyy-MM-dd HH:mm')}"></span></div>
+            <div>
+              <b>상태:</b>
+              <span th:if="${report.reportStatus==0}" class="il-status il-status--wait">미답변</span>
+              <span th:if="${report.reportStatus==1 or report.reportStatus==2}"
+                class="il-status il-status--done">답변완료</span>
+            </div>
+          </div>
+
+          <article class="rd-content">
+            <pre th:text="${report.reportContent}"></pre>
+          </article>
+
+          <div th:if="${!#lists.isEmpty(images)}" class="image-list">
+            <div th:each="img : ${images}">
+              <img th:src="${img.filePath}" th:alt="${img.originFilename}" onerror="this.parentElement.remove();">
+            </div>
+          </div>
+
+          <section class="rd-reply">
+            <h3>답변</h3>
+            <div th:if="${report.reportReply != null and report.reportReply != ''}">
+              <pre th:text="${report.reportReply}"></pre>
+              <small th:if="${report.reportReplyAt != null}"
+                th:text="${#temporals.format(report.reportReplyAt,'yyyy-MM-dd HH:mm')}"></small>
+            </div>
+            <div th:if="${report.reportReply == null or report.reportReply == ''}">
+              답변 준비 중입니다.
+            </div>
+          </section>
+
+          <div class="rd-actions">
+            <a th:href="@{/center/report}">목록으로</a>
+            <a th:if="${report.reportStatus==0}" th:href="@{|/center/report/update/${report.reportNo}|}">수정</a>
+            <form th:if="${report.reportStatus==0}" th:action="@{|/center/report/delete/${report.reportNo}|}"
+              method="post">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+              <button type="submit">철회</button>
+            </form>
+          </div>
+        </section>
+
+        <section th:if="${report == null}">
+          <p>존재하지 않는 문의이거나 권한이 없습니다.</p>
+          <a th:href="@{/center/report}">목록으로</a>
+        </section>
+      </div>
+    </main>
+    <div class="image-overlay"></div>
+
+    <script th:inline="javascript">
+      
+      document.addEventListener('DOMContentLoaded', function () {
+        const images = document.querySelectorAll('.image-list img');
+        const imageOverlay = document.querySelector('.image-overlay');
+        let currentEnlargedImage = null;
+
+        images.forEach(img => {
+          img.addEventListener('click', function () {
+            if (this.classList.contains('enlarged')) {
+              // If already enlarged, shrink it
+              this.classList.remove('enlarged');
+              imageOverlay.classList.remove('active');
+              currentEnlargedImage = null;
+            } else {
+              // If not enlarged, enlarge it
+              if (currentEnlargedImage) {
+                currentEnlargedImage.classList.remove('enlarged'); // Shrink previous if any
+              }
+              this.classList.add('enlarged');
+              imageOverlay.classList.add('active');
+              currentEnlargedImage = this;
+            }
+          });
+        });
+
+        // Click on overlay to shrink image
+        imageOverlay.addEventListener('click', function () {
+          if (currentEnlargedImage) {
+            currentEnlargedImage.classList.remove('enlarged');
+            imageOverlay.classList.remove('active');
+            currentEnlargedImage = null;
+          }
+        });
+
+        // Optional: Close with ESC key
+        document.addEventListener('keydown', function (event) {
+          if (event.key === 'Escape' && currentEnlargedImage) {
+            currentEnlargedImage.classList.remove('enlarged');
+            imageOverlay.classList.remove('active');
+            currentEnlargedImage = null;
+          }
+        });
+      });
+    </script>
+  </div>
+</div>
+
+</html>

@@ -1,0 +1,136 @@
+// Gradle 빌드 설정 파일
+
+// 플러그인 설정
+plugins {
+	id 'java' // 자바 프로젝트로 지정
+	id 'org.springframework.boot' version '3.5.3' // Spring Boot 기능 사용 (내장 톰캣, 실행 지원 등)
+	id 'io.spring.dependency-management' version '1.1.7' // 의존성 버전 자동 관리
+}
+
+// 프로젝트 기본 정보 설정
+group = 'com.ex' // 패키지 네임스페이스 (보통 도메인 기반 작성)
+version = '0.0.1-SNAPSHOT' // 현재 프로젝트 버전 (개발 중인 스냅샷 버전)
+
+// 자바 버전 명시 (JDK 21 사용)
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+// 의존성 범위 설정
+// Lombok 같은 라이브러리를 사용할 때, annotationProcessor로만 선언하면 컴파일 시에만 쓰이는데, 빌드 시에도 IDE에서 인식되도록
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor // annotationProcessor 설정을 compileOnly 범위로도 확장
+    }
+}
+
+// 라이브러리 다운로드 경로 지정 (Maven 중앙 저장소 사용)
+repositories {
+	mavenCentral()
+}
+
+
+dependencies {
+
+	// WebSocket 서버 기능 제공 (실시간 통신을 위한 Socket 구성)
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+	// 테스트용 라이브러리 (JUnit, Mockito 등 포함)
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+	// JUnit 플랫폼 런처 (테스트 실행용)
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	
+	//========================[라이브러리 추가]========================
+
+		
+    // [Spring Boot Starter Web]
+    // Spring MVC 기반 웹 애플리케이션 개발에 필요한 핵심 구성 요소를 제공
+    // REST API, JSON 변환, 내장 톰캣 등을 포함하여 웹 서비스 구현을 쉽게 지원
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	
+	// [spring-boot-devtools]
+	// 개발 환경에서만 사용되는 자동 재시작 및 LiveReload 지원 도구
+	// 코드 수정 시 서버를 자동으로 재시작해 개발 효율을 높임
+	// 운영 환경에서는 포함되지 않도록 developmentOnly로 설정
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	
+	// [Lombok]
+	// 반복되는 getter/setter, 생성자 코드를 줄여주는 라이브러리
+	// 컴파일 시점에만 적용되며, 어노테이션 분석을 위해 annotationProcessor 함께 사용
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+	
+	// [Thymeleaf]
+	// HTML 템플릿 엔진으로, 서버 사이드에서 뷰(View)를 렌더링할 때 사용
+	// Spring MVC와 잘 통합되며 JSP 대신 사용 가능
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+	
+	// [thymeleaf-layout-dialect]
+	// Thymeleaf에서 레이아웃 템플릿 기능(layout:decorate 등)을 제공하는 확장 라이브러리
+	// 공통 레이아웃을 정의하고, 개별 화면에서는 필요한 부분만 override하여 재사용 가능
+	implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect'
+	
+	// [Oracle JDBC 드라이버]
+	// Oracle 데이터베이스와 Java 애플리케이션을 연결해주는 JDBC 드라이버
+	// runtimeOnly로 설정하여 애플리케이션 실행 시점에만 로드되도록 함
+	runtimeOnly 'com.oracle.database.jdbc:ojdbc17'
+	
+	// [MyBatis Spring Boot Starter]
+	// SQL 매핑 프레임워크인 MyBatis를 Spring Boot에 통합하기 위한 스타터
+	// Mapper 인터페이스와 XML 매핑 파일을 활용해 SQL을 분리해 관리할 수 있음
+	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
+
+	// [Email 발송 Starter]
+	// 이메일 전송 기능을 제공하는 Spring Boot 스타터
+	// JavaMailSender, SMTP 설정 등 메일 전송 관련 기능 포함
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+	// [WebSocket]
+	// Spring Boot에서 WebSocket 기반의 양방향 통신 기능을 제공하는 라이브러리
+	// 실시간 채팅, 알림, 스트리밍 데이터 처리 등에 사용
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+	// [Spring Data JPA]
+	// ORM 기반의 데이터베이스 연동을 위한 핵심 라이브러리
+	// 엔티티 클래스와 DB 테이블 매핑, CRUD 처리 자동화
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+	// [Spring Validation]
+	// 사용자의 입력값을 검증하기 위한 라이브러리
+	// @Valid, @NotNull 등의 어노테이션을 통해 유효성 검사 수행
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+	// [Security]
+	// 인증과 권한을 관리하는 보안 프레임워크
+	// 로그인, 세션, 권한 처리 등을 위한 필터 체인 자동 구성
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+
+	// [Thymeleaf + Spring Security 연동]
+	// Thymeleaf 템플릿에서 시큐리티 관련 속성(e.g. sec:authorize)을 사용 가능하게 해주는 확장 모듈
+	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
+
+	// [Apache POI - Core]
+	// MS Office 문서를 처리하기 위한 라이브러리 (주로 HSSF/XSSF API 제공)
+	// 엑셀(.xls, .xlsx), 워드(.doc, .docx), 파워포인트(.ppt, .pptx) 파일을 Java 코드로 읽고 쓰는 기능 지원
+	implementation 'org.apache.poi:poi:5.2.5'
+
+	// [Apache POI - OOXML]
+	// Apache POI 중에서 엑셀 XLSX(Office Open XML) 형식을 다루기 위한 확장 모듈
+	// XSSFWorkbook, XSSFSheet 등의 클래스를 제공하여 .xlsx 엑셀 파일 생성/수정/출력 가능
+	implementation 'org.apache.poi:poi-ooxml:5.2.5'
+}
+
+// JUnit Platform을 사용하여 테스트 실행
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+// 컴파일러 옵션 설정 - 컴파일러가 매개변수이름(key)를 보존하도록 하기위함(@PostMapping("cartInsert")에서 사용)
+compileJava {
+    options.compilerArgs << '-parameters'
+}

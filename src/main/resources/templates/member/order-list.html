@@ -1,0 +1,791 @@
+<!-- 스윗 얼랏 적용 완료 -->
+<!-- templates/member/order-list.html -->
+<!-- 마이페이지 - 주문 목록 페이지 -->
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="ko" layout:decorate="~{common/layout}">
+<head>
+  	<link rel="stylesheet" th:href="@{/css/member/mypage.css}">
+  	<link rel="stylesheet" th:href="@{/css/member/order-list.css}">
+	<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+   	<meta name="_csrf" th:content="${_csrf.token}">
+  	<meta name="_csrf_header" th:content="${_csrf.headerName}">
+	<script th:src="@{/js/comm/sweetalert.noah.js}"></script>
+	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+	<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+	<!-- 공용 무한 스크롤 스크립트 -->
+	<script th:src="@{/js/member/mypage.js}"></script>
+</head>
+
+<body>
+<div layout:fragment="content" class="container my-3 mypage">
+  	<div class="main-wrapper">
+  	
+    	<!-- 왼쪽 사이드바 -->
+    	<div class="sidebar">
+			<ul>
+				<li><a class="mypage-title" th:href="@{/member/mypage}">마이페이지</a></li>				
+                <li><a th:href="@{/member/order-list}" class="is-active" aria-current="page">주문 내역</a></li>
+                <li><a th:href="@{/member/wish-list}">찜 목록</a></li>
+                <li><a th:href="@{/member/subscription}">정기 결제 조회/해지</a></li>
+                <li><a th:href="@{/member/review-list}">상품 후기</a></li>
+                <li><a th:href="@{/member/address}">배송지 관리</a></li>
+                <li><a th:href="@{/member/account-info}">회원 정보 관리</a></li>               
+                <li><a th:href="@{/center}" >고객 센터</a></li>
+                <li><a th:href="@{/center/report/list}">신고 내역</a></li>
+                <li><a th:href="@{/center/inquiry/list}">문의 내역</a></li>
+            </ul>
+    	</div>
+
+	    <!-- 오른쪽 content 영역 -->
+	    <div class="content-right">
+	       	<h2 class="order-title">주문 내역</h2>
+		    <div id="content-area" class="content-area">
+		      	<div class="order-list">
+		
+		        	<!-- 상태 필터 드롭다운 -->
+		        	<div class="order-toolbar">
+		          		<label for="orderFilter">상태 필터</label>
+		          		<select id="orderFilter" class="order-filter">
+				            <option value="ALL">전체</option>
+				            <option value="결제 완료">결제 완료</option>
+				            <option value="주문 거절">주문 거절</option>
+				            <option value="주문 수락">주문 수락</option>
+				            <option value="배송 대기">배송 대기</option>
+				            <option value="픽업 완료">픽업 완료</option>
+				            <option value="배송 완료">배송 완료</option>
+				            <option value="주문 취소">주문 취소</option>
+		          		</select>
+		        	</div>
+		
+		       	 	<!-- 주문 아이템 -->
+		        	<div th:each="order : ${orderList}"
+		             	 th:with="statusText=${order.status == 0 ? '결제 완료' :
+		                                   	  (order.status == 1 ? '주문 거절' :
+		                                   	  (order.status == 2 ? '주문 수락' :
+		                                   	  (order.status == 3 ? '배송 대기' :
+		                                      (order.status == 4 ? '픽업 완료' :
+		                                      (order.status == 5 ? '배송 완료' : '주문 취소')))))}"
+		             	 class="order-item"
+		             	 th:attr="data-status-text=${statusText}">
+		
+		          		<!-- 위쪽: 주문번호 / 상태 / 주문일시 -->
+		          		<div class="order-header">
+				            <div><b>결제번호</b> <span th:text="${order.merchantUid}">-</span></div>
+				            <div class="order-status" th:text="${statusText}"></div>
+				            <div class="order-date">
+		              			<span th:text="${#temporals.format(order.orderTime.orderedAt, 'yyyy-MM-dd HH:mm')}"></span>
+		            		</div>
+		          		</div>
+		
+		          		<!-- 중간: 이미지 / 상점+상품 / 우측 버튼 -->
+		          		<div class="order-main">
+		          		
+		            		<!-- 썸네일 -->
+							<div class="order-thumb-wrap">
+							  	<a class="linkDefault"
+							       th:if="${order.product != null}"
+							       th:href="@{/product/detail/{no}(no=${order.product.productNo})}">
+							    	<img th:src="@{|/upload/product/${order.product.thumbnailName}|}" alt="상품 이미지" class="order-img" />
+							  	</a>
+							  	<div th:if="${order.product == null}" class="order-img-placeholder">
+							    	<img th:src="@{/img/no-image.svg}" alt="이미지 없음" class="order-img" />
+							  	</div>
+							</div>
+		
+		            		<!-- 상점 + 상품 + 배송시간 출력 -->
+		            		<div class="order-info">
+		              			<a class="shop-link" th:href="@{|/shop/view/${order.shop.shopNo}|}" th:text="${order.shop.shopName}">상점명</a>
+								<div class="product-line">
+								  	<span th:text="${order.product != null ? order.product.productName : '상품(삭제됨)'}">상품명</span>
+								  	<span th:if="${order.orderDetail != null and order.orderDetail.size > 1}"
+								          th:text="' 외 ' + (${order.orderDetail.size - 1}) + '건'"></span>
+								</div>
+								<div class="delivery-time"
+								     th:if="${order.orderTime != null and order.orderTime.completedAt != null}"
+								     th:text="'배송 완료 시간 : ' + ${#temporals.format(order.orderTime.completedAt, 'yyyy-MM-dd HH:mm')}">
+								</div>
+		            		</div>
+		
+		            		<!-- 우측 버튼들 -->
+							<div class="order-actions">
+							  	<button type="button" class="btn od-open-btn" th:data-order-no="${order.orderNo}">주문 상세</button>
+							
+							  	<button type="button" class="btn btn-order-qna"
+							            th:if="${order.product != null}"
+							            th:data-product-no="${order.product.productNo}"
+							            th:data-product-name="${order.product.productName}"
+							            th:data-shop-name="${order.shop.shopName}"
+							            th:data-order-no="${order.orderNo}">
+							    	판매자 문의
+							  	</button>
+							
+							  	<!-- 배송 완료 + 상품 존재 시에만 후기 작성 버튼 노출 -->
+							  	<th:block th:if="${order.status == 5 and order.product != null}">
+							    	<button type="button" class="btn review-open-btn"
+							         	    th:data-product-no="${order.product.productNo}"
+							         	    th:data-product-name="${order.product.productName}"
+							           	    th:data-order-no="${order.orderNo}">
+							      		후기 작성
+							    	</button>
+							  	</th:block>
+							
+							  	<!-- 결제 완료 상태 (case = 0) 일 때만 주문 취소 버튼 노출 -->
+							  	<th:block th:if="${order.status == 0}">
+							    	<button class="btn cancel-btn" type="button"
+							        	    th:data-merchant-uid="${order.merchantUid}"
+							        	    th:data-order-no="${order.orderNo}">
+							      		주문 취소
+							    	</button>
+							  	</th:block>
+							</div>
+		          		</div>
+		
+		          		<!-- 아래: 주소 + 가격 -->
+		          		<div class="order-footer">
+		            		<div class="addr" th:text="'주소 : ' + ${order.orderAddress}">주소</div>
+		            		<div class="price" th:text="'가격 : ' + ${#numbers.formatInteger(order.orderPrice, 3, 'COMMA')} + '원'">가격</div>
+		          		</div>
+		       		 </div>
+		
+					<!-- 페이지네이션 -->
+					<div class="pagination" th:if="${totalPages > 1}">
+					  	<ul>
+					    	<!-- 이전 버튼 -->
+					    	<li th:if="${hasPrev}">
+					      		<a th:href="@{|/member/order-list?page=${prevPage}&size=${size}|}">이전</a>
+					    	</li>
+					
+					    	<!-- 페이지 번호들 -->
+					    	<li th:each="i : ${#numbers.sequence(1, totalPages)}"
+					        	th:classappend="${i == page} ? 'active'">
+					      		<a th:href="@{|/member/order-list?page=${i}&size=${size}|}" 
+					           	   th:text="${i}">1</a>
+					    	</li>
+					
+					    	<!-- 다음 버튼 -->
+					    	<li th:if="${hasNext}">
+					      		<a th:href="@{|/member/order-list?page=${nextPage}&size=${size}|}">다음</a>
+					    	</li>
+					  	</ul>
+					</div>
+		      	</div>
+		    </div>
+	    </div>
+	</div>
+
+	<!-- 주문취소 모달 -->
+	<div class="dimmed" aria-hidden="true" id="dimmed" style="display:none"></div>
+	<div id="modal-cancel-order" class="modal_layer" style="display:none">
+		<div class="modal_box">
+	      	<div class="modal_title">
+	        	<h5>주문 취소</h5>
+	        	<p class="text-muted small text-center mb-4">취소 사유를 입력해주세요.</p>
+	      	</div>
+	      	<div class="modal_content">
+	        	<div class="mb-3">
+	          		<input type="text" name="cancel_reason" id="cancel_reason" maxlength="200" class="form-control"/>
+	        	</div>
+	      	</div>
+	      	<div class="modal_btns">
+	        	<a href="javascript:;" class="btn close-btn"><span class="btn_text">닫기</span></a>
+	        	<a href="javascript:;" class="btn btn-orange" id="modal_cancel_order"><span class="btn_text">주문 취소</span></a>
+	      	</div>
+	    </div>
+	</div>
+</div> <!-- /content -->
+
+<!-- 스크립트 -->
+<script layout:fragment="script" type="text/javascript" th:inline="javascript">
+
+	// [공통] 모든 jQuery AJAX 요청에 CSRF 헤더 자동 첨부
+  	$(function () { // 문서가 준비되면 실행
+    	const token  = $('meta[name="_csrf"]').attr('content');       // 서버가 준 CSRF 토큰 값
+    	const header = $('meta[name="_csrf_header"]').attr('content'); // 서버가 요구하는 헤더 키 이름
+
+    	// 모든 AJAX 요청 직전에 실행되어 헤더를 자동으로 붙여준다
+    	$(document).ajaxSend(function (e, xhr) {
+      		if (token && header) xhr.setRequestHeader(header, token); // 헤더:값 형태로 붙임
+    	});
+  	});
+	
+	
+  /********************************************************************
+   * [주문 취소 모달] 열기 / 닫기 / 서버 요청
+   ********************************************************************/
+  	// "주문 취소" 버튼을 클릭하면 실행
+  	$(document).on('click', '.cancel-btn', function(){
+    	// 어두운 배경과 모달창을 보이게 한다
+    	$('.dimmed, #modal-cancel-order').show();
+
+    	// 버튼에 data-* 로 심어둔 결제번호/주문번호를 꺼내서
+    	const merchantUid = $(this).data('merchant-uid'); // ex) iamport 결제번호
+    	const orderNo     = $(this).data('order-no');     // 주문 PK
+
+    	// 모달 안의 [주문 취소 실행] 버튼에 데이터로 심어둔다 (이후 실제 취소 때 사용)
+    	$('#modal_cancel_order').data('merchant-uid', merchantUid);
+    	$('#modal_cancel_order').data('order-no', orderNo);
+  	});
+
+  	// 모달 내부의 [주문 취소] 버튼을 실제로 클릭했을 때 실행
+  	$('#modal_cancel_order').on('click',function(){
+    	// 위에서 data()로 심어둔 값들을 읽어온다
+    	const orderNo     = $(this).data('order-no');
+    	const merchantUid = $(this).data('merchant-uid');
+    	const reason      = $('#cancel_reason').val(); // 입력한 취소 사유
+
+    	// 유효성 검사: 사유가 없으면 경고 알림
+    	if(!reason){
+      		showWarningAlert('취소 사유를 입력해주세요.');
+      		return; // 더 진행하지 않음
+    	}
+
+    	// 서버에 주문 취소를 요청 (POST, JSON)
+    	$.ajax({
+      		url         : "/order/cancel",     // 서버 취소 API
+      		type        : "POST",              // 메서드
+      		contentType : "application/json",  // JSON 전송
+      		dataType    : "text",              // 응답 형태(문자)
+      		data        : JSON.stringify({     // 보내는 데이터(JSON 직렬화)
+        	merchant_uid : merchantUid,
+        	orderNo      : orderNo,
+        	reason       : reason
+      		}),
+      		success : function(){
+        		// 성공 시: 모달 닫고 성공 알림 → 새로고침으로 상태 반영
+        		closeModal();
+        		showSuccessAlert('주문이 취소되었습니다.');
+        		setTimeout(function(){ location.reload(); }, 1200);
+      		},
+      		error : function(xhr){
+        		// 실패 시: 모달 닫고 에러 알림
+        		console.log(xhr.status+" 메세지: "+xhr.responseText);
+        		closeModal();
+        		showErrorAlert('취소에 실패했습니다.');
+      		}
+		});
+	});
+
+  	// 모달 닫기 이벤트: (X) 닫기 클릭 or 어두운영역 클릭 or ESC 키
+  	$(document).on('click', '.close-btn, .dimmed', closeModal);
+  	$(document).on('keydown', function(e){ if(e.key === 'Escape'){ closeModal(); }});
+
+  	// 실제로 모달을 닫는 함수
+  	function closeModal(){
+    	$('#cancel_reason').val('');                // 입력된 취소사유 초기화
+    	$('.dimmed, #modal-cancel-order').hide();   // 배경/모달 숨김
+  	}
+  	
+
+  /********************************************************************
+   * [상태 필터] 드롭다운으로 화면에서 주문 카드 필터링
+   ********************************************************************/
+  	document.addEventListener('DOMContentLoaded', function(){ // DOM 로드 후
+    	const filter = document.getElementById('orderFilter'); // 상태 셀렉트 박스
+    	if (!filter) return;                                   // 안전장치
+
+    	const items = document.querySelectorAll('.order-item'); // 화면의 주문 카드들
+
+    	// 실제 필터 적용 함수
+    	function applyFilter(){
+      		const v = filter.value; // 선택된 상태값 (ALL 또는 '결제 완료' 등)
+      		items.forEach(el => {
+        		// 각 주문 카드에 data-status-text 로 상태 문자열이 들어있다
+        		const txt = (el.getAttribute('data-status-text') || '').trim();
+        		// ALL 이면 모두 표시, 아니면 일치하는 것만 표시
+        		el.style.display = (v === 'ALL' || txt === v) ? '' : 'none';
+      		});
+    	}
+
+    	// URL에 ?status=배송 완료 처럼 들어온 초기값을 반영 (북마크/공유 대비)
+    	const params = new URLSearchParams(location.search);
+    	const init = params.get('status'); // 초기 상태값
+    	if(init){
+      		const opt = Array.from(filter.options).find(o => o.value === init);
+      		if (opt) filter.value = init; // 일치 옵션이 있으면 선택
+    	}
+
+    	applyFilter();                         // 첫 적용
+    	filter.addEventListener('change', applyFilter); // 변경 때마다 재적용
+  	});
+
+  /********************************************************************
+   * [후기 작성 모달] 프래그먼트 동적 로드 → 바인딩 → 표시
+   *  - 서버에서 /member/order-review-modal?fragment=true 로 HTML 조각을 받아와
+   *    body에 append 후, 여기 스크립트에서 직접 이벤트 바인딩(wireReviewModal)
+   *    (동적 삽입된 <script>는 자동실행되지 않아 여기서 수동 바인딩이 필요)
+   ********************************************************************/
+  	(function OrderReviewModalIIFE(){
+    	// 로딩 오버레이 표시
+    	function showLoading(){
+      		hideLoading(); // 중복 방지
+      		const $loader = $('<div id="rvLoading" aria-hidden="true" />').css({
+        		position:'fixed', inset:0, zIndex: 1550,
+        		display:'flex', alignItems:'center', justifyContent:'center',
+        		background:'rgba(255,255,255,.2)', backdropFilter:'blur(1px)'
+      		}).append(
+        		$('<div role="status" aria-live="polite">불러오는 중…</div>').css({
+          			padding:'10px 14px', border:'1px solid #eee', borderRadius:'10px',
+          			background:'#fff', boxShadow:'0 4px 20px rgba(0,0,0,.08)', fontWeight:'700'
+        		})
+      		);
+      		$('body').append($loader); // 바디에 붙여 표시
+    	}
+    	// 로딩 오버레이 숨김
+    	function hideLoading(){ $('#rvLoading').remove(); }
+
+    	// 기존에 떠있는 후기 모달/스타일/핸들러 제거 (중복 방지)
+    	function removeExistingReviewModal(){
+      		$('#rvDimmed, #rvModal, #rv-style').remove(); // 요소 제거
+      		$(document).off('.rv');                       // .rv 네임스페이스 이벤트 제거
+    	}
+
+    	// 실제 모달 내부에 이벤트를 바인딩하고 열어주는 함수
+    	function wireReviewModal(){
+      		// 모달 구성요소 캐싱
+      		const $dim     = $('#rvDimmed');       // 어두운 배경
+      		const $modal   = $('#rvModal');        // 모달 본체
+      		const $form    = $('#rvForm');         // 폼
+      		const $stars   = $('#rvStars');        // 별점 버튼 영역
+      		const $score   = $('#rvRating');       // 실제 점수 hidden input
+      		const $scoreLb = $('#rvScoreLabel');   // "점수를 선택하세요" 라벨
+      		const $content = $('#rvContent');      // 후기 내용 textarea
+
+      		// 별점 색칠 함수 (선택/호버 등에 따라 ★ 색상 바꾸기)
+      		function paintStars(n){
+        		$stars.find('.star').each(function(){
+          			const v = Number($(this).data('val'));   // 각 별의 값(1~5)
+          			$(this).toggleClass('filled', v <= n);   // n 이하만 채움
+        		});
+        		$scoreLb.text(n ? (n + '점 선택됨') : '점수를 선택하세요.'); // 안내 문구 업데이트
+      		}
+
+      		// 모달 닫기 함수 (요소/이벤트 싹 정리)
+      		function close(){
+        		$(document).off('.rv');        // 등록해둔 .rv 이벤트 제거
+        		$modal.remove();               // 모달 제거
+        		$dim.remove();                 // 배경 제거
+        		$('#rv-style').remove();       // 모달용 임시 스타일 제거
+      		}
+
+      		// 닫기(배경 클릭, 닫기 버튼, ESC) 이벤트
+      		$(document).on('click.rv', '[data-rv-close], #rvDimmed', close);
+      		$(document).on('keydown.rv', function(e){ if(e.key === 'Escape') close(); });
+
+      		// 별점: 마우스 올리면 임시 채움, 나가면 확정값으로 복원, 클릭하면 값 확정
+      		$stars.on('mouseenter.rv', '.star', function(){ paintStars(Number($(this).data('val'))); });
+      		$stars.on('mouseleave.rv', function(){ paintStars(Number($score.val() || 0)); });
+      		$stars.on('click.rv', '.star', function(){
+        		const n = Number($(this).data('val')); // 몇 점 클릭했는지
+        		$score.val(n);                          // hidden input에 저장
+        		paintStars(n);                          // 별 칠하기
+      		});
+
+      		// 제출(후기 등록) 처리
+      		$form.on('submit.rv', function(e){
+        		e.preventDefault(); // 폼 기본 동작(페이지 이동) 막음
+
+        		// 파라미터 수집
+        		const productNo = Number($('#rvProductNo').val());
+        		const orderNo   = Number($('#rvOrderNo').val());
+        		const rating    = Number($score.val());
+        		const content   = ($content.val() || '').trim();
+
+        		// 유효성 검사
+        		if (!orderNo){ showCostomWarningAlert('주문 번호가 없습니다.'); return; }
+        		if (!rating){ showCostomWarningAlert('별점을 선택해주세요.'); return; }
+        		if (content.length < 10){ // 최소 글자수 예시
+        			showCostomWarningAlert('후기 내용은 최소 10자 이상입니다.');
+          			$content.focus();
+          			return;
+        		}
+
+        		// 중복 클릭 방지: 버튼 잠금 + 문구 변경
+        		const $btn = $('#rvSubmit').prop('disabled', true).text('등록중…');
+
+        		// 서버에 후기 등록 요청
+        		$.ajax({
+          			url: '/member/review',               // 컨트롤러 매핑
+          			method: 'POST',                      // POST 폼 전송
+          			dataType: 'json',                    // 응답은 JSON
+          			data: { productNo, orderNo, reviewContent: content, rating } // 폼 데이터 전송
+        		})
+        		.done(function(res){
+          			// 성공 응답 포맷: { status: 'ok' } 라는 가정
+          			if(res && res.status === 'ok'){
+            			showToast('후기가 등록되었습니다.','success',900); // 가벼운 토스트 알림
+            			close(); // 모달 닫기
+            			// 잠시 후 내 후기 목록으로 이동
+            			setTimeout(function(){ window.location.href = '/member/review-list?page=1&size=5'; }, 900);
+          			}else{
+            			// 서버에서 에러 메시지 제공 시 사용, 없으면 기본 문구
+            			const msg = (res && res.msg) ? res.msg : '후기 등록에 실패했습니다.';
+            			showErrorAlert(msg);
+          			}
+        		})
+        		.fail(function(xhr){
+          			// 401 이면 로그인으로 보냄 (세션 만료 등)
+          			if(xhr && xhr.status === 401){ window.location.href = '/member/login'; return; }
+          			const msg = (xhr && xhr.responseText) ? xhr.responseText : '후기 등록에 실패했습니다.';
+          			showErrorAlert(msg);
+        		})
+        		.always(function(){
+          			// 항상 버튼 원복
+          			$btn.prop('disabled', false).text('등록');
+        		});
+     	 	});
+
+      		// 초기 상태: 별점 0으로 칠하고, 모달/배경을 보여주고, 텍스트에 포커스
+      		paintStars(0);
+      		$dim.show(); $modal.show();
+      		setTimeout(()=> $content.trigger('focus'), 40);
+    	}
+
+    	// 외부에서 호출: 후기 모달 열기 (상품/주문 정보 필요)
+    	function openReviewModal(params){
+      		const { productNo, productName, orderNo } = params || {};
+      		if(!productNo){ showWarningAlert('상품 정보가 없습니다.'); return; } // 필수값 체크
+
+      		// 혹시 남아있던 이전 모달 정리
+      		removeExistingReviewModal();
+
+      		// 서버에 보낼 쿼리스트링 구성 (fragment=true 로 모달 조각만 요청)
+      		const query = $.param({ productNo, productName, orderNo, fragment: true });
+      		const url = '/member/order-review-modal?' + query;
+
+      		// 프래그먼트에 문제가 있으면 전체 페이지로 폴백
+      		function fullPageFallback(){
+        		const fallback = '/member/order-review-modal'
+        		  + '?productNo='   + encodeURIComponent(productNo)
+        		  + '&orderNo='     + encodeURIComponent(orderNo || 0)
+        		  + '&productName=' + encodeURIComponent(productName || '');
+        		window.location.href = fallback;
+      		}
+
+      		// 로딩 오버레이 띄우기
+      		showLoading();
+
+      		// 서버에서 모달 HTML 조각을 GET으로 불러온다
+      		$.get(url, function(html){
+        		// 서버가 로그인 페이지로 리다이렉트 시킨 경우(세션만료 등) 방어
+        		if (typeof html === 'string' && html.indexOf('/member/login') !== -1) {
+          			window.location.href = '/member/login';
+          			return;
+        		}
+
+        		// 받은 HTML 문자열을 임시 DOM으로 파싱
+        		const $tmp = $('<div>').html($.parseHTML(html, document, true));
+        		const $rvModal = $tmp.find('#rvModal'); // 우리가 기대하는 루트 요소
+
+        		// 기대하는 요소가 없으면 전체 페이지 폴백
+        		if ($rvModal.length === 0) {
+          			console.warn('[Review Modal] fragment did not contain #rvModal. Response:', html?.substring?.(0,400));
+          			fullPageFallback();
+          			return;
+        		}
+
+        		// 문제 없다면 body에 조각을 붙이고, 여기서 직접 이벤트 바인딩/표시
+        		$('body').append($tmp.children());
+        		wireReviewModal();
+      		}, 'html')
+      		.fail(function(xhr){
+        		// 통신 실패 시에도 전체 페이지로 폴백
+        		console.error('[Review Modal] failed:', xhr);
+        		fullPageFallback();
+      		})
+      		.always(hideLoading); // 성공/실패 관계없이 로딩 제거
+    	}
+
+    	// 주문 카드의 "후기 작성" 버튼을 클릭했을 때 실행
+    	$(document).on('click', '.review-open-btn', function(e){
+      		e.preventDefault();            // a/button 기본 동작 방지
+      		e.stopPropagation();           // 상위로 이벤트 전파 방지
+      		e.stopImmediatePropagation();  // 같은 요소의 다른 핸들러도 중단 (중복 방지)
+
+      		// 화면 상태 텍스트가 '배송 완료'인지 확인
+      		const statusText = $(this).closest('.order-item').data('status-text');
+      		if(statusText !== '배송 완료'){
+      			showWarningAlert('배송 완료된 주문만 후기 작성이 가능합니다.');
+      			return false;
+      		}
+      		
+      		// 버튼에 심어둔 데이터 추출
+      		const $b = $(this);
+      		const params = {
+        		productNo:   Number($b.data('product-no')),
+        		productName: $b.data('product-name') || '',
+        		orderNo:     Number($b.data('order-no')) || 0
+      		};
+
+      		// 안전장치
+      		if(!params.productNo){
+        		showWarningAlert('상품 정보가 없습니다.');
+        		return false;
+      		}
+
+      		// 모달 열기
+      		openReviewModal(params);
+      		return false; // 링크/폼 등 기본 동작 차단
+    	});
+  	})();
+
+  
+  /********************************************************************
+   * [주문 상세 모달] 프래그먼트 동적 로드 → 단순 표시
+   ********************************************************************/
+  	(function OrderDetailModalIIFE(){
+    	// 로딩 오버레이 표시
+    	function showLoading(){
+      		hideLoading();
+      		const $loader = $('<div id="odLoading" aria-hidden="true" />').css({
+        		position:'fixed', inset:0, zIndex: 1400,
+        		display:'flex', alignItems:'center', justifyContent:'center',
+        		background:'rgba(255,255,255,.2)', backdropFilter:'blur(1px)'
+      		}).append(
+        		$('<div role="status" aria-live="polite">불러오는 중…</div>').css({
+          			padding:'10px 14px', border:'1px solid #eee', borderRadius:'10px',
+          			background:'#fff', boxShadow:'0 4px 20px rgba(0,0,0,.08)', fontWeight:'700'
+        		})
+      		);
+      		$('body').append($loader);
+    	}
+    	// 로딩 오버레이 숨김
+    	function hideLoading(){ $('#odLoading').remove(); }
+
+    	// 기존 떠있는 상세 모달 정리
+    	function removeExistingOrderDetailModal(){
+      		$('#odDimmed, #odModal, #od-style').remove();
+    	}
+
+    	// 상세 모달 열기 (baseUrl은 /member/order-detail/{orderNo})
+    	function openOrderDetailModal(baseUrl){
+      		removeExistingOrderDetailModal(); // 이전 모달 제거
+
+      		// fragment=true 를 붙여 조각만 받도록
+      		const url = baseUrl + (baseUrl.includes('?') ? '&' : '?') + 'fragment=true';
+
+      		// 실패 시 상세페이지 전체로 이동
+      		function fullPageFallback(){ window.location.href = baseUrl; }
+
+      		// 로딩 표시
+      		showLoading();
+		
+      		// 프래그먼트 요청
+      		$.get(url, function(html){
+        		// 로그인 리다이렉트 방어
+        		if (typeof html === 'string' && html.indexOf('/member/login') !== -1) {
+          			window.location.href = '/member/login';
+          			return;
+        		}
+	
+	        	// 임시 DOM으로 파싱
+	        	const $tmp = $('<div>').html($.parseHTML(html, document, true));
+	        	const $odModal = $tmp.find('#odModal'); // 기대하는 루트
+	
+	        	// 없으면 전체 페이지로 폴백
+	        	if ($odModal.length === 0){
+	          		console.warn('[OrderDetail Modal] fragment did not contain #odModal. Response:', html?.substring?.(0,400));
+	          		fullPageFallback();
+	          		return;
+	        	}
+	
+	        	// body에 붙이고 모달/배경을 보여줌 (상세 모달 내부 스크립트는 최소화 가정)
+	        	$('body').append($tmp.children());
+	        	$('#odDimmed, #odModal').show();
+	
+	        	// 접근성: 닫기 버튼이 있다면 포커스 이동
+	        	const closeBtn = document.querySelector('#odModal [data-od-close]');
+	        	if(closeBtn){ try{ closeBtn.focus(); }catch(_){} }
+      		}, 'html')
+      		.fail(function(xhr){
+        		// 실패 시 전체 페이지로
+        		console.error('[OrderDetailModal] failed:', xhr);
+        		fullPageFallback();
+      		})
+      		.always(hideLoading); // 로딩은 반드시 제거
+    	}
+
+    	// "주문 상세" 버튼을 클릭했을 때 상세 모달 열기
+    	$(document).on('click.orderDetail', '.od-open-btn', function(e){
+      		e.preventDefault();  // 기본 동작 방지
+      		e.stopPropagation(); // 상위 전파 방지
+
+      		const orderNo = Number($(this).data('order-no')); // 주문 번호
+      		if(!orderNo) return false; // 안전장치
+
+      		openOrderDetailModal('/member/order-detail/' + orderNo); // 모달 프래그먼트 요청
+      		return false;
+    	});
+  	})();
+
+  /********************************************************************
+   * [판매자 문의 모달] 프래그먼트 동적 로드 → 바인딩 → 표시
+   ********************************************************************/
+  	(function OrderSellerQnaModalIIFE(){
+    	// 로딩 오버레이 표시
+    	function showLoading(){
+      		hideLoading();
+      		const $loader = $('<div id="qnaLoading" aria-hidden="true" />').css({
+        		position:'fixed', inset:0, zIndex: 1500,
+        		display:'flex', alignItems:'center', justifyContent:'center',
+        		background:'rgba(255,255,255,.2)', backdropFilter:'blur(1px)'
+      		}).append(
+        		$('<div role="status" aria-live="polite">불러오는 중…</div>').css({
+        	  		padding:'10px 14px', border:'1px solid #eee', borderRadius:'10px',
+          			background:'#fff', boxShadow:'0 4px 20px rgba(0,0,0,.08)', fontWeight:'700'
+        		})
+      		);
+      		$('body').append($loader);
+    	}
+    	// 로딩 오버레이 숨김
+    	function hideLoading(){ $('#qnaLoading').remove(); }
+
+    	// 기존 떠있는 QnA 모달 제거
+    	function removeExistingQnaModal(){
+      		$('#qnaDimmed, #qnaModal, #qna-style').remove(); // 요소 제거
+      		$(document).off('.qna');                          // 이벤트 제거
+    	}
+
+    	// 문의 모달 열기 (상품/주문 정보 필요)
+    	function openQnaModal(params){
+      		const { productNo, productName, shopName, orderNo } = params || {};
+      		if(!productNo){ showWarningAlert('상품 정보가 없습니다.'); return; } // 필수값 확인
+
+      		removeExistingQnaModal(); // 이전 모달 제거
+		
+      		// 서버 프래그먼트 요청용 쿼리 생성
+      		const query = $.param({ productNo, productName, shopName, orderNo, fragment: true });
+      		const url = '/member/order-qna-modal?' + query;
+
+      		// 실패 시 전체 페이지 폴백
+      		function fullPageFallback(){
+        		const fallback = '/member/order-qna-modal'
+        		  + '?productNo='   + encodeURIComponent(productNo)
+        		  + '&orderNo='     + encodeURIComponent(orderNo || 0)
+        		  + '&productName=' + encodeURIComponent(productName || '')
+        		  + '&shopName='    + encodeURIComponent(shopName || '');
+        		window.location.href = fallback;
+      		}
+
+      		// 로딩 띄움
+      		showLoading();
+		
+      		// 프래그먼트 GET
+      		$.get(url, function(html){
+        		// 로그인 리다이렉트 방어
+        		if (typeof html === 'string' && html.indexOf('/member/login') !== -1) {
+        	  		window.location.href = '/member/login';
+          			return;
+        		}
+	
+        		// 임시 DOM으로 파싱
+        		const $tmp = $('<div>').html($.parseHTML(html, document, true));
+        		const $qnaModal = $tmp.find('#qnaModal'); // 기대 루트
+
+        		// 없으면 폴백
+        		if($qnaModal.length === 0){
+          			console.warn('[QnA Modal] fragment did not contain #qnaModal. Response:', html?.substring?.(0,400));
+          			fullPageFallback();
+          			return;
+        		}
+
+        		// body에 붙이고 아래에서 이벤트 바인딩/표시
+        		$('body').append($tmp.children());
+        		wireQnaModal(); // 별도 함수에서 바인딩(아래)
+      		}, 'html')
+      		.fail(function(xhr){
+        		console.error('[QnA Modal] failed:', xhr);
+        		fullPageFallback();
+      		})
+      		.always(hideLoading); // 로딩 제거
+    	}
+
+    	// 모달 내부의 입력/버튼 이벤트 바인딩 및 표시
+    	function wireQnaModal(){
+      		// 요소 캐싱
+      		const $modal   = $('#qnaModal');     // 모달
+      		const $dim     = $('#qnaDimmed');    // 배경
+      		const $title   = $('#qnaTitleInput');// 제목 입력
+      		const $content = $('#qnaContent');   // 내용 입력
+      		const $secret  = $('#qnaSecret');    // 비밀글 체크박스
+
+      		// 서버가 th:attr 로 박아둔 data에서 번호 읽음
+      		const productNo = Number($modal.data('product-no')) || 0;
+      		const orderNo   = Number($modal.data('order-no')) || 0;
+
+      		// 닫기 함수 (요소/이벤트 정리)
+      		function close(){
+        		$(document).off('.qna');
+        		$modal.remove();
+        		$dim.remove();
+        		$('#qna-style').remove();
+      		}
+
+      		// 닫기: 배경/닫기 버튼/ESC
+      		$(document).on('click.qna', '[data-qna-close], #qnaDimmed', close);
+      		$(document).on('keydown.qna', function(e){ if(e.key === 'Escape') close(); });
+		
+      		// [등록] 버튼 클릭 시 서버로 문의 등록 요청
+      		$(document).on('click.qna', '#qnaSubmit', function(){
+        		// 입력 값 정리
+        		const titleVal   = ($title.val() || '').trim();
+        		const contentVal = ($content.val() || '').trim();
+        		const secret     = $secret.is(':checked');
+
+        		// 유효성 체크
+        		if(!titleVal){ showWarningAlert('제목을 입력하세요.'); return; }
+        		if(!contentVal){ showWarningAlert('내용을 입력하세요.'); return; }
+        		if(!productNo){ showWarningAlert('상품 정보가 올바르지 않습니다.'); return; }
+
+        		// 주문 번호가 있으면 내용 끝에 (주문번호: NNN) 표시
+        		const finalContent = orderNo ? `${contentVal}\n\n(주문번호: ${orderNo})` : contentVal;
+		
+        		// 중복 등록 방지: 버튼 잠금
+        		const $btn = $(this).prop('disabled', true).text('등록중…');
+	
+        		// 서버 POST (JSON)
+        		$.ajax({
+          			url: `/product/${productNo}/qna`,
+          			method: 'POST',
+          			contentType: 'application/json',
+          			data: JSON.stringify({ title: titleVal, content: finalContent, secret })
+        		})
+        		.done(function(){
+          			// 성공: 토스트 → 모달 닫기
+          			showToast('문의가 등록되었습니다.','success',1600);
+          			close();
+        		})
+        		.fail(function(xhr){
+          			// 인증문제면 로그인으로
+          			if(xhr && xhr.status === 401){ location.href = '/member/login'; return; }
+          			const msg = xhr?.responseJSON?.message || '문의 등록에 실패했습니다.';
+          			showErrorAlert(msg);
+        		})
+        		.always(function(){
+          			// 버튼 원복
+          			$btn.prop('disabled', false).text('등록');
+        		});
+      		});
+
+      		// 모달/배경 표시 + 제목에 포커스
+      		$dim.show(); $modal.show();
+      		setTimeout(()=> $title.trigger('focus'), 30);
+    	}
+
+    	// "판매자 문의" 버튼을 클릭하면 실행
+    	$(document).on('click', '.btn-order-qna', function(e){
+      		e.preventDefault();  // 기본 동작 방지
+      		e.stopPropagation(); // 상위 전파 방지
+
+      		// 버튼의 data-* 에서 정보 추출
+      		const $b = $(this);
+      		openQnaModal({
+        		productNo:   Number($b.data('product-no')),
+        		productName: $b.data('product-name'),
+        		shopName:    $b.data('shop-name'),
+        		orderNo:     Number($b.data('order-no')) || 0
+      		});
+      		return false; // 링크/폼 기본 동작 차단
+    	});
+	})();
+</script>
+</body>
+</html>

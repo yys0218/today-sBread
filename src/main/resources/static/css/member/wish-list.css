@@ -1,0 +1,237 @@
+/* ===============================
+   wish-list.css (찜 목록 전용 스타일)
+   =============================== */
+
+/* 오른쪽 전체 래퍼 (제목 + content-area 감싸는 박스) */
+.content-right {
+  width: 100%;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;                 /* 제목과 content-area 사이 간격 */
+  box-sizing: border-box;
+  background: none !important; /* 흰 배경 제거 */
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* 페이지 상단 제목 */
+.page-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0 0 12px 4px;
+  color: #333;
+}
+
+/* 메인 컨텐츠 박스 */
+.content-area {
+  flex-grow: 1 1 1060;
+  padding: 40px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.07);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 25px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+/* 컨텐츠 내부 정렬 */
+#content-area > * { align-self: stretch; width: 100%; }
+#content-area .wish-box { width: 100%; }
+#content-area .wish-topbar .left { margin-left: -16px; }
+#content-area .wish-topbar .left label { padding: 4px 0; }
+
+/* 찜 박스 */
+.wish-box {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+/* 상단 툴바 */
+.wish-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.wish-topbar .left { display: flex; align-items: center; gap: 10px; }
+.wish-sum { color: #666; font-size: .9rem; }
+
+/* 찜 목록 그리드 */
+.wish-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+
+/* 개별 아이템 */
+.wish-item {
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border: 1px solid #eee;
+  border-radius: 10px;
+}
+
+/* 체크박스 통일 스타일 */
+input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  background-color: #fff;
+  cursor: pointer;
+  position: relative;
+  vertical-align: middle;
+  transition: all 0.2s ease;
+}
+
+/* hover 시 테두리 강조 */
+input[type="checkbox"]:hover {
+  border-color: #f46f40;
+}
+
+/* 체크된 상태 */
+input[type="checkbox"]:checked {
+  background-color: #f46f40;   /* 주황 배경 */
+  border-color: #f46f40;
+}
+
+/* 체크 표시 (흰색) */
+input[type="checkbox"]:checked::after {
+  content: "✔";
+  color: #fff;
+  font-size: 14px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -55%);
+}
+
+.wish-thumb {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #eee;
+}
+.wish-title { font-weight: 600; }
+.wish-price { font-weight: 700; }
+.wish-empty { text-align: center; color: #888; padding: 40px 0; }
+.pager { display: flex; justify-content: center; gap: 8px; margin-top: 12px; }
+
+/* 상점 표시 라인 */
+.store-line {
+  font-size: .9rem;
+  color: #666;
+  margin-bottom: 4px;
+  line-height: 1;
+}
+.store-line i { margin-right: 4px; color: #f46f40; }
+.store-line a {
+  color: #444;
+  font-weight: 600;
+  text-decoration: none;
+}
+.store-line a:hover { text-decoration: underline; }
+
+/* 제목 + 검색창 같은 줄 */
+.page-header {
+  display: flex;
+  justify-content: space-between; /* 좌측: 제목 / 우측: 검색창 */
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+/* 제목 */
+.page-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+}
+
+/* 검색창 */
+.wish-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.wish-search input[type="text"] {
+  width: 240px;
+  padding: 6px 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+/* 검색 버튼 (주황 계열) */
+.wish-search button {
+  border: none;
+  background: #f46f40;   /* 기본 주황 */
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.wish-search button:hover { background: #d85f38; }
+
+/* ===== 버튼 영역 ===== */
+.wish-actions button {
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: .9rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+/* 장바구니 버튼: 주황색 */
+.btn-to-cart {
+  background: #f46f40;
+  color: #fff;
+  border: none;
+}
+.btn-to-cart:hover { background: #d85f38; }
+
+/* 삭제 버튼 + 선택 삭제 버튼: 연한 회색 */
+.btn-delete-one,
+.wish-topbar button[type="submit"] {
+  background: #e5e7eb;
+  color: #333;
+  border: none;
+}
+.btn-delete-one:hover,
+.wish-topbar button[type="submit"]:hover {
+  background: #d1d5db;
+  color: #111;
+}
+
+/* 마이페이지 공용과 충돌 방지 */
+.mypage .wish-actions .btn-to-cart {
+  background: #f46f40 !important;
+  color: #fff !important;
+}
+.mypage .wish-actions .btn-to-cart:hover {
+  background: #d85f38 !important;
+}
+
+.mypage .wish-actions .btn-delete-one,
+.mypage .wish-topbar button[type="submit"] {
+  background: #e5e7eb !important;
+  color: #333 !important;
+}
+.mypage .wish-actions .btn-delete-one:hover,
+.mypage .wish-topbar button[type="submit"]:hover {
+  background: #d1d5db !important;
+  color: #111 !important;
+}

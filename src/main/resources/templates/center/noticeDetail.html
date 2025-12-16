@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{common/layout}">
+
+<head>
+  <title>공지 상세</title>
+  <meta charset="UTF-8">
+  <meta th:name="_csrf" th:content="${_csrf.token}">
+  <meta th:name="_csrf_header" th:content="${_csrf.headerName}">
+  <link rel="stylesheet" th:href="@{/css/center/help-center.css}">
+  <link rel="stylesheet" th:href="@{/css/center/centerSidebar.css}">
+  <link rel="stylesheet" th:href="@{/css/center/notice.css}">
+</head>
+
+<div layout:fragment="content" class="container my-3">
+  <div class="container hc-layout">
+    <!-- 좌측 사이드바 -->
+    <div th:replace="~{center/centerSidebar :: centerMenu('notice')}"></div>
+
+    <!-- 우측 본문 -->
+    <main class="hc-main">
+      <h1 class="nl-title">공지사항 상세</h1>
+
+      <!-- 본문 카드 -->
+      <section class="hc-section">
+        <article class="nd-article box">
+          <header class="nd-header">
+            <!-- 제목 -->
+            <div class="nd-title" th:text="${notice.noticeTitle}">공지 제목</div>
+            <!-- 메타 정보 -->
+            <div class="nd-meta">
+              <div><span>카테고리</span> <span th:text="${notice.noticeCategory}">공지</span></div>
+              <div><span>등록일</span> <span th:text="${#temporals.format(notice.noticeAt,'yyyy-MM-dd HH:mm')}">2025-09-15</span></div>
+              <div th:if="${notice.noticeUpdateAt != null}">
+                <span>수정일</span> <span th:text="${#temporals.format(notice.noticeUpdateAt,'yyyy-MM-dd HH:mm')}"></span>
+              </div>
+            </div>
+          </header>
+
+          <hr class="nd-divide" />
+
+          <!-- 본문 내용 -->
+          <section class="nd-content">
+            <p th:text="${notice.noticeContent}">
+              공지사항 본문 내용이 이 영역에 표시됩니다.
+            </p>
+          </section>
+        </article>
+      </section>
+
+      <!-- 하단 액션 -->
+      <section class="hc-section">
+        <div class="nd-actions">
+          <a th:href="@{/center/notice/list}">목록으로</a>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+</html>

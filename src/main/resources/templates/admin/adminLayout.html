@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+<head>
+  <meta charset="UTF-8">
+  <title>관리자페이지</title>
+  <meta th:name="_csrf" th:content="${_csrf.token}">
+  <meta th:name="_csrf_header" th:content="${_csrf.headerName}">
+  <link rel="stylesheet" th:href="@{/css/admin/admin.css}">
+  <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body>
+  <!-- 헤더 -->
+  <header class="admin-header">
+    <div class="logo">
+      <a th:href="@{/admin/main}" class="btn-logo">관리자페이지</a>
+    </div>
+    <div class="header-actions">
+      <button class="btn-action"><a th:href="@{/}">사이트이동</a></button>
+      <!-- <button class="btn-action">잠금모드</button> -->
+      <button class="btn-action"><a th:href="@{/member/logout}">로그아웃</a></button>
+    </div>
+  </header>
+
+  <!-- 전체 레이아웃 -->
+  <div class="admin-layout">
+    <!-- 사이드바 -->
+    <aside class="admin-sidebar">
+      <ul class="menu">
+        <li><a class="menu-btn" th:href="@{/admin/main}">메인</a></li>
+        <li class="has-sub">
+          <button class="menu-btn">사이트 관리</button>
+          <ul class="submenu">
+            <li><a th:href="@{/admin/main/dashBoard}">대쉬보드</a></li>
+            <li><a th:href="@{/admin/site/settle}">정산내역 관리</a></li>
+          </ul>
+        </li>
+        <li class="has-sub">
+          <button class="menu-btn">게시판 관리</button>
+          <ul class="submenu">
+            <li><a th:href="@{/admin/board/notice}">공지사항 관리</a></li>
+            <li><a th:href="@{/admin/board/faq}">FAQ 관리</a></li>
+            <li><a th:href="@{/admin/board/inquiry}">1:1 문의 관리</a></li>
+            <li><a th:href="@{/admin/board/report}">신고 관리</a></li>
+          </ul>
+        </li>
+        <li class="has-sub">
+          <button class="menu-btn">회원 관리</button>
+          <ul class="submenu">
+            <li><a th:href="@{/admin/user/member}">회원관리</a></li>
+            <li><a th:href="@{/admin/user/shop}">매장관리</a></li>
+            <li><a th:href="@{/admin/user/registry}">입점신청</a></li>
+            <li><a th:href="@{/admin/user/closing}">폐점현황</a></li>
+          </ul>
+        </li>
+        
+      </ul>
+    </aside>
+
+    <!-- 메인 컨텐츠 -->
+    <main class="admin-content">
+      <th:block layout:fragment="content"></th:block>
+      <div th:replace="~{/admin/footer :: footer}"></div>
+    </main>
+  </div>
+
+</body>
+
+<th:block layout:fragment="script">
+  <script th:src="@{/js/admin/admin.js}"></script>
+</th:block>
+</html>

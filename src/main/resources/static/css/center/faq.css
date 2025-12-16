@@ -1,0 +1,150 @@
+/* ===== FAQ List (fl-*) ===== */
+:root{
+  --bg:#FFF6E9; --ink:#3D2B1F; --ink-weak:#6C5243;
+  --brand:#D95C43; --brand-2:#E7B674; --line:#E8D8C6; --card:#FFFFFF;
+}
+
+/* 제목 */
+.fl-title{
+  font-weight:800; letter-spacing:-.3px;
+  font-size: clamp(20px, 3vw, 28px);
+  margin: 6px 0 14px;
+}
+
+/* 검색 폼 */
+#searchForm{
+  display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+  padding: 12px; border:1px solid var(--line); border-radius:16px; background:#fff;
+  box-shadow: 0 10px 24px rgba(0,0,0,.04);
+  margin-bottom: 16px;
+}
+#searchForm input[type="text"]{
+  flex: 1 1 260px; min-width: 220px;
+  padding: 10px 12px; border:1px solid var(--line); border-radius:10px; background:#FAF6EF; outline:none;
+}
+#searchForm button{
+  padding: 10px 16px; border-radius:12px; border:1px solid var(--line);
+  background: var(--brand); color:#fff; font-weight:700; cursor:pointer;
+  transition: transform .08s ease, box-shadow .12s ease;
+}
+#searchForm button:hover{ transform: translateY(-1px); box-shadow:0 8px 18px rgba(0,0,0,.06); }
+
+/* FAQ 리스트 (아코디언) */
+.fl-list{ list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px; }
+.fl-item{
+  border:1px solid var(--line); border-radius:14px; background:#fff;
+  overflow: hidden;
+}
+.fl-q{
+  padding:14px 16px; font-weight:800; color:var(--ink); cursor:pointer;
+}
+.fl-q:hover{ color: var(--brand); }
+.fl-a{
+  padding: 0 16px 14px; color:var(--ink-weak);
+  line-height: 1.65; white-space: pre-wrap;
+}
+
+/* 글쓰기 버튼 */
+.fl-actions > a{
+  display:inline-block; margin-top:12px;
+  padding:10px 14px; border-radius:12px; border:1px solid var(--line);
+  background:#fff; text-decoration:none; color:var(--ink); font-weight:700;
+  transition: all .15s ease;
+}
+.fl-actions > a:hover{
+  border-color: color-mix(in srgb, var(--brand) 40%, var(--line) 60%);
+  color: var(--brand);
+}
+
+/* 페이징 (notice.css와 동일 톤) */
+.pagination{
+  display:flex; gap:6px; list-style:none; padding:0; margin:16px 0 0;
+  justify-content:center; align-items:center;
+}
+.pagination.justify-content-center{ justify-content:center; }
+.page-item .page-link{
+  display:inline-block; min-width:40px; text-align:center;
+  padding:8px 12px; border-radius:12px; border:1px solid var(--line);
+  background:#fff; text-decoration:none; color:var(--ink); font-weight:600;
+  transition: all .12s ease;
+}
+.page-item:hover .page-link{
+  border-color: color-mix(in srgb, var(--brand) 40%, var(--line) 60%); color: var(--brand);
+}
+.page-item.active .page-link{ border-color: var(--brand); color: var(--brand); }
+.page-item.disabled .page-link{ opacity:.45; pointer-events:none; }
+
+/* 반응형 */
+@media (max-width: 960px){
+  .fl-cats{ border-spacing: 6px; }
+}
+@media (max-width: 560px){
+  .fl-cats{ border-spacing: 6px 6px; }
+  /* 2열 느낌으로 줄이려면 아래 주석 해제
+  .fl-cats tr{ display:flex; gap:6px; }
+  .fl-cats td{ flex:1; }
+  */
+}
+
+/* ===== FAQ Form (ff-*) ===== */
+.ff-container {
+  padding: 24px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 8px 20px rgba(0,0,0,.04);
+}
+.ff-group {
+  margin-bottom: 16px;
+}
+.ff-group label {
+  display: block;
+  font-weight: 700;
+  color: var(--ink-weak);
+  margin-bottom: 8px;
+}
+.ff-group input[type="text"],
+.ff-group select,
+.ff-group textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #FAF6EF;
+  outline: none;
+  font-size: 15px;
+  transition: border-color .15s ease;
+}
+.ff-group input[type="text"]:focus,
+.ff-group select:focus,
+.ff-group textarea:focus {
+  border-color: var(--brand);
+}
+.ff-actions {
+  margin-top: 24px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+.ff-actions button,
+.ff-actions a {
+  padding: 12px 20px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: #fff;
+  text-decoration: none;
+  color: var(--ink);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .15s ease;
+}
+.ff-actions button[type="submit"] {
+  background: var(--brand);
+  color: #fff;
+  border-color: var(--brand);
+}
+.ff-actions a:hover,
+.ff-actions button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(0,0,0,.06);
+}

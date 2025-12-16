@@ -1,0 +1,210 @@
+<html layout:decorate="~{common/layout}">
+
+<head>
+  <title>내 문의 목록</title>
+  <meta charset="UTF-8">
+  <meta th:name="_csrf" th:content="${_csrf.token}">
+  <meta th:name="_csrf_header" th:content="${_csrf.headerName}">
+  <link rel="stylesheet" th:href="@{/css/center/help-center.css}">
+  <link rel="stylesheet" th:href="@{/css/center/centerSidebar.css}">
+  <link rel="stylesheet" th:href="@{/css/main/main.css}" />
+  <link rel="stylesheet" th:href="@{/css/center/inquiry.css}">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script th:src="@{/js/comm/sweetalert.noah.js}"></script>
+</head>
+
+<div layout:fragment="content" class="container my-3">
+  <div class="container hc-layout">
+    <!-- 좌측 사이드바 -->
+    <div th:replace="~{center/centerSidebar :: centerMenu('inquiry')}"></div>
+
+    <!-- 우측 본문 -->
+    <main class="hc-main">
+      <h2 class="il-title">내 1:1 문의</h2>
+      <!-- 메인 작성 영역 -->
+
+      <form th:object="${inquiryForm}" method="post" enctype="multipart/form-data" id="inquiryForm">
+        <h1 th:text="${inquiryNo != null} ? '1:1 문의 수정' : '1:1 문의 작성'"></h1>
+        <div th:replace="~{error/formErrors :: formErrorsFragment}"></div>
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+        <div>
+          <label for="inquiryType">문의유형</label>
+          <select th:field="*{inquiryType}">
+            <option value="0">회원</option>
+            <option value="1">매장</option>
+            <option value="2">주문/배송</option>
+            <option value="3">결제</option>
+            <option value="4">기타</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="inquiryTitle">제목</label>
+          <input type="text" th:field="*{inquiryTitle}" />
+        </div>
+
+        <div>
+          <label for="inquiryContent">내용</label>
+          <textarea th:field="*{inquiryContent}" rows="10"></textarea>
+        </div>
+
+        <div>
+          <label>이미지(최대 5장)<small>jpg, png, gif, webp파일 만 가능합니다</small></label>
+          <div id="image-container">
+            <!-- 기존 이미지 미리보기 -->
+            <div th:each="img : ${images}" class="preview">
+              <img th:src="@{${img.filePath}}" th:alt="${img.originFilename}" onerror="this.parentElement.remove();">
+              <button type="button" class="remove-btn" th:attr="data-id=${img.inquiryImgNo}">x</button>
+            </div>
+            <!-- + 버튼 -->
+            <label for="image-input" id="add-btn">+</label>
+          </div>
+          <input id="image-input" name="images" type="file" accept="image/*" multiple style="display:none"></input>
+
+        </div>
+        <div id="delete-container"></div>
+
+        <div>
+          <button type="submit" th:text="${inquiryNo != null} ? '수정' : '등록'"></button>
+          <a th:href="@{/center/inquiry}">목록으로</a>
+        </div>
+      </form>
+    </main>
+
+
+    <!-- ===== 이미지 업로드/삭제 스크립트 ===== -->
+    <div layout:fragment="script">
+      <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+      <script th:src="@{/js/comm/sweetalert.noah.js}"></script>
+      <script>
+        const imageInput = document.getElementById("image-input");
+        const container = document.getElementById("image-container");
+        const addBtn = document.getElementById("add-btn");
+        addBtn.style.display = "flex"; // Ensure initial display is flex for centering
+        const form = document.getElementById("inquiryForm");
+        const deleteContainer = document.getElementById("delete-container");
+
+        let files = []; // 새로 선택한 파일
+        let deleteIds = []; // 삭제할 기존 이미지 ID
+
+        // === 기존 이미지 삭제(X 버튼) ===
+        document.querySelectorAll(".remove-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const id = btn.getAttribute("data-id");
+            deleteIds.push(id);
+
+            // hidden input 추가
+            const hidden = document.createElement("input");
+            hidden.type = "hidden";
+            hidden.name = "deleteImgIds";
+            hidden.value = id;
+            deleteContainer.appendChild(hidden);
+
+            btn.parentElement.remove(); // 미리보기 제거
+
+            // 삭제 후 버튼 다시 보이게 (5개 미만이면)
+            const totalCount = container.querySelectorAll(".preview").length;
+            if (totalCount < 5) addBtn.style.display = "flex";
+          });
+        });
+
+        // === 새 이미지 선택 시 미리보기 ===
+        imageInput.addEventListener("change", (e) => {
+          const selected = Array.from(e.target.files);
+
+          // 현재 화면의 개수(기존 + 신규)
+          let currentCount = container.querySelectorAll(".preview").length;
+
+          // 추가 가능한 개수
+          const available = 5 - currentCount;
+
+          // 초과된 파일은 잘라냄
+          const addFiles = selected.slice(0, available);
+
+          addFiles.forEach(file => {
+            files.push(file);
+            previewImage(file);
+            currentCount++; // 추가될 때마다 카운트 증가
+          });
+
+          // 5개 딱 채워진 순간 버튼 숨김
+          addBtn.style.display = currentCount >= 5 ? "none" : "flex";
+
+          // 선택창 초기화 (같은 파일 다시 선택 가능하게)
+          imageInput.value = "";
+        });
+
+        function previewImage(file) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const div = document.createElement("div");
+            div.classList.add("preview");
+
+            const img = document.createElement("img");
+            img.src = e.target.result;
+
+            const removeBtn = document.createElement("button");
+            removeBtn.innerText = "x";
+            removeBtn.classList.add("remove-btn");
+
+            removeBtn.onclick = () => {
+              files = files.filter(f => f !== file);
+              div.remove();
+              const totalCount = container.querySelectorAll(".preview").length;
+              if (totalCount < 5) addBtn.style.display = "flex";
+            };
+
+            div.appendChild(img);
+            div.appendChild(removeBtn);
+            container.insertBefore(div, addBtn);
+          };
+          reader.readAsDataURL(file);
+        }
+
+        // === submit 시 files를 input에 반영 ===
+        form.addEventListener("submit", (e) => {
+          const dataTransfer = new DataTransfer();
+          files.forEach(f => dataTransfer.items.add(f));
+          imageInput.files = dataTransfer.files;
+        });
+      </script>
+      <script>
+        document.getElementById('inquiryForm').addEventListener('submit', function (event) {
+          event.preventDefault();
+
+          const fieldsToValidate = [
+            { id: 'inquiryType', message: '문의 유형을 선택해주세요.' },
+            { id: 'inquiryTitle', message: '문의 제목을 입력해주세요.' },
+            { id: 'inquiryContent', message: '문의 내용을 입력해주세요.' },
+            // { id: 'inquiryMail', message: '이메일을 입력해주세요.' },
+          ];
+
+          for (const field of fieldsToValidate) {
+            const inputElement = document.getElementById(field.id);
+            if (!inputElement.value.trim()) {
+              Swal.fire({
+                icon: 'warning',
+                title: '입력 오류',
+                text: field.message,
+                confirmButtonText: '확인',
+                confirmButtonColor: '#ff6600',
+                didClose: () => {
+                  inputElement.focus({ preventScroll: true });
+                  inputElement.scrollIntoView({
+                    behavior: 'auto',
+                    block: 'center'
+                  });
+                }
+              });
+              return;
+            }
+          }
+
+          event.target.submit();
+        });
+      </script>
+    </div>
+  </div>
+
+</html>

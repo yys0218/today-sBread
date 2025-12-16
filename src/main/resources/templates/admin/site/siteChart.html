@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{admin/adminLayout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>정산 통계 조회</title>
+</head>
+
+<div layout:fragment="content">
+    <div>
+        <button onclick="loadChart('week')">1주일 단위</button>
+        <button onclick="loadChart('month')">1개월 단위</button>
+        <button onclick="loadChart('3month')">3개월 단위</button>
+    </div>
+
+    <canvas id="Chart" width="600" height="300"></canvas>
+</div>
+
+
+<th:block layout:fragment="script">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+    <script>
+        const ctx = document.getElementById('Chart');
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: { labels: [], datasets: [{ label: '신규 회원 수', data: [], fill: false, borderColor: '#007bff' }] },
+            options: { scales: { y: { beginAtZero: true } } }
+        });
+
+        function loadChart(period) {
+            $.ajax({
+                url: "/admin/site/member/stats",
+                data: { period: period },
+                success: function (res) {
+                    chart.data.labels = res.labels;
+                    chart.data.datasets[0].data = res.data;
+                    chart.data.datasets[0].label =
+                        period === 'week' ? '주간 신규 회원 수' :
+                        period === 'month' ? '월간 신규 회원 수' :
+                        '3개월 단위 신규 회원 수';
+                    chart.update();
+                }
+            });
+        }
+
+        // 최초 로딩: 주간 데이터
+        loadChart('week');
+    </script>
+    <script th:src="@{/js/admin/admin.js}"></script>
+</th:block>

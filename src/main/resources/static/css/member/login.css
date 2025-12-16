@@ -1,0 +1,21 @@
+/*  <link rel="stylesheet" th:href="@{/css/member/login.css}"> */
+
+	/* 로그인창 css */
+    .login-container { background-color: rgb(255, 251, 240); min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+    .login-title h1 { margin-bottom: 50px; font-weight: 800; font-size: clamp(28px, 5vw, 56px);
+      				  line-height: 1.2; letter-spacing: -0.4px; color: #4a3c2a;
+      				  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); position: relative; display: inline-block; padding-bottom: 16px; }
+    .login-title h1::after { content: ''; position: absolute; left: 50%; transform: translateX(-50%); bottom: 0;
+      						 width: 100%; height: 6px; background: #f46f40; border-radius: 999px; box-shadow: 0 4px 12px rgba(244, 111, 64, 0.4); }
+    .login-card { background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6); padding: 40px; width: 100%; max-width: 600px; }
+    .custom-input { background-color: #fff; color: #333; border: 2px solid #ddd; border-radius: 8px; }
+    .custom-input::placeholder { color: #888; }
+    .custom-input:focus { border-color: #f46f40; box-shadow: 0 0 0 0.2rem rgba(244, 111, 64, 0.25); background-color: #fff; color: #333; }
+    .custom-label { color: #555 !important; }
+    .custom-btn { background-color: #f46f40; color: white; border: none; border-radius: 8px; width: 100%; height: 50px; font-size: 1.1rem; font-weight: bold; transition: background-color 0.3s ease;}
+    .custom-btn:hover, .custom-btn:focus { background-color: #d85f38; }
+    .btn-a { text-decoration: none; color: #6d6d6d; font-size: 14px; line-height: 1.6; }
+    .btn-a:hover { color: #f46f40; cursor: pointer; text-decoration: none; }
+    .link-list { list-style: none; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; flex-wrap: wrap; }
+    .link-list li { display: flex; align-items: center; }
+    .link-list li + li::before { content: '|'; margin: 0 12px; color: #c8c8c8; }

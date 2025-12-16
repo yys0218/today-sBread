@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{admin/adminLayout}">
+
+<head>
+  <link rel="stylesheet" th:href="@{/css/admin/faq.css}">
+</head>
+<div layout:fragment="content">
+  <h2 class="fl-title">FAQ 관리</h2>
+
+  <!-- 카테고리 버튼 -->
+  <table class="fl-cats">
+    <tr>
+      <td><button type="button" class="cat-btn" data-category=""
+          th:classappend="${category==''} ? ' selected' : ''">(전체)</button></td>
+      <td><button type="button" class="cat-btn" data-category="회원"
+          th:classappend="${category=='회원'} ? ' selected' : ''">회원</button></td>
+      <td><button type="button" class="cat-btn" data-category="주문"
+          th:classappend="${category=='주문'} ? ' selected' : ''">주문</button></td>
+      <td><button type="button" class="cat-btn" data-category="결제"
+          th:classappend="${category=='결제'} ? ' selected' : ''">결제</button></td>
+    </tr>
+    <tr>
+      <td><button type="button" class="cat-btn" data-category="배송"
+          th:classappend="${category=='배송'} ? ' selected' : ''">배송</button></td>
+      <td><button type="button" class="cat-btn" data-category="취소/환불"
+          th:classappend="${category=='취소/환불'} ? ' selected' : ''">취소/환불</button></td>
+      <td><button type="button" class="cat-btn" data-category="쿠폰/포인트"
+          th:classappend="${category=='쿠폰/포인트'} ? ' selected' : ''">쿠폰/포인트</button></td>
+      <td><button type="button" class="cat-btn" data-category="매장"
+          th:classappend="${category=='매장'} ? ' selected' : ''">매장</button></td>
+    </tr>
+  </table>
+
+  <!-- 검색/필터 폼 -->
+  <form id="searchForm" th:action="@{/admin/board/faq/list}" method="get" onsubmit="return false;">
+    <input type="hidden" name="category" th:value="${category}">
+    <input type="text" name="kw" th:value="${kw}" placeholder="검색어">
+    <button id="btnSearch" type="button">검색</button>
+  </form>
+
+
+  <!-- FAQ 목록 fragment -->
+  <div id="faqListWrapper" th:fragment="listFragment (paging, category, kw)">
+    <table class="fl-table">
+      <thead>
+        <tr>
+          <th>번호</th>
+          <th>카테고리</th>
+          <th>제목</th>
+          <th>상태</th>
+          <th>관리</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:if="${paging.empty}">
+          <td colspan="5">게시글이 없습니다.</td>
+        </tr>
+        <tr th:each="f, loop : ${paging}"
+          th:onclick="|location.href='@{/admin/board/faq/detail/{faqNo}(faqNo=${f.faqNo})}'|" style="cursor:pointer;">
+          <td th:text="${paging.getTotalElements - (paging.number * paging.size) - loop.index}"></td>
+          <td th:text="${f.faqCategory}"></td>
+          <td th:text="${f.faqTitle}"></td>
+          <td>
+            <span th:if="${f.faqStatus==0}" class="faq-status faq-status--show">게시중</span>
+            <span th:if="${f.faqStatus==1}" class="faq-status faq-status--hide">숨김</span>
+          </td>
+          <td onclick="event.stopPropagation();">
+            <a th:href="@{/admin/board/faq/update/{faqNo}(faqNo=${f.faqNo})}">수정</a>
+            <a th:href="@{/admin/board/faq/cancel/{faqNo}(faqNo=${f.faqNo})}">숨김</a>
+            <a th:href="@{/admin/board/faq/delete/{faqNo}(faqNo=${f.faqNo})}">삭제</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="fl-actions"><a th:href="@{/admin/board/faq/insert}">글쓰기</a></div>
+    <!-- 페이징처리 -->
+    <div th:if="${!paging.isEmpty()}">
+      <ul class="pagination justify-content-center">
+        <span class="page-item" th:if="${paging.hasPrevious()}">
+          <a class="page-link page-link-ajax" href="#" th:attr="data-page=${paging.number-1}"><span>이전</span></a>
+        </span>
+        <span th:each="page : ${#numbers.sequence(0, paging.totalPages-1)}"
+          th:if="${page >= paging.number-5 and page <= paging.number+5}"
+          th:classappend="${page==paging.number} ? 'active'" class="page-item">
+          <a th:text="${page+1}" class="page-link page-link-ajax" href="#" th:attr="data-page=${page}"></a>
+        </span>
+        <span class="page-item" th:if="${paging.hasNext()}">
+          <a class="page-link page-link-ajax" href="#" th:attr="data-page=${paging.number+1}"><span>다음</span></a>
+        </span>
+      </ul>
+    </div>
+    <!-- 페이징 처리 끝 -->
+  </div>
+
+  <div layout:fragment="script">
+    <script>
+      (() => {
+        // DOM 준비 후에만 실행되도록 래퍼
+        function ready(fn) {
+          if (document.readyState !== 'loading') fn();
+          else document.addEventListener('DOMContentLoaded', fn);
+        }
+
+        ready(() => {
+          const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+          const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+          const searchForm = document.getElementById('searchForm');
+          if (!searchForm) return; // 방어
+
+          const categoryInput = searchForm.querySelector('input[name="category"]');
+          const kwInput = searchForm.querySelector('input[name="kw"]');
+          const btnSearch = document.getElementById('btnSearch');
+          let listWrapper = document.getElementById('faqListWrapper');
+
+          // 공통 AJAX
+          async function loadFaqList({ kw, category, page }) {
+            const params = new URLSearchParams();
+            params.append("kw", kw ?? "");
+            params.append("category", category ?? "");
+            params.append("page", page ?? 0);
+
+            const resp = await fetch(`${searchForm.getAttribute("action")}?${params.toString()}`, {
+              method: "GET"
+            });
+            const html = await resp.text();
+            const frag = new DOMParser().parseFromString(html, "text/html").getElementById("faqListWrapper");
+            if (frag) listWrapper.innerHTML = frag.innerHTML;
+          }
+
+
+          // 카테고리(이벤트 위임)
+          document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.cat-btn');
+            if (!btn) return;
+            const cat = btn.getAttribute('data-category') || '';
+            categoryInput.value = cat;
+
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+
+            loadFaqList({ kw: kwInput.value, category: cat, page: 0 });
+          });
+
+          // 검색 버튼
+          btnSearch?.addEventListener('click', () => {
+            loadFaqList({ kw: kwInput.value, category: categoryInput.value, page: 0 });
+          });
+
+          // 페이지네이션(이벤트 위임)
+          document.addEventListener('click', (e) => {
+            const a = e.target.closest('.page-link-ajax');
+            if (!a) return;
+            e.preventDefault();
+            const page = a.getAttribute('data-page');
+            loadFaqList({ kw: kwInput.value, category: categoryInput.value, page });
+          });
+        });
+      })();
+    </script>
+  </div>
+
+</html>

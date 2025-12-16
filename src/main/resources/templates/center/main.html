@@ -1,0 +1,188 @@
+<html layout:decorate="~{common/layout}">
+
+<head>
+  <title>고객센터 메인</title>
+  <meta charset="UTF-8">
+  <meta th:name="_csrf" th:content="${_csrf.token}">
+  <meta th:name="_csrf_header" th:content="${_csrf.headerName}">
+  <link rel="stylesheet" th:href="@{/css/center/help-center.css}">
+  <link rel="stylesheet" th:href="@{/css/center/centerSidebar.css}">
+  <link rel="stylesheet" th:href="@{/css/main/main.css}" />
+</head>
+<div layout:fragment="content" class="container my-3">
+  <div class="container hc-layout">
+    <!-- 사이드바 -->
+    <aside class="hc-aside box" aria-label="고객센터 사이드바">
+      <nav>
+        <div class="mypage-title jua-regular">
+          <a th:href="@{/center}">고객센터</a>
+        </div>
+        <ul class="hc-side">
+          <li><a th:href="@{/center/notice}">공지사항</a></li>
+          <li><a th:href="@{/center/faq}">FAQ</a></li>
+          <li><a th:href="@{/center/inquiry}">문의 게시판</a></li>
+          <li><a th:href="@{/center/report}">신고 게시판</a></li>
+          <li th:if="${memberRole == 0}"><a th:href="@{/center/registry}">입점신청</a></li>
+          <li th:if="${memberRole == 1}"><a th:href="@{/center/closing}">폐점신청</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- 우측 본문 -->
+    <main class="hc-main">
+      <!-- Hero -->
+      <section class="hc-hero">
+        <div class="hc-hero__inner box">
+          <div class="hc-hero__head">
+            <h1 class="hc-title jua-regular">고객센터 통합 검색</h1>
+            <p class="hc-sub">공지 · FAQ를 한 곳에서 빠르게 검색하세요.</p>
+
+            <form class="hc-searchbar" action="/center/search" method="get">
+              <input type="text" name="kw" placeholder="문의·키워드 검색 (예: 환불, 쿠폰)" aria-label="고객센터 검색">
+              <button class="hc-btn hc-btn--primary" type="submit">검색</button>
+            </form>
+          </div>
+          <div class="hc-hero__art" aria-hidden="true">
+            <img src="image/main/center.png" class="hero-img">
+          </div>
+        </div>
+      </section>
+
+      <!-- 공지사항 최신글 -->
+      <section class="hc-section cm-section">
+        <h2 class="hc-section__title cm-section__title">공지사항 최신글</h2>
+        <div th:each="n : ${notices}">
+          <a class="hc-card cm-card" th:text="${n.noticeCategory}+' : '+${n.noticeTitle}"
+            th:href="@{/center/notice/detail/{num}(num=${n.noticeNo})}">
+          </a>
+        </div>
+      </section>
+
+      <!-- FAQ 카테고리 + TOP5 -->
+      <section class="hc-section cm-section">
+        <h2 class="hc-section__title cm-section__title">FAQ 카테고리</h2>
+
+        <table id="faq-cat" class="fl-cats">
+          <tr>
+            <td><button type="button" class="cat-btn" data-category=""
+                th:classappend="${category==''} ? ' selected' : ''">(전체)</button></td>
+            <td><button type="button" class="cat-btn" data-category="회원"
+                th:classappend="${category=='회원'} ? ' selected' : ''">회원</button></td>
+            <td><button type="button" class="cat-btn" data-category="주문"
+                th:classappend="${category=='주문'} ? ' selected' : ''">주문</button></td>
+            <td><button type="button" class="cat-btn" data-category="결제"
+                th:classappend="${category=='결제'} ? ' selected' : ''">결제</button></td>
+          </tr>
+          <tr>
+            <td><button type="button" class="cat-btn" data-category="배송"
+                th:classappend="${category=='배송'} ? ' selected' : ''">배송</button></td>
+            <td><button type="button" class="cat-btn" data-category="취소/환불"
+                th:classappend="${category=='취소/환불'} ? ' selected' : ''">취소/환불</button></td>
+            <td><button type="button" class="cat-btn" data-category="쿠폰/포인트"
+                th:classappend="${category=='쿠폰/포인트'} ? ' selected' : ''">쿠폰/포인트</button></td>
+            <td><button type="button" class="cat-btn" data-category="매장"
+                th:classappend="${category=='매장'} ? ' selected' : ''">매장</button></td>
+        </table>
+
+        <!-- FAQ 목록 fragment (id/fragment명/구조 유지) -->
+        <div id="faqListWrapper" th:fragment="faqFragment (paging, category, kw)">
+          <ul class="fl-list cm-fl-list">
+            <span th:each="f : ${faqs}" class="fl-item cm-fl-item">
+              <!-- 질문 -->
+              <div class="fl-q cm-fl-q" th:attr="data-faqno=${f.faqNo}" th:text="${f.faqTitle}"></div>
+              <!-- 답변 -->
+              <div class="fl-a cm-fl-a" style="display:none;" th:text="${f.faqContent}"></div>
+            </span>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 빠른 바로가기 -->
+      <section class="hc-section cm-section" th:if="${session.user != null}">
+        <div class="hc-quick cm-quick">
+          <a class="hc-quick__item cm-quick__item box" th:href="@{/center/inquiry}">
+            <div class="hc-quick__title cm-quick__title">내 1:1 문의</div>
+            <div class="hc-quick__desc muted cm-quick__desc">
+              진행상태 확인 · 추가 문의
+              <span class="hc-badgeCount cm-badgeCount" th:text="*{inquiryCount}"></span>
+            </div>
+          </a>
+
+          <a class="hc-quick__item cm-quick__item box" th:href="@{/center/report}">
+            <div class="hc-quick__title cm-quick__title">내 신고 내역</div>
+            <div class="hc-quick__desc muted cm-quick__desc">
+              처리현황 확인
+              <span class="hc-badgeCount cm-badgeCount" th:text="*{reportCount}"></span>
+            </div>
+          </a>
+        </div>
+      </section>
+    </main>
+  </div> <!-- /.hc-layout -->
+  </th:block>
+
+  <div layout:fragment="script">
+    <script>
+      (() => {
+        function ready(fn) {
+          if (document.readyState !== 'loading') fn();
+          else document.addEventListener('DOMContentLoaded', fn);
+        }
+
+        ready(() => {
+          const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+          const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+          const listWrapper = document.getElementById('faqListWrapper');
+
+          // FAQ 리스트 로드 (카테고리별)
+          async function loadFaqList(category) {
+            const formData = new FormData();
+            formData.append('category', category ?? '');
+
+            const resp = await fetch('/center/faqMain', {
+              method: 'POST',
+              headers: csrfHeader && csrfToken ? { [csrfHeader]: csrfToken } : {},
+              body: formData
+            });
+            const html = await resp.text();
+            const frag = new DOMParser()
+              .parseFromString(html, "text/html")
+              .getElementById("faqListWrapper");
+            if (frag) listWrapper.innerHTML = frag.innerHTML;
+          }
+
+          // 카테고리 버튼 클릭 → 리스트 교체
+          document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.cat-btn');
+            if (!btn) return;
+
+            const cat = btn.getAttribute('data-category') || '';
+
+            // 버튼 활성화 표시
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+
+            loadFaqList(cat);
+          });
+
+          // 제목 클릭 → 답변 토글
+          document.addEventListener('click', (e) => {
+            const q = e.target.closest('.fl-q');
+            if (!q) return;
+
+            const a = q.nextElementSibling;
+            const isOpen = (a.style.display === 'block'); // 현재 열려 있는지 체크
+
+            // 모든 답변 닫기
+            document.querySelectorAll('.fl-a').forEach(ans => ans.style.display = 'none');
+
+            // 이미 열려 있던 게 아니라면 → 열기
+            if (!isOpen) {
+              a.style.display = 'block';
+            }
+          });
+        });
+      })();
+    </script>
+  </div>
+</div>

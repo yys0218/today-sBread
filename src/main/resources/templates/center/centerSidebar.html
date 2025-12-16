@@ -1,0 +1,30 @@
+<!-- 고객센터 타이틀 + 사이드바 -->
+<div th:fragment="centerMenu(activeMenu)">
+    <aside class="hc-aside box" aria-label="고객센터 사이드바">
+        <nav>
+            <div class="mypage-title jua-regular" >
+                <a th:href="@{/center}">고객센터</a>
+            </div>
+            <ul class="hc-side">
+                <li>
+                    <a th:href="@{/center/notice}" th:classappend="${activeMenu == 'notice'} ? ' active'">공지사항</a>
+                </li>
+                <li>
+                    <a th:href="@{/center/faq}" th:classappend="${activeMenu == 'faq'} ? ' active'">FAQ</a>
+                </li>
+                <li>
+                    <a th:href="@{/center/inquiry}" th:classappend="${activeMenu == 'inquiry'} ? ' active'">문의 게시판</a>
+                </li>
+                <li>
+                    <a th:href="@{/center/report}" th:classappend="${activeMenu == 'report'} ? ' active'">신고 게시판</a>
+                </li>
+                <li th:if="${memberRole == 0}">
+                    <a th:href="@{/center/registry}" th:classappend="${activeMenu == 'registry'} ? ' active'">입점신청</a>
+                </li>
+                <li th:if="${memberRole == 1}">
+                    <a th:href="@{/center/closing}" th:classappend="${activeMenu == 'closing'} ? ' active'">폐점신청</a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+</div>

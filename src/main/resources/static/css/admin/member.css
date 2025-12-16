@@ -1,0 +1,350 @@
+/* 제목 */
+.ml-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  max-width: 1100px;
+  color: var(--brand);
+  border-left: 5px solid var(--brand);
+  padding-left: 10px;
+}
+
+/* 레이아웃 */
+.member-layout {
+  display: flex;           /* 🔥 가로 배치 */
+  align-items: flex-start; /* 위쪽 기준 정렬 */
+  gap: 12px;               /* 테이블 ↔ 상세 패널 사이 여백 */
+  margin: 0;
+  max-width: 1400px;       /* 전체 영역 폭 */
+}
+
+/* 테이블 */
+.ml-table {
+  width: 1100px;          /* 🔥 테이블 고정폭 */
+  table-layout: fixed;  
+  border-collapse: collapse;
+  background: #fff;
+  border: 1px solid var(--line);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  flex-shrink: 0;         /* 🔥 flex 줄어듦 방지 */
+}
+
+.ml-table th, .ml-table td {
+  border: 1px solid var(--line);
+  padding: 10px 12px;
+  text-align: center;
+  font-size: 14px;
+}
+.ml-table th {
+  background: #f8f5f1;
+  font-weight: bold;
+}
+.ml-table tr:hover {
+  background: #fdf1e6;
+}
+
+/* 상세 패널 */
+.ml-detail {
+  width: 400px;
+  margin-left: 20px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  padding: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  flex-shrink: 0;          /* 크기 줄어들지 않도록 */
+}
+.ml-detail h3 {
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+.ml-detail #detail-content {
+  min-height: 200px;
+  font-size: 14px;
+  color: var(--ink);
+}
+
+/* --- 페이징 (inquiry와 동일 톤) --- */
+.pagination {
+  display: flex;
+  gap: 6px;
+  list-style: none;
+  padding: 0;
+  margin: 16px 0 0;
+  max-width: 1100px;
+  justify-content: center;
+  align-items: center;
+}
+.page-item .page-link {
+  display: inline-block;
+  min-width: 40px;
+  text-align: center;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: #fff;
+  text-decoration: none;
+  color: var(--ink);
+  font-weight: 600;
+  transition: all .12s ease;
+}
+.page-item:hover .page-link {
+  border-color: color-mix(in srgb, var(--brand) 40%, var(--line) 60%);
+  color: var(--brand);
+}
+.page-item.active .page-link { border-color: var(--brand); color: var(--brand); }
+.page-item.disabled .page-link { opacity: .45; pointer-events: none; }
+
+/* ─ 검색/필터 컨테이너 ─ */
+#memberSortForm {
+  margin: 15px 0;
+  max-width: 1100px;
+  padding: 12px 15px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+
+  display: flex;
+  flex-direction: column;   /* 🔥 세로 배치 */
+  gap: 12px;                /* 줄 간격 */
+}
+
+/* ─ 검색 영역 ─ */
+#memberSortForm div[name="keyword"] {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+#memberSortForm input[type="text"] {
+  flex: 1;
+  min-width: 200px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-size: 14px;
+}
+#memberSortForm input[type="text"]:focus {
+  outline: none;
+  border-color: var(--brand);
+}
+#memberSortForm button[type="submit"] {
+  padding: 6px 14px;
+  border-radius: 4px;
+  border: 1px solid var(--brand);
+  background: var(--brand);
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all .2s ease;
+}
+#memberSortForm button[type="submit"]:hover {
+  background: #b36d3d;
+  border-color: #b36d3d;
+}
+
+/* ─ 회원 상태 필터 버튼 ─ */
+#memberSortForm .role-filter {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+#memberSortForm .role-filter button {
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+  background: #f8f5f1;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all .15s ease;
+}
+#memberSortForm .role-filter button:hover {
+  background: #f2e2d2;
+  border-color: var(--brand);
+  color: var(--brand);
+}
+/* 🔥 선택된 필터 버튼 */
+#memberSortForm .role-filter button.active {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+  font-weight: 600;
+}
+
+
+/* ─ 정렬 버튼 ─ */
+#memberSortForm div[name="sortField"] {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+#memberSortForm div[name="sortField"] button {
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+  background: #f8f5f1;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all .15s ease;
+}
+#memberSortForm div[name="sortField"] button:hover {
+  background: #f2e2d2;
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+/* ─ 회원 제재 모달 ─ */
+#restrict-modal {
+  display: none;
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);  
+  width: 30%;                        
+  max-width: 400px;                  
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+  padding: 24px;
+  z-index: 800;
+}
+
+#restrict-modal h4 {
+  font-size: 16px;
+  margin-bottom: 14px;
+  color: var(--brand);
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 6px;
+}
+
+/* 폼 레이아웃 */
+#restrict-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* label */
+#restrict-form label {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* select 공통 */
+#restrict-form select {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 15px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+}
+#restrict-form select:focus {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 2px rgba(179,109,61,0.2);
+}
+
+/* 버튼 영역 */
+#restrict-form button {
+  padding: 10px 16px;
+  font-size: 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all .2s ease;
+}
+
+/* 확인 버튼 */
+#restrict-form button[onclick*="submitRestrict"] {
+  background: var(--brand);
+  border: 1px solid var(--brand);
+  color: #fff;
+  font-weight: 600;
+}
+#restrict-form button[onclick*="submitRestrict"]:hover {
+  background: #b36d3d;
+  border-color: #b36d3d;
+}
+
+/* 취소 버튼 */
+#restrict-form button[onclick*="closeRestrictModal"] {
+  background: #f8f5f1;
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+#restrict-form button[onclick*="closeRestrictModal"]:hover {
+  background: #f2e2d2;
+  border-color: var(--brand);
+  color: var(--brand);
+}
+/* 상세 패널 안의 공통 글자 */
+.ml-detail #detail-content p {
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 6px 0;
+  color: var(--ink);
+  display: flex;
+  justify-content: space-between;  /* 라벨-값을 양쪽 정렬 */
+  border-bottom: 1px dashed var(--line);
+  padding: 4px 0;
+}
+
+/* 라벨 부분 (굵게 + 브랜드 컬러 강조) */
+.ml-detail #detail-content p b {
+  font-weight: 600;
+  color: var(--brand);
+  margin-right: 8px;
+}
+
+/* 값(span) 부분 */
+.ml-detail #detail-content p span {
+  flex: 1;
+  text-align: right;
+  color: #333;
+  word-break: break-all;  /* 긴 이메일/주소 줄바꿈 */
+}
+
+/* 버튼 영역 */
+.ml-detail #detail-content button {
+  margin-top: 10px;
+  padding: 6px 12px;
+  font-size: 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all .2s ease;
+}
+
+/* 정지 버튼 */
+.ml-detail #detail-content button[onclick*="openRestrictModal"] {
+  background: var(--brand);
+  border: 1px solid var(--brand);
+  color: #fff;
+  font-weight: 600;
+}
+.ml-detail #detail-content button[onclick*="openRestrictModal"]:hover {
+  background: #b36d3d;
+  border-color: #b36d3d;
+}
+
+/* 제재 취소 버튼 */
+.ml-detail #detail-content button[onclick*="release"] {
+  background: #f8f5f1;
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+.ml-detail #detail-content button[onclick*="release"]:hover {
+  background: #f2e2d2;
+  border-color: var(--brand);
+  color: var(--brand);
+}
+/* 테이블 너비 */
+.ml-table th:nth-child(1),.ml-table td:nth-child(1) { width: 5%; }   /* 번호 */
+.ml-table th:nth-child(2),.ml-table td:nth-child(2) { width: 18%; }  /* 아이디 */
+.ml-table th:nth-child(3),.ml-table td:nth-child(3) { width: 12%; }  /* 닉네임 */
+.ml-table th:nth-child(4),.ml-table td:nth-child(4) { width: 15%; }  /* 이름 */
+.ml-table th:nth-child(5),.ml-table td:nth-child(5) { width: 5%; }  /* 성별 */
+.ml-table th:nth-child(6),.ml-table td:nth-child(6) { width: 22%; }  /* 이메일 */
+.ml-table th:nth-child(7),.ml-table td:nth-child(7) { width: 8%; }  /* 상태 */
+.ml-table th:nth-child(8),.ml-table td:nth-child(8) { width: 15%; }  /* 가입일 */

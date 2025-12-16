@@ -1,0 +1,154 @@
+#riderDeleteModal .content-area {
+    flex-grow: 1;
+    padding: 32px 40px;
+    background-color: #2a2a2a;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);
+    width: 100%;
+    box-sizing: border-box;
+}
+#riderDeleteModal .withdraw-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+#riderDeleteModal .withdraw-wrap h2 {
+    margin: 0 0 4px;
+    font-size: 1.6rem;
+    font-weight: 800;
+    text-align: center;
+    color: #ffffff;
+}
+#riderDeleteModal .withdraw-wrap .desc {
+    text-align: center;
+    color: #ffffff;
+    margin-bottom: 8px;
+}
+#riderDeleteModal .section {
+    margin-top: 8px;
+}
+#riderDeleteModal .section-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 0 0 8px;
+    color: #ffffff;
+}
+/* 라디오 리스트 */
+#riderDeleteModal .radios {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+#riderDeleteModal .radios label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #ffffff;
+}
+#riderDeleteModal .radios input[type='radio'] {
+    transform: translateY(1px);
+}
+/* 기타 사유 */
+#riderDeleteModal .other-text {
+    width: 100%;
+    margin-top: 8px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 10px 12px;
+    resize: none;
+    box-sizing: border-box;
+}
+#riderDeleteModal .other-text:focus {
+    outline: none;
+    border-color: #f57348;
+    box-shadow: 0 0 0 3px rgba(245, 115, 72, 0.15);
+}
+/* 유의사항 박스 */
+#riderDeleteModal .terms {
+    border: 1px solid #eee;
+    border-radius: 10px;
+    padding: 12px;
+    background: #fafafa;
+    color: #ffffff;
+    line-height: 1.6;
+}
+#riderDeleteModal .agree {
+    display: flex;
+    align-items: center;
+    justify-content: right;
+    gap: 8px;
+    margin-top: 10px;
+    font-weight: 600;
+}
+/* 버튼 (사이트 주황 톤) */
+#riderDeleteModal .btn-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 6px;
+}
+#riderDeleteModal .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    height: 44px;
+    padding: 0 18px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+    font-weight: 700;
+}
+#riderDeleteModal .btn-ghost {
+    background: #f3f3f3;
+}
+#riderDeleteModal .btn-ghost:hover {
+    background: #e9e9e9;
+    transform: translateY(-1px);
+}
+#riderDeleteModal .btn-danger {
+    background: #f99a7d;
+    color: #000;
+}
+#riderDeleteModal .btn-danger:hover {
+    background: #f57348;
+    transform: translateY(-1px);
+}
+#riderDeleteModal .btn-danger:active {
+    background: #f46f40;
+    transform: translateY(0);
+}
+#riderDeleteModal .btn[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+}
+@media (max-width: 768px) {
+    #riderDeleteModal .btn {
+        min-width: 100px;
+        height: 42px;
+    }
+}
+
+#riderDeleteModal h2,
+#riderDeleteModal .section-title {
+    color: #ffffff; /* 흰색 */
+}
+
+#riderDeleteModal .desc,
+#riderDeleteModal .radios label,
+#riderDeleteModal .agree {
+    /* color: #dddddd; 연한 회색 */
+    color: #ffffff; /* 흰색 */
+}
+
+#riderDeleteModal .terms p {
+    color: #000;
+    font-size: 14px;
+}

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{admin/adminLayout}">
+
+<head>
+  <link rel="stylesheet" th:href="@{/css/admin/inquiry.css}">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script th:src="@{/js/comm/sweetalert.noah.js}"></script>
+</head>
+
+<div layout:fragment="content">
+  <div class="id-wrap">
+    <h2 class="id-title">1:1 문의 상세</h2>
+
+    <!-- 문의가 존재할 때 -->
+    <section th:if="${inquiry != null}">
+      <!-- 메타 -->
+      <div class="id-meta">
+        <div><b>제목:</b> <span th:text="${inquiry.inquiryTitle}"></span></div>
+        <div><b>작성자:</b> <span th:text="${inquiry.member.memberNick}"></span></div>
+        <div><b>작성일:</b> <span th:text="${#temporals.format(inquiry.inquiryAt,'yyyy-MM-dd HH:mm')}"></span></div>
+        <div>
+          <b>상태:</b>
+          <span th:if="${inquiry.inquiryStatus==0}" class="il-status il-status--wait">미답변</span>
+          <span th:if="${inquiry.inquiryStatus==1 or inquiry.inquiryStatus==2}" class="il-status il-status--done">답변완료</span>
+        </div>
+      </div>
+
+      <!-- 본문 -->
+      <article class="id-content">
+        <pre th:text="${inquiry.inquiryContent}"></pre>
+      </article>
+
+      <!-- 첨부 이미지 -->
+      <div th:if="${!#lists.isEmpty(images)}" class="image-list">
+        <div th:each="img : ${images}">
+          <img th:src="@{${img.filePath}}" th:alt="${img.originFilename}" onerror="this.parentElement.remove();">
+        </div>
+      </div>
+
+      <!-- 답변이 있을 때 -->
+      <section id="replyDisplay" class="id-reply" th:if="${inquiry.inquiryReply != null}">
+        <h3>등록된 답변</h3>
+        <div th:text="${inquiry.inquiryReply}"></div>
+      </section>
+
+      <!-- 답변이 없을 때 폼 -->
+      <section class="id-reply-form" th:if="${inquiry.inquiryReply==null}">
+        <h3>답변 작성</h3>
+        <form id="replyForm"
+          th:action="@{/admin/board/inquiry/reply/{inquiryNo}(inquiryNo=${inquiry.inquiryNo}, page=${page}, status=${status}, type=${type}, size=${size})}"
+          method="post">
+          <input type="hidden" id="csrfToken" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+          <textarea name="inquiryReply" rows="5" th:text="${inquiry.inquiryReply}"></textarea>
+          <button type="submit">답변 등록</button>
+        </form>
+      </section>
+
+      <!-- 하단 액션 -->
+      <div class="id-actions">
+        <a th:href="@{/admin/board/inquiry(page=${page}, status=${status}, type=${type}, size=${size})}">목록으로</a>
+      </div>
+    </section>
+
+    <!-- 문의가 존재하지 않을 때 -->
+    <section th:if="${inquiry == null}">
+      <p>존재하지 않는 문의입니다.</p>
+      <a th:href="@{/admin/board/inquiry}">목록으로</a>
+    </section>
+  </div>
+
+  <!-- 이미지 확대 오버레이 -->
+  <div class="image-overlay"></div>
+
+  <!-- 이미지 확대 스크립트 -->
+  <script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+      const images = document.querySelectorAll('.image-list img');
+      const imageOverlay = document.querySelector('.image-overlay');
+      let currentEnlargedImage = null;
+
+      images.forEach(img => {
+        img.addEventListener('click', function () {
+          if (this.classList.contains('enlarged')) {
+            this.classList.remove('enlarged');
+            imageOverlay.classList.remove('active');
+            currentEnlargedImage = null;
+          } else {
+            if (currentEnlargedImage) currentEnlargedImage.classList.remove('enlarged');
+            this.classList.add('enlarged');
+            imageOverlay.classList.add('active');
+            currentEnlargedImage = this;
+          }
+        });
+      });
+
+      imageOverlay.addEventListener('click', function () {
+        if (currentEnlargedImage) {
+          currentEnlargedImage.classList.remove('enlarged');
+          imageOverlay.classList.remove('active');
+          currentEnlargedImage = null;
+        }
+      });
+
+      document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && currentEnlargedImage) {
+          currentEnlargedImage.classList.remove('enlarged');
+          imageOverlay.classList.remove('active');
+          currentEnlargedImage = null;
+        }
+      });
+    });
+  </script>
+
+  <!-- 답변 등록 AJAX -->
+  <script th:inline="javascript">
+    document.addEventListener("DOMContentLoaded", function () {
+      const replyForm = document.getElementById("replyForm");
+
+      if (replyForm) {
+        replyForm.addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          const formData = new FormData(replyForm);
+          const actionUrl = replyForm.getAttribute("action");
+          const csrfToken = document.getElementById("csrfToken").value;
+
+          fetch(actionUrl, {
+            method: "POST",
+            body: formData,
+            headers: { "X-CSRF-TOKEN": csrfToken }
+          })
+            .then(response => {
+              if (!response.ok) throw new Error("서버 오류");
+              return response.text();
+            })
+            .then(result => {
+              Swal.fire({
+                icon: "success",
+                title: "답변 완료",
+                text: "답변을 등록했습니다.",
+                confirmButtonText: "확인",
+                confirmButtonColor: "#ff6600"
+              }).then(() => location.reload());
+            })
+            .catch(error => {
+              Swal.fire({
+                icon: "error",
+                title: "실패",
+                text: "답변 등록에 실패했습니다. 다시 시도해주세요."
+              });
+            });
+        });
+      }
+    });
+  </script>
+</div>
+</html>

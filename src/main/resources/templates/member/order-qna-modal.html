@@ -1,0 +1,65 @@
+<!-- templates/member/order-qna-modal.html -->
+<!-- 판매자 문의 모달 프래그먼트: qna-modal -->
+<div th:fragment="qna-modal">
+	<div id="qnaDimmed" aria-hidden="true"></div>
+  	<div id="qnaModal" role="dialog" aria-modal="true" aria-labelledby="qnaTitle" th:attr="data-product-no=${productNo},data-order-no=${orderNo}">
+    	<div class="qna-box">
+      		<div class="qna-title">
+        		<div>
+          			<h6 id="qnaTitle">판매자 문의</h6>
+          			<div class="subtitle">
+            			<span th:text="${shopName}">상점명</span>
+            			<span class="small-muted" th:text="${productName != null ? ' · ' + productName : ''}"></span>
+          			</div>
+        		</div>
+        		<button type="button" class="qna-close" data-qna-close>닫기</button>
+      		</div>
+
+      		<div class="mb-2">
+        		<label class="form-label" for="qnaTitleInput">제목</label>
+        		<input type="text" class="form-control" id="qnaTitleInput" placeholder="예) 배송일정 문의" />
+      		</div>
+
+      		<div class="mb-2">
+        		<label class="form-label" for="qnaContent">내용</label>
+        		<textarea class="form-control" id="qnaContent"
+                  		  placeholder="문의 내용을 입력하세요. 주문번호/특이사항을 함께 적어주시면 답변이 빨라집니다."></textarea>
+        		<div class="small-muted" style="margin-top:6px;">예: 배송 희망 시간, 수령자 연락처 등</div>
+      		</div>
+<!-- 
+      		<div class="form-check mb-3">
+       		<input type="checkbox" id="qnaSecret" />
+        		<label for="qnaSecret">비밀글</label>
+      		</div>
+-->
+      		<div class="actions">
+        		<button type="button" class="btn" data-qna-close>취소</button>
+        		<button type="button" class="btn primary" id="qnaSubmit">등록</button>
+      		</div>
+    	</div>
+  	</div>
+<style id="qna-style">
+#qnaDimmed{ position: fixed; inset: 0; display: none; background: rgba(0,0,0,.5); z-index: 1200; }
+#qnaModal{ position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); display:none; width:min(560px,92%); z-index:1210; }
+#qnaModal .qna-box{ background:#fff; color:#222; border-radius:12px; padding:18px; border:1px solid #eee; box-shadow:0 10px 32px rgba(0,0,0,.35); max-height:90vh; overflow:auto; }
+#qnaModal .qna-title{ display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:10px; }
+#qnaModal h6{ margin:0; font-size:1.05rem; font-weight:700; }
+#qnaModal .subtitle{ color:#888; font-size:.9rem; margin-top:4px; }
+.small-muted{ color:#888; font-size:.9rem; }
+.qna-close{ border:1px solid #ddd; background:#fff; border-radius:8px; padding:6px 10px; cursor:pointer; transition: background .15s, transform .06s; }
+.qna-close:hover{ background:#f5f5f5; } .qna-close:active{ transform: translateY(1px); }
+.form-label{ display:block; font-weight:600; margin-bottom:6px; }
+.form-control{ width:100%; border-radius:10px; border:1px solid #e5e7eb; background:#fff; color:#222; padding:10px 12px; box-sizing:border-box; }
+textarea.form-control{ min-height:160px; resize:vertical; }
+.form-control:focus{ border-color:#111827; box-shadow:0 0 0 .2rem rgba(17,24,39,.15); outline:0; }
+.form-check{ display:flex; align-items:center; gap:6px; margin:12px 0 0; }
+.form-check input{ width:16px; height:16px; cursor:pointer; }
+.actions{ display:flex; justify-content:flex-end; gap:8px; margin-top:12px; }
+.btn{ min-width:96px; height:40px; padding:0 14px; border-radius:8px; border:1px solid #ddd; background:#fff; cursor:pointer; }
+.btn.primary{ background:#222; color:#fff; border-color:#222; }
+.btn.primary:hover{ background:#111; border-color:#111; }
+.btn:disabled{ opacity:.6; cursor:not-allowed; }
+.my-swal-container{ z-index: 9999 !important;}
+@media (max-width:576px){ #qnaModal .qna-box{ padding:16px; } }
+</style>
+</div>

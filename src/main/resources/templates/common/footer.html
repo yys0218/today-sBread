@@ -1,0 +1,29 @@
+<!-- 푸터 통째로 끌어다 쓰기 위해, 전체 내용을 감싸는 fragment태그 필요 -->
+<footer th:fragment="footer" class="site-footer">
+	회사명 : (주)글로벌 아이티(IT) 인재개발원 | 사업자등록번호 : 119-81-85582 | 서울시 관악구 남부순환로 1820, 에그옐로우 <br>
+	전화번호 : 02-6020-0051 | 팩스번호 : 02-3285-0012 | 담당강사 : 탁민지 | 만든이 : 윤예솔, 이우현, 안병주, 맹재희, 안성진 <br>
+	2025 (주)글로벌아이티정보기술. ALL RIGHTS RESERVED.
+<style>
+html, body{
+	height: 100%;
+	margin: 0;
+}	
+body{
+	display: flex;
+	flex-direction: column;
+}
+main{
+	flex: 1;
+}
+.site-footer{
+	border-top: 1px solid #ddd;
+	padding: 15px 20px;
+	font-size: 14px;
+	color: #666;
+	background-color: #f9f9f9;
+	text-align: center;
+	line-height: 1.6;
+	margin-top: auto;
+}
+</style>
+</footer>

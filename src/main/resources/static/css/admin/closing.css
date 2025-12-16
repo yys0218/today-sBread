@@ -1,0 +1,107 @@
+/* 제목 */
+.admin-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  max-width: 1100px;
+  color: var(--brand);
+  border-left: 5px solid var(--brand);
+  padding-left: 10px;
+}
+
+/* 검색 필터 */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 15px 0 20px;
+  max-width: 1100px;
+  background: #fff;
+  padding: 12px 15px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.filter-bar label {
+  font-size: 14px;
+  font-weight: bold;
+  color: var(--ink);
+}
+.filter-bar input[type="date"] {
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-size: 14px;
+}
+.filter-bar .btn-search {
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+  background: #f8f5f1;
+  cursor: pointer;
+  transition: all .15s ease;
+}
+.filter-bar .btn-search:hover {
+  background: #f2e2d2;
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+/* 테이블 */
+.admin-table {
+  width: 1100px;
+  border-collapse: collapse;
+  background: #fff;
+  border: 1px solid var(--line);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.admin-table th, .admin-table td {
+  border: 1px solid var(--line);
+  padding: 10px 12px;
+  text-align: center;
+  font-size: 14px;
+}
+.admin-table th {
+  background: #f8f5f1;
+  font-weight: bold;
+}
+.admin-table tr:hover {
+  background: #fdf1e6;
+}
+
+/* 페이징 */
+.pagination {
+  display: flex;
+  gap: 6px;
+  list-style: none;
+  padding: 0;
+  margin: 16px 0 0;
+  max-width: 1100px;
+  justify-content: center;
+  align-items: center;
+}
+.page-item .page-link {
+  display: inline-block;
+  min-width: 40px;
+  text-align: center;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: #fff;
+  text-decoration: none;
+  color: var(--ink);
+  font-weight: 600;
+  transition: all .12s ease;
+}
+.page-item:hover .page-link {
+  border-color: color-mix(in srgb, var(--brand) 40%, var(--line) 60%);
+  color: var(--brand);
+}
+.page-item.active .page-link {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+.page-item.disabled .page-link {
+  opacity: .45;
+  pointer-events: none;
+}

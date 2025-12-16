@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>오늘의빵 - 따끈따끈 실시간 배달</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    /* ------------------ Color System ------------------
+       로고 톤에 맞춘 팔레트 (필요 시 CSS 변수만 바꾸세요) */
+    :root{
+      --bg: #FFF6E9;      /* 배경 베이지 */
+      --ink: #3D2B1F;     /* 진한 브라운 텍스트 */
+      --ink-weak:#6C5243; /* 보조 텍스트 */
+      --brand:#D95C43;    /* 스쿠터 레드/오렌지 */
+      --brand-2:#E7B674;  /* 배송박스 라이트 브라운 */
+      --line:#E8D8C6;     /* 구분선 */
+      --card:#FFFFFF;     /* 카드 배경 */
+      --success:#31B76A;  /* 배달 가능 등 긍정 색 */
+    }
+
+    /* ------------------ Reset & Base 기본 스타일 초기화------------------ */
+    *, *::before, *::after{ box-sizing: border-box; }
+    html, body { height: 100%; }
+    body{
+      margin: 0;
+      color: var(--ink);
+      font-family: 'Noto Sans KR', system-ui, -apple-system, Segoe UI, Roboto, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+      background: radial-gradient(1200px 600px at 80% -10%, #FFFAF1 20%, var(--bg) 70%);
+    }
+    a{ color: inherit; text-decoration: none; }
+    img{ display:block; max-width:100%; height:auto; }
+    .container{ width:min(1120px, 92%); margin-inline:auto; }
+
+    /* ------------------ Header ------------------ */
+    header{
+      position: sticky; top: 0; z-index: 40;
+      backdrop-filter: saturate(140%) blur(10px);
+      background: color-mix(in srgb, var(--bg) 88%, #fff 12%);
+      border-bottom: 1px solid var(--line);
+    }
+    .nav{ display:flex; align-items:center; justify-content:space-between; padding:12px 0; }
+    .brand{ display:flex; align-items:center; gap:12px; font-weight:700; letter-spacing:-.2px; }
+    .brand__logo{
+      width:48px; height:48px; border-radius:14px; overflow:hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,.08);
+      background:#fff;
+    }
+    .brand__name{ font-family: 'Jua', system-ui; font-size: clamp(20px, 3.6vw, 28px); }
+
+    /* PC 네비게이션 */
+    .menu{ display:flex; gap:24px; align-items:center; }
+    .menu a{ opacity:.9; }
+    .menu a:hover{ opacity:1; color: var(--brand); }
+
+    /* 버튼 */
+    .btn{ display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:12px; border:1px solid var(--line); background:#fff; font-weight:600; }
+    .btn--primary{ background: var(--brand); color: #fff; border-color: color-mix(in srgb, var(--brand) 70%, #000 10%); }
+    .btn--ghost{ background: transparent; }
+
+    /* ------------------ Hero ------------------ */
+    .hero{ padding: 48px 0 28px; }
+    .hero__inner{ display:grid; grid-template-columns: 1.15fr .85fr; gap: 28px; align-items:center; }
+    .hero h1{ font-family: 'Jua', system-ui; font-size: clamp(28px, 4.4vw, 48px); line-height:1.15; margin:.1em 0 .4em; }
+    .hero p{ font-size: clamp(15px, 2.2vw, 18px); color: var(--ink-weak); margin:0 0 18px; }
+
+    /* 검색박스 */
+    .searchbox{
+      display:flex; gap:10px; padding:10px; border:1px solid var(--line); border-radius:16px; background:#fff;
+      box-shadow: 0 10px 24px rgba(0,0,0,.04);
+    }
+    .searchbox input{
+      flex:1; border:0; outline:0; font-size:16px; padding:12px 12px; border-radius:10px; background: #FAF6EF;
+    }
+    .searchbox .btn{ padding:12px 18px; }
+
+    /* 배지 */
+    .badges{ display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+    .badge{ font-size:13px; padding:8px 12px; border-radius:999px; background:#fff; border:1px solid var(--line) }
+
+    /* 히어로 썸네일(로고 큰 이미지) */
+    .hero__art{
+      background: conic-gradient(from 0deg at 50% 50%, #fff 0deg, #fff 140deg, var(--bg) 220deg, #fff 360deg);
+      border: 1px solid var(--line); border-radius: 24px; padding: 24px;
+      box-shadow: 0 12px 28px rgba(0,0,0,.06);
+    }
+
+    /* ------------------ Features ------------------ */
+    .section{ padding: 46px 0; }
+    .section__title{ font-weight: 800; letter-spacing:-.3px; font-size: clamp(20px, 3vw, 28px); margin: 0 0 14px; }
+    .grid-3{ display:grid; grid-template-columns: repeat(3, 1fr); gap:18px; }
+    .card{ background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 18px; box-shadow: 0 8px 20px rgba(0,0,0,.04); }
+    .card h3{ margin: 10px 0 8px; font-size: 18px; }
+    .muted{ color: var(--ink-weak); }
+
+    /* ------------------ CTA ------------------ */
+    .cta{
+      background: linear-gradient(180deg, #fff 0%, var(--bg) 80%);
+      border: 1px dashed color-mix(in srgb, var(--brand) 60%, #000 8%);
+      padding: 22px; border-radius: 18px; text-align:center;
+    }
+
+    /* ------------------ Footer ------------------ */
+    footer{ padding: 40px 0 60px; color: var(--ink-weak); border-top: 1px solid var(--line); }
+    .footgrid{ display:grid; grid-template-columns: 1.3fr 1fr 1fr 1fr; gap:20px; }
+    .footgrid a{ display:block; padding:6px 0; color: var(--ink-weak); }
+    .copyright{ margin-top: 18px; font-size: 13px; }
+
+    /* ------------------ Responsive ------------------ */
+    @media (max-width: 920px){
+      .hero__inner{ grid-template-columns: 1fr; }
+      .grid-3{ grid-template-columns: 1fr; }
+      .footgrid{ grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <!-- ================== Header ================== -->
+  <header>
+    <div class="container nav">
+      <a class="brand" href="/">
+        <!-- 로고 이미지 경로를 프로젝트에 맞추어 바꾸세요. (예: /static/img/logo.png) -->
+        <span class="brand__logo">
+          <img src="/static/img/logo-오늘의빵.png" alt="오늘의빵 로고" width="48" height="48" loading="eager" />
+        </span>
+        <span class="brand__name">오늘의빵</span>
+      </a>
+      <nav class="menu">
+        <a href="/shops">빵집찾기</a>
+        <a href="/breads">실시간빵</a>
+        <a href="/subscribe">정기구독</a>
+        <a href="/help">고객센터</a>
+        <!-- 로그인 상태에 따라 Thymeleaf로 버튼 분기 -->
+        <!-- <a class="btn btn--ghost" th:if="${not #httpServletRequest.remoteUser}" th:href="@{/login}">로그인</a> -->
+        <!-- <a class="btn btn--primary" th:if="${not #httpServletRequest.remoteUser}" th:href="@{/join}">회원가입</a> -->
+        <!-- <a class="btn" th:if="${#httpServletRequest.remoteUser}" th:href="@{/mypage}">마이페이지</a> -->
+      </nav>
+    </div>
+  </header>
+
+  <!-- ================== Hero ================== -->
+  <section class="hero">
+    <div class="container hero__inner">
+      <div>
+        <h1>동네 빵집의 따끈함을<br/>지금 바로, 집 앞으로</h1>
+        <p>실시간 재고 확인 · 30분 내 배달 · 동네 베이커리 구독까지 한 번에. 오늘의빵이 당신의 아침을 책임집니다.</p>
+
+        <!-- 검색 박스: 이름/키워드/지역 중 하나를 입력받습니다. -->
+        <form class="searchbox" action="/search" method="get">
+          <input name="q" placeholder="빵·빵집·지역으로 검색 (예: 소금빵, 강남)" aria-label="빵 검색" />
+          <button class="btn btn--primary" type="submit">검색</button>
+        </form>
+        <div class="badges" aria-label="인기 태그">
+          <a class="badge" href="/search?q=크루아상">#크루아상</a>
+          <a class="badge" href="/search?q=소금빵">#소금빵</a>
+          <a class="badge" href="/search?q=바게트">#바게트</a>
+          <a class="badge" href="/search?q=식빵">#식빵</a>
+        </div>
+      </div>
+
+      <div class="hero__art">
+        <!-- 메인 섬네일로 로고를 활용 (더 큰 PNG/SVG 권장) -->
+        <img src="/static/img/hero-오늘의빵.png" alt="오늘의빵 배달 로고" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== Features ================== -->
+  <section class="section">
+    <div class="container">
+      <h2 class="section__title">왜 오늘의빵일까요?</h2>
+      <div class="grid-3">
+        <article class="card">
+          <div class="badge" style="background: #FFF3F1; border-color:#FFD3C9;">실시간</div>
+          <h3>지금 막 나온 빵</h3>
+          <p class="muted">매장별 실시간 굽기·소진 알림으로 가장 맛있는 타이밍을 놓치지 않습니다.</p>
+        </article>
+        <article class="card">
+          <div class="badge" style="background: #F0FFF6; border-color:#C7F1D9;">빠른배달</div>
+          <h3>동네 30분 내 도착</h3>
+          <p class="muted">근거리 라이더 네트워크로 따끈함을 그대로, 문 앞까지 전해드립니다.</p>
+        </article>
+        <article class="card">
+          <div class="badge" style="background: #FFFBEA; border-color:#FFF0B6;">구독</div>
+          <h3>취향저격 구독</h3>
+          <p class="muted">평일 아침 식빵, 주말 크루아상 등 원하는 조합으로 정기배송이 가능합니다.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== How it works ================== -->
+  <section class="section">
+    <div class="container">
+      <h2 class="section__title">이렇게 이용하세요</h2>
+      <div class="grid-3">
+        <div class="card">
+          <h3>1. 검색</h3>
+          <p class="muted">키워드 또는 위치로 가까운 빵집과 실시간 재고를 확인합니다.</p>
+        </div>
+        <div class="card">
+          <h3>2. 장바구니</h3>
+          <p class="muted">굽기 상태·픽업/배달 시간을 선택해 담아주세요.</p>
+        </div>
+        <div class="card">
+          <h3>3. 수령</h3>
+          <p class="muted">실시간 위치 추적으로 배달 시간을 확인하고, 따끈하게 받으세요.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== CTA ================== -->
+  <section class="section">
+    <div class="container">
+      <div class="cta">
+        <h2 style="margin:0 0 8px">지금 내 주변 빵집 보기</h2>
+        <p class="muted" style="margin:0 0 14px">가장 가까운 곳부터 실시간으로 보여드립니다.</p>
+        <a class="btn btn--primary" href="/shops">바로 시작하기</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== Footer ================== -->
+  <footer>
+    <div class="container footgrid">
+      <div>
+        <div class="brand" style="margin-bottom:10px">
+          <span class="brand__logo" aria-hidden="true"><img src="/static/img/logo-오늘의빵.png" alt=""/></span>
+          <span class="brand__name">오늘의빵</span>
+        </div>
+        <div class="muted">동네 빵집과 고객을 연결하는 실시간 e커머스 플랫폼</div>
+        <div class="copyright">© <span id="y"></span> TodayBread Inc. All rights reserved.</div>
+      </div>
+      <div>
+        <strong>서비스</strong>
+        <a href="/shops">빵집찾기</a>
+        <a href="/breads">실시간빵</a>
+        <a href="/subscribe">정기구독</a>
+      </div>
+      <div>
+        <strong>고객지원</strong>
+        <a href="/help">고객센터</a>
+        <a href="/notice">공지사항</a>
+        <a href="/policy">이용약관</a>
+        <a href="/privacy">개인정보처리방침</a>
+      </div>
+      <div>
+        <strong>입점·제휴</strong>
+        <a href="/partner">입점안내</a>
+        <a href="/rider">라이더 모집</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // 푸터 연도 자동 갱신
+    document.getElementById('y').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

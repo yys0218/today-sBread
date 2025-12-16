@@ -1,0 +1,294 @@
+@ -1,156 +1,149 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{/admin/adminLayout}">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/admin/adminLayout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>정산 조회 페이지</title>
+  <meta charset="UTF-8">
+  <title>정산 통계 조회</title>
+</head>
+
+<div layout:fragment="content">
+
+    <h2>정산 내역 관리</h2>
+
+    <!-- 현재 정산 설정 -->
+    <div>
+        <p>현재 빵집 수수료: <span th:text="${config.shopRatio}">0</span>%</p>
+        <p>현재 라이더 수수료: <span th:text="${config.riderRatio}">0</span>%</p>
+        <button type="button" onclick="openConfigHistoryModal()">설정 내역 보기</button>
+        <button type="button" onclick="openConfigModal()">설정 변경</button>
+    </div>
+
+    <!-- 정산 설정 -->
+    <div id="configModal" style="display:none;">
+        <form method="post" th:action="@{/admin/site/settle/config}">
+            <label>빵집 수수료</label>
+            <input type="number" name="shopRatio" min="0" max="100">
+            <label>라이더 수수료</label>
+            <input type="number" name="riderRatio" min="0" max="100">
+            <button type="submit">저장</button>
+            <button type="button" onclick="closeConfigModal()">닫기</button>
+        </form>
+    </div>
+
+
+
+    <!-- 검색 -->
+    <form method="get" th:action="@{/admin/site/settle/list}">
+        <input type="text" name="keyword" th:value="${keyword}" placeholder="매장/라이더 검색">
+        <button type="submit">검색</button>
+    </form>
+
+    <!-- 엑셀 다운로드 -->
+    <a th:href="@{|/admin/site/settle/export?sortField=${sortField}&sortDir=${sortDir}&keyword=${keyword}|}">
+        엑셀 다운로드
+    </a>
+
+    <!-- 정산 내역 테이블 -->
+    <table>
+        <thead>
+            <tr>
+                <th>
+                    <a
+                        th:href="@{|/admin/site/settle/list?sortField=settleNo&sortDir=${sortDir=='ASC'?'DESC':'ASC'}|}">번호</a>
+                </th>
+                <th>구분</th>
+                <th>이름</th>
+                <th>
+                    <a
+                        th:href="@{|/admin/site/settle/list?sortField=settleAmt&sortDir=${sortDir=='ASC'?'DESC':'ASC'}|}">금액</a>
+                </th>
+                <th>수수료</th>
+                <th>
+                    <a
+                        th:href="@{|/admin/site/settle/list?sortField=settleAt&sortDir=${sortDir=='ASC'?'DESC':'ASC'}|}">일자</a>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="s : ${settleList}">
+                <td th:text="${s.settleNo}"></td>
+                <td th:text="${s.settleType==1?'빵집':'라이더'}"></td>
+                <td th:text="${s.settleName}"></td>
+                <td th:text="${s.settleAmt}"></td>
+                <td th:text="${s.settleCharge} + '%'"></td>
+                <td th:text="${#temporals.format(s.settleAt, 'yyyy-MM-dd HH:mm')}"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 페이징 처리 -->
+    <div th:if="${!paging.isEmpty()}">
+        <ul class="pagination justify-content-center">
+            <span class="page-item" th:if="${paging.hasPrevious()}">
+                <a class="page-link"
+                    th:href="@{/admin/site/settle/list(page=${paging.number-1}, sortField=${sortField}, sortDir=${sortDir}, keyword=${keyword})}">
+                    <span>이전</span>
+                </a>
+            </span>
+            <span th:each="page:${#numbers.sequence(0, paging.totalPages-1)}"
+                th:if="${page >= paging.number-5 and page <= paging.number+5}"
+                th:classappend="${page==paging.number} ? 'active'" class="page-item">
+                <a th:text="${page+1}" class="page-link"
+                    th:href="@{'/admin/site/settle/list'(page=${page}, sortField=${sortField}, sortDir=${sortDir}, keyword=${keyword})}"></a>
+            </span>
+            <span class="page-item" th:if="${paging.hasNext()}">
+                <a class="page-link"
+                    th:href="@{'/admin/site/settle/list'(page=${paging.number+1}, sortField=${sortField}, sortDir=${sortDir}, keyword=${keyword})}">
+                    <span>다음</span>
+                </a>
+            </span>
+        </ul>
+    </div>
+    <!--페이징 처리 끝-->
+
+    <!-- 정산 설정 내역 모달 -->
+    <div id="configHistoryModal"
+        style="display:none; position:fixed; top:10%; left:20%; width:60%; background:#fff; border:1px solid #ddd; padding:20px; z-index:999;">
+        <h3>정산 설정 내역</h3>
+        <table border="1" width="100%">
+            <thead>
+                <tr>
+                    <th>변경일자</th>
+                    <th>빵집 수수료</th>
+                    <th>라이더 수수료</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="h : ${configHistory}">
+                    <td th:text="${#temporals.format(h.updatedAt, 'yyyy-MM-dd HH:mm')}"></td>
+                    <td th:text="${h.shopRatio + '%'}"></td>
+                    <td th:text="${h.riderRatio + '%'}"></td>
+                </tr>
+            </tbody>
+        </table>
+        <button type="button" onclick="closeConfigHistoryModal()">닫기</button>
+    </div>
+
+  <h2>정산 통계 조회</h2>
+
+  <!-- 대상 탭 -->
+  <ul class="tab-menu" id="targetTabs">
+    <li data-target="all" class="active">전체</li>
+    <li data-target="seller">판매자</li>
+    <li data-target="rider">라이더</li>
+  </ul>
+
+  <!-- 기간 탭 -->
+  <ul class="tab-menu" id="periodTabs">
+    <li data-type="daily" class="active">최근 10일</li>
+    <li data-type="weekly">최근 8주</li>
+    <li data-type="monthly">최근 12개월</li>
+  </ul>
+
+  <!-- 특정 회원/매장 검색 -->
+  <div>
+    <input type="text" id="memberSearch" placeholder="판매자/라이더 검색">
+    <button onclick="searchMemberChart()">조회</button>
+  </div>
+
+  <canvas id="chargeChart" width="600" height="300"></canvas>
+</div>
+<th:block layout:fragment="script">
+    <script>
+
+        function openConfigModal() {
+            const modal = document.getElementById("configModal");
+            if (modal) {
+                modal.style.display = "block";
+            } else {
+                alert("설정 모달을 찾을 수 없습니다.");
+<th:block layout:fragment="script">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+  <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+
+  <script>
+    let selectedMemberNo = null;
+    let currentTarget = "all";
+    let currentPeriod = "daily";
+    let chargeChart = null;
+
+    // 대상 탭
+    $("#targetTabs li").on("click", function() {
+      $("#targetTabs li").removeClass("active");
+      $(this).addClass("active");
+      currentTarget = $(this).data("target");
+      selectedMemberNo = null;
+      $("#memberSearch").val("");
+      loadChart(currentPeriod);
+    });
+
+    // 기간 탭
+    $("#periodTabs li").on("click", function() {
+      $("#periodTabs li").removeClass("active");
+      $(this).addClass("active");
+      currentPeriod = $(this).data("type");
+      loadChart(currentPeriod);
+    });
+
+    // 자동완성
+    $("#memberSearch").autocomplete({
+      source: function(request, response) {
+        $.ajax({
+          url: "/admin/site/settle/chart/search",
+          data: { keyword: request.term },
+          success: function(data) {
+            response($.map(data, function(item) {
+              return {
+                label: item.label,
+                value: item.label,
+                memberNo: item.memberNo
+              };
+            }));
+          }
+        });
+      },
+      select: function(event, ui) {
+        selectedMemberNo = ui.item.memberNo;
+      },
+      minLength: 1
+    });
+
+    // 개별 검색
+    function searchMemberChart() {
+      if (!selectedMemberNo) {
+        alert("검색에서 판매자 또는 라이더를 선택하세요.");
+        return;
+      }
+      loadChart(currentPeriod, selectedMemberNo);
+    }
+
+    // 차트 로딩
+    function loadChart(type, memberNo = null) {
+      $.ajax({
+        url: "/admin/site/settle/chart/charge",
+        data: {
+          type: type,
+          memberNo: memberNo,
+          target: currentTarget
+        },
+        success: function(data) {
+          const ctx = document.getElementById("chargeChart").getContext("2d");
+          if (chargeChart !== null) chargeChart.destroy();
+
+          chargeChart = new Chart(ctx, {
+            type: "line",
+            data: {
+              labels: data.labels,
+              datasets: [{
+                label: "수수료 수익 (원)",
+                data: data.values,
+                borderColor: "rgba(75, 192, 192, 1)",
+                backgroundColor: "rgba(75, 192, 192, 0.2)",
+                fill: true,
+                tension: 0.3
+              }]
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                title: {
+                  display: true,
+                  text: (type === "daily" ? "최근 10일" :
+                         type === "weekly" ? "최근 8주" : "최근 12개월") +
+                        " " +
+                        (memberNo ? "개별 회원/매장" :
+                         currentTarget === "seller" ? "판매자 합계" :
+                         currentTarget === "rider" ? "라이더 합계" : "전체 합계")
+                }
+              },
+              scales: { y: { beginAtZero: true } }
+            }
+          });
+        }
+      });
+    }
+
+        function closeConfigModal() {
+            const modal = document.getElementById("configModal");
+            if (modal) {
+                modal.style.display = "none";
+            }
+        }
+        function openConfigHistoryModal() {
+            document.getElementById("configHistoryModal").style.display = "block";
+        }
+        function closeConfigHistoryModal() {
+            document.getElementById("configHistoryModal").style.display = "none";
+        }
+    </script>
+    $(document).ready(function() {
+      loadChart(currentPeriod);
+    });
+  </script>
+</th:block>
+
+</html>
+</html>

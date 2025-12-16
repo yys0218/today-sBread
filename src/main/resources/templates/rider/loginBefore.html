@@ -1,0 +1,182 @@
+<!--
+******************************************
+*  Created On : 2025. 8. 11.
+*  File : rider-login.html
+*******************************************
+ -->
+<html layout:decorate="~{rider/rider-layout}">
+    <div th:block layout:fragment="head-extra">
+        <meta name="_csrf" th:content="${_csrf.token}" />
+        <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+    </div>
+
+    <div class="container d-flex flex-column justify-content-center align-items-center" layout:fragment="content" style="height: 80vh">
+        <!-- 높이를 화면의 80%로 설정 -->
+
+        <!-- 로그인 폼 -->
+        <div class="card my-5 p-5" style="width: 600px; border-radius: 20px">
+            <h5 class="my-3 pb-3 text-start">로그인</h5>
+            <form th:action="@{/rider/login}" method="post" class="text-start">
+                <div th:if="${param.error}">
+                    <div class="alert alert-danger text-center">사용자 이름 또는 비밀번호를 확인해주세요.</div>
+                </div>
+                <div class="mb-3 form-floating">
+                    <input type="text" name="riderId" id="riderId" class="form-control mx-auto" placeholder="아이디" />
+                    <label for="riderId">아이디</label>
+                </div>
+                <div class="mb-3 form-floating">
+                    <input type="password" name="password" id="password" class="form-control mx-auto" placeholder="비밀번호" />
+                    <label for="password">비밀번호</label>
+                </div>
+                <div class="my-5 d-flex justify-content-center">
+                    <button type="submit" class="btn btn-primary" style="width: 100%; height: 50px">로그인</button>
+                </div>
+            </form>
+            <!-- 화면 하단 버튼 -->
+            <div class="width-500 d-flex justify-content-center gap-2 mb-3">
+                <ul class="link-list">
+                    <li><a class="btn-a" id="findRiderId">아이디 찾기</a></li>
+                    <li><a class="btn-a">비밀번호 찾기</a></li>
+                    <li><a class="btn-a">회원가입</a></li>
+                </ul>
+                <script>
+                    $('.btn-a').on('click', function () {
+                        console.log($(this).text());
+                    });
+                </script>
+            </div>
+        </div>
+        <!-- 모달 뒷배경 -->
+        <div class="dimmed" aria-hidden="true" id="dimmed" style="display: none"></div>
+
+        <!-- 모달 -->
+        <div id="modal-find-id" class="modal_layer" style="display: none">
+            <div class="modal_box">
+                <div class="modal_title">
+                    <h5>아이디 찾기</h5>
+                    <p class="text-muted small text-center mb-4">가입 시 사용한 아이디와 이메일을 입력해주세요.</p>
+                </div>
+                <div class="modal_content">
+                    <div class="mb-3 form-floating">
+                        <input type="text" name="modal_name" id="modal_name" class="form-control mx-auto" placeholder="아이디" />
+                        <label for="modal_name">이름</label>
+                        <i class="bi bi-person position-absolute top-50 start-0 translate-middle-y ms-3 text-secondary"></i>
+                    </div>
+                    <div class="mb-3 form-floating">
+                        <input type="email" name="modal_email" id="modal_email" class="form-control mx-auto" placeholder="아이디" />
+                        <label for="modal_email">이메일</label>
+                    </div>
+                </div>
+                <div class="hidden_content" style="display: none">
+                    <div class="mb-3">
+                        <h4 style="text-align: center">조회된 아이디</h4>
+                        <input type="text" name="result_input_id" id="result_input_id" class="form-control mx-auto" readonly />
+                    </div>
+                </div>
+                <!-- 버튼 -->
+                <div class="modal_btns">
+                    <a href="javascript:;" class="btn close-btn btn-group1"><span class="btn_text">취소</span></a>
+                    <a href="javascript:;" class="btn btn-primary btn-group1" id="modal_search_id"><span class="btn_text">찾기</span></a>
+                    <a href="javascript:;" class="btn btn-none" id="id_insert_btn" style="display: none"><span class="btn_text">확인</span></a>
+                </div>
+            </div>
+        </div>
+        <!-- 모달 종료 -->
+
+        <script>
+            // 모든 jQuery AJAX 요청에 CSRF 헤더 자동 첨부
+            $(function () {
+                const token = $('meta[name="_csrf"]').attr('content');
+                const header = $('meta[name="_csrf_header"]').attr('content');
+                $(document).ajaxSend(function (e, xhr) {
+                    if (token && header) xhr.setRequestHeader(header, token);
+                });
+            });
+            // 열기
+            $('#findRiderId').on('click', function () {
+                $('.dimmed, .modal_layer').show();
+            });
+
+            // 닫기 버튼
+            $('.close-btn').on('click', function () {
+                closeIdModal();
+            });
+
+            // 배경 클릭 시 닫기
+            $('.dimmed').on('click', function () {
+                closeIdModal();
+            });
+
+            // ESC 키 닫기
+            $(document).on('keydown', function (e) {
+                if (e.key === 'Escape') closeIdModal();
+            });
+
+            // ID 찾기 버튼
+            $('#modal_search_id').on('click', function () {
+                const box = $(this).closest('.modal_box');
+                const content = box.find('.modal_content');
+                const hidden = box.find('.hidden_content');
+                const result = box.find('#result_input_id');
+                console.log('실행');
+                // Ajax 로 실제 조회 후 성공시 값 주입
+                $.ajax({
+                    url: '/rider/ajaxFindRiderId',
+                    type: 'POST',
+                    data: { riderName: $('#modal_name').val(), riderEmail: $('#modal_email').val() },
+                    success: function (response) {
+                        console.log('response : ' + response);
+                        if (response) {
+                            result.val(response);
+                            // 화면 전환
+                            content.hide();
+                            hidden.show();
+
+                            // 확인 버튼 표시(레이아웃 유지)
+                            $('#id_insert_btn').css('display', 'inline-flex');
+
+                            // 필요 시 기본 버튼 그룹 숨김
+                            $('.btn-group1').hide();
+                            // Ajax 성공시 끝
+                        } else {
+                            // Ajax 실패시
+
+                            showErrorTitleAlert('아이디 찾기 실패', '아이디 또는 비밀번호를 입력해주세요.');
+
+                            // Ajax 실패시 끝
+                        }
+                    },
+                    error: function (xhr, status, message) {},
+                });
+            });
+
+            // 확인 버튼 (결과 반영)
+            $('#id_insert_btn').on('click', function () {
+                let result = $('#result_input_id');
+                let input = $('#riderId');
+                console.log(input);
+                if (result.val().trim()) {
+                    input.val(result.val().trim());
+                    closeIdModal();
+                }
+            });
+
+            // 모달 닫기 + 초기화
+            function closeIdModal() {
+                // 입력값 초기화
+                $('#modal_name').val('');
+                $('#modal_email').val('');
+                $('#result_input_id').val('');
+
+                // 영역/버튼 상태 초기화
+                $('.modal_content').show();
+                $('.hidden_content').hide();
+                $('#id_insert_btn').hide();
+                $('.btn-group1').show();
+
+                // 모달/배경 닫기
+                $('.modal_layer, .dimmed').hide();
+            }
+        </script>
+    </div>
+</html>

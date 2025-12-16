@@ -1,0 +1,58 @@
+/*상품이 없을 때*/
+.noProduct{
+	max-width: 900px;
+}
+
+/*로딩중 오버레이*/
+#loadingOverlay {
+    top: 0;
+    left: 0;
+}
+
+/*필터링 박스*/
+/* hover 시 */
+.sort:hover {
+	text-decoration: underline; /* underline:block → text-decoration으로 */
+	color: #ff7542;
+	cursor: pointer; /* UX 개선 */
+}
+
+/* 클릭 후에도 유지하고 싶다면 JS로 .active 클래스 토글 */
+.sort.active {
+	color: #fff;
+	background-color: #ff7542;
+}
+
+/*상품 카드*/
+.card {
+	min-width: 178px;
+}
+
+/*찜*/
+.bi-heart {
+	font-size: clamp(12px, 3vw, 32px);
+}
+
+.sticky-wrapper {
+  position: sticky;
+}
+
+.filtering {
+	position: sticky;
+	top: 210px; /*화면 상단에서 이만큼 떨어진 위치에 고정*/
+	max-height: calc(100vh - 40px); /*화면 높이에서 여백 제외*/
+	overflow-y: auto; /*내용이 길면 스크롤 */
+	z-index: 100;
+	min-width: 230px;
+	max-width: 270px;
+	background: white;
+	border: 1px solid #ddd;
+	border-radius: 17px;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+	padding: 20px; 
+
+}
+
+.user_location:hover {
+	cursor: pointer;
+}

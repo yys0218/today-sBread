@@ -1,0 +1,25 @@
+<div th:fragment="detailFragment" xmlns:th="http://www.thymeleaf.org">
+  <p><b>매장번호:</b> <span th:text="${shop.shopNo}"></span></p>
+  <p><b>매장명:</b> <span th:text="${shop.shopName}"></span></p>
+  <p><b>사업자명:</b> <span th:text="${shop.businessName}"></span></p>
+  <p><b>연락처:</b> <span th:text="${shop.shopContact}"></span></p>
+  <p><b>이메일:</b> <span th:text="${shop.businessMail}"></span></p>
+  <p><b>주소:</b> <span th:text="${shop.shopAddress}"></span></p>
+  <p><b>상태:</b> <span id="detail-status" th:text="${shop.shopStatus}"></span></p>
+  <p><b>등록일:</b> <span th:text="${#temporals.format(shop.shopCreatedAt, 'yyyy-MM-dd HH:mm')}"></span></p>
+  <p th:if="${shop.shopStatus==2}"><b>폐점일:</b> <span th:text="${#temporals.format(shop.closingAt, 'yyyy-MM-dd HH:mm')}"></span></p>
+  
+  <div th:if="${restrict != null}">
+    <p><b>제재 사유:</b> <span id="detail-reason" th:text="${restrict.restrictReason}"></span></p>
+    <p><b>제재 기간:</b>
+      <span th:text="${#temporals.format(restrict.restrictAt, 'yyyy-MM-dd')}"></span> ~
+      <span th:text="${#temporals.format(restrict.restrictPeriod, 'yyyy-MM-dd')}"></span>
+    </p>
+  </div>
+
+  <!-- 제재가 있으면 정지 안보이게, 없으면 취소 안보이게 -->
+  <div th:if="${shop.shopStatus!=2}">
+    <button type="button" th:if="${shop.shopStatus==0}" th:onclick="|openRestrictModal(${shop.shopNo})|">정지</button>
+    <button type="button" th:if="${shop.shopStatus==1}" th:onclick="|releaseShop(${shop.shopNo})|">제재 취소</button>
+  </div>
+</div>

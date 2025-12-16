@@ -1,0 +1,314 @@
+<!--
+******************************************
+*  Created On : 2025. 8. 12.
+*  File : rider-all-view.html
+*******************************************
+ -->
+
+<html layout:decorate="~{rider/rider-layout1}">
+    <!-- 페이지 전용 CSS 주입 -->
+    <th:block layout:fragment="head-extra">
+        <!-- 외부 CSS -->
+        <link rel="stylesheet" th:href="@{/css/rider/riderDelivery.css}" />
+        <!-- 혹은 인라인 스타일 -->
+    </th:block>
+
+    <!-- side_bar 영역 시작 -->
+    <div layout:fragment="side_bar">
+        <!-- rider의 정보 출력용 div-->
+        <div>
+            <div class="rider_Info">
+                <div class="info_time">
+                    <span class="timezone">
+                        <span class="timezone_hour"></span>
+                        :
+                        <span class="timezone_min"></span>
+                        :
+                        <span class="timezone_sec"></span>
+                    </span>
+                </div>
+                <div class="info_id">
+                    <span th:text="|#${#authentication.principal.username} 님 |"></span>
+                </div>
+            </div>
+            <div>
+                <div class="delivery_info card mt-3">
+                    <div class="step requested done">
+                        <div class="time">14:00</div>
+                        <div class="circle"></div>
+                        <div class="label">요청</div>
+                    </div>
+                    <div class="step assigned active">
+                        <div class="time">15:30</div>
+                        <div class="circle"></div>
+                        <div class="label">배차</div>
+                    </div>
+                    <div class="step pickup">
+                        <div class="time"></div>
+                        <div class="circle"></div>
+                        <div class="label">픽업</div>
+                    </div>
+                    <div class="step">
+                        <div class="time"></div>
+                        <div class="circle"></div>
+                        <div class="label">완료</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="delivery_detail card px-3 mt-3">
+            <div class="delivery_title">
+                <span>금액</span>
+                <div class="d-flex">
+                    <input type="text" name="orderPrice" id="orderPrice" class="custom-h-input order-price" />
+                </div>
+            </div>
+            <div class="delivery_title">
+                <span>고객연락처</span>
+                <div class="d-flex">
+                    <input type="text" name="orderPhone" id="orderPhone" class="custom-h-input" />
+                </div>
+            </div>
+            <div class="delivery_title">
+                <span>배달주소</span>
+                <div id="delivery_address"></div>
+            </div>
+            <div class="delivery_title flex-column">
+                <span>고객 메모</span>
+                <div>
+                    <div class="order-box order-request"></div>
+                </div>
+            </div>
+            <div class="delivery_title flex-column">
+                <span>주문 내역</span>
+                <div>
+                    <div class="order-box order-details"></div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // jQuery가 로드된 뒤 실행
+            $(function () {
+                function tickOne($box) {
+                    const tz = $box.data('tz') || Intl.DateTimeFormat().resolvedOptions().timeZone;
+                    const fmt = new Intl.DateTimeFormat('ko-KR', {
+                        timeZone: tz,
+                        hour12: false,
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                    });
+                    const parts = fmt.formatToParts(new Date());
+                    const map = {};
+                    parts.forEach((p) => (map[p.type] = p.value));
+
+                    $box.find('.timezone_hour').text(map.hour);
+                    $box.find('.timezone_min').text(map.minute);
+                    $box.find('.timezone_sec').text(map.second);
+                }
+
+                function tickAll() {
+                    $('.timezone').each(function () {
+                        tickOne($(this));
+                    });
+                }
+
+                tickAll(); // 즉시 1회
+                setInterval(tickAll, 1000); // 1초마다 갱신
+            });
+        </script>
+    </div>
+    <!-- side_bar 영역 끝 -->
+
+    <!-- content 영역 시작 -->
+    <div layout:fragment="content" class="content-start" data-order-type="delivery">
+        <th:block th:replace="~{rider/orderFragment :: orderList}"></th:block>
+
+        <th:block th:replace="~{rider/deliveryModalFragment :: deliveryModal}"></th:block>
+    <script>
+                    $('.nav_item').removeClass('active');
+                    $('.nav_item').eq(3).addClass('active');
+    </script>    
+    </div>
+        
+        <script>
+
+           
+
+            // 아래와 같이 옵션을 입력하지 않아도 된다
+
+            // $(document).on('click', '.detail-btn', function () {
+            //     dimmed.show();
+            //     modal.show();
+            //     let latitude = $(this).closest('.order-card').find('.distance').data('lat');
+            //     let longitude = $(this).closest('.order-card').find('.distance').data('lng');
+            //     let shopName = $(this).closest('.order-card').find('.distance').data('shopName');
+            //     // 지도를 표시할 div와  지도 옵션으로  지도를 생성합니다
+            //     initMap(latitude, longitude, shopName);
+            // });
+
+            // //
+            // function initMap(latitude, longitude, shopName) {
+            //     navigator.geolocation.getCurrentPosition(function (pos) {
+            //         const riderLat = pos.coords.latitude;
+            //         const riderLng = pos.coords.longitude;
+            //         // 1. 컨테이너와 옵션 먼저 정의
+            //         var mapContainer = document.getElementById('map');
+            //         var mapOption = {
+            //             center: new kakao.maps.LatLng(latitude, longitude), // 중심 좌표
+            //             level: 1, // 확대 레벨
+            //         };
+
+            //         // 2. 지도 객체 생성
+            //         var map = new kakao.maps.Map(mapContainer, mapOption);
+
+            //         // 3. 줌 컨트롤 추가
+            //         var zoomControl = new kakao.maps.ZoomControl();
+            //         map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
+
+            //         // 4. 오버레이 제거 후 교통정보 추가
+            //         var mapTypes = {
+            //             traffic: kakao.maps.MapTypeId.TRAFFIC,
+            //             roadview: kakao.maps.MapTypeId.ROADVIEW,
+            //             terrain: kakao.maps.MapTypeId.TERRAIN,
+            //             bicycle: kakao.maps.MapTypeId.BICYCLE,
+            //         };
+
+            //         for (var type in mapTypes) {
+            //             map.removeOverlayMapTypeId(mapTypes[type]);
+            //         }
+            //         map.addOverlayMapTypeId(mapTypes.traffic);
+
+            //         var imageSrc = '/image/rider/shopIcon.png', // 마커이미지의 주소입니다
+            //             imageSize = new kakao.maps.Size(64, 69), // 마커이미지의 크기입니다
+            //             imageOption = { offset: new kakao.maps.Point(27, 69) }; // 마커이미지의 옵션입니다. 마커의 좌표와 일치시킬 이미지 안에서의 좌표를 설정합니다.
+
+            //         // 마커의 이미지정보를 가지고 있는 마커이미지를 생성합니다
+            //         var markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imageOption),
+            //             markerPosition = new kakao.maps.LatLng(latitude, longitude); // 마커가 표시될 위치입니다
+
+            //         // 마커를 표시할 위치와 title 객체 배열입니다
+            //         var positions = [
+            //             {
+            //                 title: '가게',
+            //                 latlng: new kakao.maps.LatLng(latitude, longitude),
+            //                 img: '/image/rider/shopIcon.png',
+            //             },
+            //             {
+            //                 title: '라이더',
+            //                 latlng: new kakao.maps.LatLng(riderLat, riderLng),
+            //                 img: '/image/rider/riderIcon.png',
+            //             },
+            //         ];
+
+            //         // positions 배열 돌면서 마커 생성
+            //         positions.forEach(function (pos) {
+            //             var imageSize = new kakao.maps.Size(64, 69); // 마커 크기
+            //             var markerImage = new kakao.maps.MarkerImage(pos.img, imageSize);
+
+            //             new kakao.maps.Marker({
+            //                 map: map, // 표시할 지도
+            //                 position: pos.latlng, // 좌표
+            //                 title: pos.title, // 마우스 오버 시 표시되는 타이틀
+            //                 image: markerImage, // 이미지
+            //             });
+            //         });
+
+            //         // 가게/라이더 좌표 배열
+            //         var bounds = new kakao.maps.LatLngBounds();
+
+            //         positions.forEach(function (pos) {
+            //             bounds.extend(pos.latlng);
+            //         });
+
+            //         // 지도 영역을 bounds로 맞춤
+            //         map.setBounds(bounds);
+
+            //         // (선택) 드래그 제한 → 지도 바깥으로 안 나가게
+            //         kakao.maps.event.addListener(map, 'dragend', function () {
+            //             if (!bounds.contain(map.getCenter())) {
+            //                 map.setBounds(bounds); // 다시 지정
+            //             }
+            //         });
+
+            //         // 맵에 드레그 끄기
+            //         map.setDraggable(false);
+            //         return map; // 필요하다면 map 객체 반환
+            //     });
+            // }
+
+            // $(document).on('click', '.detail-btn', function () {
+            //     dimmed.show();
+            //     modal.show();
+            //     let latitude = parseFloat($(this).closest('.order-card').find('.distance').data('lat'));
+            //     let longitude = parseFloat($(this).closest('.order-card').find('.distance').data('lng'));
+            //     // 지도를 표시할 div와  지도 옵션으로  지도를 생성합니다
+
+            //     initMap(latitude, longitude);
+            // });
+
+            // function initMap(shopLat, shopLng) {
+            //     console.log('shopLat : ' + shopLat);
+            //     console.log('shopLng : ' + shopLng);
+
+            //     navigator.geolocation.getCurrentPosition(function (pos) {
+            //         const riderLat = pos.coords.latitude;
+            //         const riderLng = pos.coords.longitude;
+            //         console.log('pos 실행');
+
+            //         // 1. 지도 컨테이너 + 옵션
+            //         var mapContainer = document.getElementById('map');
+            //         var mapOption = {
+            //             center: new kakao.maps.LatLng(shopLat, shopLng), // 초기 중심은 상점
+            //             level: 4, // 확대 레벨 (적당히 두 점 다 보이게)
+            //         };
+
+            //         // 2. 지도 객체 생성
+            //         var map = new kakao.maps.Map(mapContainer, mapOption);
+
+            //         // 3. 표시할 마커 데이터
+            //         var positions = [
+            //             { title: '가게', latlng: new kakao.maps.LatLng(shopLat, shopLng), img: '/image/rider/shopIcon.png' },
+            //             { title: '라이더', latlng: new kakao.maps.LatLng(riderLat, riderLng), img: '/image/rider/riderIcon.png' },
+            //         ];
+
+            //         // 4. 마커 생성 (커스텀 아이콘)
+            //         positions.forEach(function (pos) {
+            //             var markerImage = new kakao.maps.MarkerImage(
+            //                 pos.img,
+            //                 new kakao.maps.Size(48, 52), // 아이콘 크기 (적당히 조정)
+            //                 { offset: new kakao.maps.Point(24, 52) } // 기준 좌표 (중앙 하단)
+            //             );
+
+            //             new kakao.maps.Marker({
+            //                 map: map,
+            //                 position: pos.latlng,
+            //                 title: pos.title,
+            //                 image: markerImage,
+            //             });
+            //         });
+
+            //         // 5. 두 좌표 기준으로 지도 범위 자동 맞춤
+            //         var bounds = new kakao.maps.LatLngBounds();
+            //         positions.forEach(function (pos) {
+            //             bounds.extend(pos.latlng);
+            //         });
+            //         map.setBounds(bounds);
+
+            //         // 6. 불필요한 기능 비활성화 (최적화 포인트)
+            //         map.setDraggable(false); // 드래그 불가
+            //         map.setZoomable(false); // 줌 불가
+            //         console.log('실행');
+            //     });
+            // }
+            // jquery 셀럭터로 합치기
+            // closeBottomBtn , closeTopBtn 두개 합쳐서 이벤트 함수 실행
+         
+        </script>
+    </div>
+
+    <!-- content 영역 끝 -->
+</html>
+
+<!-- IT&BIZ-->

@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ex.product.model.repository.ProductReviewMapper">
+
+<!-- 댓글 DTO 매핑 -->
+<resultMap id="ProductReviewCommentMap" type="com.ex.product.model.data.ProductReviewCommentDTO">
+    <id     property="reviewCommentNo" column="REVIEW_COMMENT_NO"/>
+    <result property="content"         column="CONTENT"/>
+    <result property="createdAt"       column="CREATED_AT"/>
+</resultMap>
+
+<!-- 리뷰 DTO 매핑 -->
+<resultMap id="ProductReviewMap" type="com.ex.product.model.data.ProductReviewDTO">
+    <id     property="reviewNo"     column="REVIEW_NO"/>
+    <result property="productNo"    column="PRODUCT_NO"/>
+    <result property="memberNo"     column="MEMBER_NO"/>
+    <result property="shopNo"       column="SHOP_NO"/>
+    <result property="reviewContent" column="REVIEW_CONTENT"/>
+    <result property="rating"       column="RATING"/>
+    <result property="createDate"   column="CREATE_DATE" jdbcType="TIMESTAMP"/>
+    <result property="status"       column="STATUS"/>
+    <result property="orderNo"      column="ORDER_NO"/>
+    <result property="memberNick"   column="MEMBER_NICK"/>
+    
+    <!-- 댓글 리스트 매핑 -->
+    <collection property="comments"
+                ofType="com.ex.product.model.data.ProductReviewCommentDTO"
+                resultMap="ProductReviewCommentMap"
+                notNullColumn="REVIEW_COMMENT_NO"/>
+</resultMap>
+
+    <!-- 후기 등록 -->
+    <insert id="insertReview" parameterType="com.ex.product.model.data.ProductReviewDTO">
+        INSERT INTO product_review (review_no, product_no, member_no, shop_no, review_content, rating, create_date, status, order_no)
+        VALUES (seq_product_review.nextval, #{productNo}, #{memberNo},
+                (SELECT shop_no FROM product WHERE product_no = #{productNo}),
+                #{reviewContent}, #{rating}, SYSTIMESTAMP, 1, #{orderNo})
+    </insert>
+
+    <!-- 특정 상품의 후기 총 개수 -->
+    <select id="selectReviewTotal" parameterType="int" resultType="int">
+        SELECT COUNT(*) FROM product_review WHERE product_no = #{productNo} AND status = 1
+    </select>
+
+    <!-- 특정 상품의 평균 별점 -->
+    <select id="selectAvgRating" parameterType="int" resultType="java.lang.Double">
+        SELECT NVL(AVG(rating), 0) FROM product_review WHERE product_no = #{productNo} AND status = 1
+    </select>
+
+    <!-- 특정 상품의 점수별 개수 -->
+    <select id="selectRatingCounts" parameterType="int" resultType="map">
+        SELECT rating AS score, COUNT(*) AS cnt
+        FROM product_review
+        WHERE product_no = #{productNo} AND status = 1
+        GROUP BY rating
+        ORDER BY rating DESC
+    </select>
+
+    <!-- 마이페이지 : 내 후기 목록 -->
+    <select id="selectReviewsByMember" resultType="com.ex.product.model.data.ProductReviewDTO">
+    	SELECT pr.review_no, pr.product_no, pr.member_no, pr.shop_no, pr.order_no, pr.review_content, pr.rating, pr.create_date, pr.status,
+           	m.member_id AS MEMBER_ID, c.review_comment_no, c.review_no, c.content, c.created_at
+    	FROM product_review pr LEFT JOIN member m ON pr.member_no = m.member_no LEFT JOIN product_review_comment c ON pr.review_no = c.review_no
+    	WHERE pr.member_no = #{memberNo} AND pr.status = 1 ORDER BY pr.create_date DESC OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+    </select>
+
+    <!-- 마이페이지 : 내 후기 총 개수 -->
+    <select id="countReviewsByMember" resultType="int">
+        SELECT COUNT(*) FROM product_review r WHERE r.member_no = #{memberNo}
+    </select>
+
+	<!-- 상품 상세 페이지 : 후기 페이지 (댓글 포함) -->
+	<select id="selectReviewPageByProduct" resultMap="ProductReviewMap">
+	    SELECT pr.review_no, pr.product_no, pr.member_no, pr.shop_no, pr.order_no, pr.review_content, pr.rating,
+	           pr.create_date, pr.status, m.member_nick AS MEMBER_NICK, c.review_comment_no, c.review_no, c.content, c.created_at
+	    FROM product_review pr
+	    LEFT JOIN member m ON pr.member_no = m.member_no
+	    LEFT JOIN product_review_comment c ON pr.review_no = c.review_no
+	    WHERE pr.product_no = #{productNo}
+	      AND pr.status = 1
+	    ORDER BY pr.create_date DESC
+	    OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+	</select>
+
+
+    <!-- 댓글 등록 -->
+    <insert id="insertCommentSeller" parameterType="com.ex.product.model.data.ProductReviewCommentDTO">
+        INSERT INTO PRODUCT_REVIEW_COMMENT (REVIEW_COMMENT_NO, REVIEW_NO, CONTENT, CREATED_AT)
+        VALUES (PRODUCT_REVIEW_COMMENT_SEQ.NEXTVAL, #{reviewNo}, #{content}, #{createdAt})
+    </insert>
+
+    <!-- 리뷰 + 댓글 가져오기 -->
+    <select id="selectReviewWithComments" resultMap="ProductReviewMap" parameterType="int">
+        SELECT pr.review_no, pr.product_no, pr.member_no, pr.shop_no, pr.review_content,
+               pr.rating, pr.create_date, pr.status, pr.order_no,
+               m.member_nick AS MEMBER_NICK, m.member_id as member_id,
+               c.review_comment_no, c.review_no, c.content, c.created_at
+        FROM product_review pr
+        LEFT JOIN member m ON pr.member_no = m.member_no
+        LEFT JOIN product_review_comment c ON pr.review_no = c.review_no
+        WHERE pr.shop_no = #{shopNo} AND pr.status = 1
+        ORDER BY pr.review_no DESC
+    </select>
+    <!-- 리뷰 + 댓글 가져오기 -->
+    <select id="selectProductReviewWithComments" resultMap="ProductReviewMap" parameterType="int">
+        SELECT pr.review_no, pr.product_no, pr.member_no, pr.shop_no, pr.review_content,
+               pr.rating, pr.create_date, pr.status, pr.order_no,
+               m.member_nick AS MEMBER_NICK, m.member_id as member_id,
+               c.review_comment_no, c.review_no, c.content, c.created_at
+        FROM product_review pr
+        LEFT JOIN member m ON pr.member_no = m.member_no
+        LEFT JOIN product_review_comment c ON pr.review_no = c.review_no
+        WHERE pr.shop_no = #{productNo} AND pr.status = 1
+        ORDER BY pr.review_no DESC
+    </select>
+
+
+    <!-- 특정 리뷰의 댓글 조회 -->
+    <select id="selectCommentsByReview" resultMap="ProductReviewCommentMap" parameterType="int">
+        SELECT review_comment_no, review_no, content, created_at
+        FROM product_review_comment
+        WHERE review_no = #{reviewNo}
+        ORDER BY created_at DESC
+    </select>
+
+
+
+
+
+
+<!-- 상점별 리뷰 조회 (DTO 전체 포함) -->
+<select id="selectReviewsByShop" resultMap="ProductReviewMap" parameterType="int">
+    SELECT pr.review_no, pr.product_no, pr.member_no, pr.shop_no, pr.review_content,
+           pr.rating, pr.create_date, pr.status, pr.order_no, m.member_nick as memberNick
+    FROM product_review pr
+    LEFT JOIN member m ON pr.member_no = m.member_no
+    WHERE pr.shop_no = #{shopNo}
+    ORDER BY pr.create_date DESC
+</select>
+
+
+<!-- 특정 상점의 모든 리뷰 내용 조회 -->
+<select id="selectReviewContentsByShop" parameterType="int" resultType="string">
+    SELECT review_content
+    FROM product_review
+    WHERE shop_no = #{shopNo}
+</select>
+
+
+	
+</mapper>
+

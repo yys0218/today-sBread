@@ -1,0 +1,135 @@
+<div th:fragment="location"><!-- 위치 설정 버튼 -->
+			<div class="d-flex align-items-center">
+				<i class="bi bi-geo-alt user_location fs-1 fw-bold me-2" title="내 위치 저장"></i>
+				<div class="selectLocation me-2">
+					<select name="sido" id="sido">
+						<option value="" selected hidden>시/도</option>
+						<div th:each="sido : ${sidoList}">
+							<option th:value="${sido}" th:text="${sido}" th:selected="${session.location != null and session.location.sido == sido}"></option>					
+						</div>
+	 				</select>
+					<select name="sigungu" id="sigungu">
+						<option value="" selected hidden>시/군/구</option>
+					</select>
+				</div>
+				<i class="bi bi-arrow-clockwise btn btn-warning deleteLocation btn-md" title="위치 초기화"></i>
+			</div>	
+ 
+<script th:src="@{/js/comm/location.js}"></script>				
+<script type="text/javascript" th:inline="javascript">
+	//페이지 로드 후 세션 스토리지에 위치 정보가 저장되어있다면
+	$(document).ready(function(){
+		if(sessionStorage.getItem('location')!=null){
+			//세션스토리지에 값이 있음
+			const location = JSON.parse(sessionStorage.getItem('location'));
+			sidoSigunguList(location.sido, location.sigungu);
+			//위치 정보 사용중 표시
+			$('.user_location').removeClass('bi-geo-alt').addClass('bi-geo-alt-fill');
+		}else{
+			//세션스토리지에 값이 없음
+			console.log('저장된 위치정보 없음');
+			//목록 불러오기
+			sidoSigunguList('서울','관악구');
+			console.log('기본위치 설정 완료');
+		}
+	});
+	
+	//시도 클릭시 시군구 목록 가져오기
+	$('#sido').on('change',function(){
+		//시군구 기존 값 비우기
+		$('#sigungu').empty().append(new Option("시/군/구","")); 
+		getSigungu();
+	});	
+	
+	//시군구 변경 시 세션스토리지에 저장, 출력 변경
+	$('#sigungu').on('change',function(){		
+		const sido = $('#sido').val();
+		const sigungu = $('#sigungu').val();
+		sessionStorage.setItem('location',JSON.stringify({sido,sigungu}));
+		//선택된 지역구에 맞게 목록 이름, 목록 변경
+		changeList();
+	});
+
+	//사용자의 위치를 페이지에 반영 () (async, await 처리)
+	$('.user_location').on('click', function(){
+			showConfirmAlert('현재 위치를 저장하겠습니까?',
+				async () => { //예
+					try{
+						//위치좌표 가져와서 주소로 변환
+						const { lat, lng } = await getUserPosition();
+						let {sido, sigungu} = await getAddress(lat, lng);
+						//상품 구매 불가한 위치일 경우
+						if($("#sido option[value='"+sido+"']").length === 0 ||
+							$("#sigungu option[value='"+sigungu+"']").length === 0	){
+							showToast('사용자의 위치에서 조회되는 상품이 없습니다.','error');
+							sidoSigunguList('서울','관악구');
+							$('.user_location').removeClass('bi-geo-alt-fill').addClass('bi-geo-alt');
+						}
+						//상품 구매가 가능한 위치일 경우
+						//해당 주소를 세션에 저장
+						sessionStorage.setItem('location',JSON.stringify({sido, sigungu}));
+						//위치 반영
+						$('#sido').val(sido).prop('selected',true);
+						$('#sigungu').val(sigungu).prop('selected',true);
+						$('.user_location').removeClass('bi-geo-alt').addClass('bi-geo-alt-fill');
+						
+						showToast("위치 정보가 반영되었습니다","success");
+						changeList();
+					} catch(error){
+						console.log(error);
+						showToast("위치 정보를 사용할 수 없어 기본값으로 지정됩니다.","error");
+						sidoSigunguList('서울','관악구');
+						}
+				},
+				() => { /*아니오*/ }
+			);
+	});
+	
+	//위치 정보 초기화 (+ 세션 스토리지에 저장된 위치정보 삭제
+	$('.deleteLocation').on('click',function(){
+		showConfirmAlert( '위치 정보를 초기화 합니다.', // 표시할 메시지
+		 	() => {// 사용자가 '예'를 눌렀을 때 실행
+		   	    	sessionStorage.removeItem('location');
+					//기본값으로 변경(관악구)
+				    sidoSigunguList('서울','관악구');
+					console.log('위치 정보 삭제&선택창 초기화');
+					//위치 정보 삭제 표시
+					$('.user_location').removeClass('bi-geo-alt-fill').addClass('bi-geo-alt');
+		 	},
+		  	() => { /*아니오*/ }
+		);
+	});
+	
+	//지역 목록 불러오고 설정한 값으로 초기화
+	function sidoSigunguList(sido, sigungu){
+		let sidoList = /*[[${sidoList}]]*/ 'null';
+		console.log('목록 불러옴'+sidoList);
+		//기존 목록 비우기
+		$('#sido').empty(); 
+		$('#sigungu').empty();
+		//시도 목록 추가
+		sidoList.forEach(function(s){
+			$('#sido').append(new Option(s,s));
+		});
+		$('#sido').val(sido);
+		//시군구 목록 불러오기
+		$.ajax({
+			url : '/sigungu',
+			method : 'get',
+			data : { sido : $('#sido').val() },
+			success: function(sigunguList){
+				//성공 응답의 시군구 리스트 반복해서 꺼내기
+				sigunguList.forEach(function(sigungu){
+					$('#sigungu').append(new Option(sigungu, sigungu));			
+				});
+				$('#sigungu').val(sigungu);
+				//설정한 값의 제목&목록 반영
+				changeList();
+			},
+			error : function(){
+				showToast("다시 시도해주세요.","error");
+			}
+		});
+	}
+</script>
+</div>

@@ -1,0 +1,218 @@
+/* 테이블 레이아웃 강제 */
+.rl-table, .rl-table tbody, .rl-table tr, .rl-table th, .rl-table td {
+  display: revert;
+}
+
+/* ===== Registry List (rl-*) ===== */
+:root{
+  --bg:#FFF6E9; --ink:#3D2B1F; --ink-weak:#6C5243;
+  --brand:#D95C43; --brand-2:#E7B674; --line:#E8D8C6; --card:#FFFFFF; --ok:#31B76A;
+}
+
+/* 제목 */
+.rl-title{
+  font-weight:100; letter-spacing:-.3px;
+  font-size: clamp(20px, 3vw, 28px);
+  margin: 6px 0 14px;
+}
+
+/* 리스트 테이블 */
+.rl-table{
+  width:100%; border-collapse: separate; border-spacing:0;
+  background:#fff; border:1px solid var(--line);
+  border-radius:18px; overflow:hidden;
+  box-shadow: 0 8px 20px rgba(0,0,0,.04);
+}
+.rl-table thead th{
+  text-align:left; font-weight:800; color:var(--ink);
+  background:#FFFDF8; border-bottom:1px solid var(--line);
+  padding: 12px 14px;
+}
+.rl-table tbody td{
+  border-bottom:1px solid var(--line);
+  padding: 12px 14px; color:var(--ink);
+}
+.rl-table tbody tr:hover{ background:#FFF9F1; }
+.rl-table tbody tr:last-child td{ border-bottom:0; }
+
+/* "번호" 열 너비 조절 */
+.rl-table th:first-child,
+.rl-table td:first-child {
+  width: 80px;
+  text-align: center;
+}
+
+.rl-table th:nth-child(2),
+.rl-table td:nth-child(2) {
+  width: 120px;
+  text-align: center;
+}
+
+.rl-table th:nth-child(3),
+.rl-table td:nth-child(3) {
+  width: 180px;
+  text-align: center;
+}
+
+.rl-table th:nth-child(4),
+.rl-table td:nth-child(4) {
+  width: 120px;
+  text-align: center;
+}
+
+/* 상태 텍스트 */
+.rl-status--wait{ color: var(--brand-2); font-weight:700; }   /* 신청중 */
+.rl-status--deny{ color: #D95C43; font-weight:700; }         /* 거절 */
+.rl-status--ok{ color: var(--ok); font-weight:700; }         /* 승인 */
+
+/* 상세 토글 */
+.rl-detail{
+  padding:14px; background:#FFFDF8;
+  border:1px solid var(--line); border-radius:12px; margin:8px 0;
+  font-size:16px; color:var(--ink);
+}
+.rl-detail b{ margin-right:4px; color:var(--ink-weak); }
+
+/* 관리 버튼 */
+.rl-table button{
+  padding:6px 12px; border-radius:8px; border:1px solid var(--line);
+  background:#fff; font-weight:600; cursor:pointer;
+  transition: all .12s ease;
+}
+.rl-table button:hover{
+  border-color: color-mix(in srgb, var(--brand) 40%, var(--line) 60%);
+  color: var(--brand);
+}
+
+/* 입점신청하기 버튼 */
+.rl-insert{
+  display:inline-block; margin-bottom:12px;
+  padding:10px 14px; border-radius:12px; border:1px solid var(--line);
+  background: var(--brand); color:#fff; font-weight:700; text-decoration:none;
+  transition: transform .08s ease, box-shadow .12s ease;
+}
+.rl-insert:hover{ transform: translateY(-1px); box-shadow:0 8px 18px rgba(0,0,0,.06); }
+.rl-insert:disabled {
+  background-color: #ccc;
+  transform: none;
+  box-shadow: none;
+}
+
+/* --- 페이징 (faq/inquiry와 동일 톤) --- */
+.pagination{
+  display:flex; gap:6px; list-style:none; padding:0; margin:16px 0 0;
+  justify-content:center; align-items:center;
+}
+.page-item .page-link{
+  display:inline-block; min-width:40px; text-align:center;
+  padding:8px 12px; border-radius:12px; border:1px solid var(--line);
+  background:#fff; text-decoration:none; color:var(--ink); font-weight:600;
+  transition: all .12s ease;
+}
+.page-item:hover .page-link{
+  border-color: color-mix(in srgb, var(--brand) 40%, var(--line) 60%); color: var(--brand);
+}
+.page-item.active .page-link{ border-color: var(--brand); color: var(--brand); }
+.page-item.disabled .page-link{ opacity:.45; pointer-events:none; }
+
+/* ===== Registry Form (rf-*) ===== */
+#registryForm{
+  max-width: 720px;
+  margin: 40px auto;
+  padding: 32px;
+  background:#fff;
+  border-radius:12px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.08);
+  font-family:'Noto Sans KR', sans-serif;
+}
+
+/* 제목 */
+#registryForm h1{
+  font-family:'Jua', system-ui;
+  font-size: clamp(24px, 4vw, 36px);
+  color: var(--ink);
+  margin-bottom: 24px;
+  text-align:center;
+}
+
+/* 라벨 */
+#registryForm label{
+  display:block; font-weight:600;
+  margin-bottom:6px; color:var(--ink);
+}
+
+/* 입력창 */
+#registryForm input[type="text"],
+#registryForm input[type="date"],
+#registryForm input[type="email"]{
+  width:100%; padding:10px 14px;
+  border:1px solid #ddd; border-radius:8px;
+  font-size:16px; margin-bottom:18px;
+  transition:border-color .2s ease, box-shadow .2s ease;
+}
+#registryForm input:focus{
+  border-color: var(--brand);
+  box-shadow:0 0 0 3px rgba(217,92,67,0.15);
+  outline:none;
+}
+
+/* 버튼 영역 */
+#registryForm button[type="submit"],
+#registryForm button[type="reset"]{
+  background: var(--brand); color:#fff;
+  font-weight:bold; border:none;
+  padding:12px 20px; border-radius:8px;
+  cursor:pointer; transition: background .2s ease;
+  margin-right:8px;
+}
+#registryForm button[type="submit"]:hover,
+#registryForm button[type="reset"]:hover{
+  background:#b44733;
+}
+
+/* 목록으로 버튼 */
+#registryForm a{
+  display:inline-block; margin-left:12px;
+  padding:11px 18px; border:1px solid #ccc; border-radius:8px;
+  text-decoration:none; color:var(--ink); font-weight:500;
+  transition: background .2s ease, color .2s ease;
+}
+#registryForm a:hover{
+  background:#f8f8f8; color:var(--brand);
+}
+/* 텍스트 영역 */
+#registryForm textarea{
+  width:100%;
+  min-height:120px;
+  padding:12px 14px;
+  border:1px solid #ddd;
+  border-radius:8px;
+  font-size:16px;
+  line-height:1.5;
+  resize: vertical; /* 세로 크기만 조절 가능 */
+  margin-bottom:18px;
+  transition:border-color .2s ease, box-shadow .2s ease;
+}
+
+#registryForm textarea:focus{
+  border-color: var(--brand);
+  box-shadow:0 0 0 3px rgba(217,92,67,0.15);
+  outline:none;
+}
+#registryForm input[type="button"] {
+  background: #fff;
+  color: var(--brand);
+  font-weight:600;
+  border:1px solid var(--brand);
+  padding:10px 16px;
+  border-radius:8px;
+  cursor:pointer;
+  margin-bottom:18px;
+  transition: all .2s ease;
+}
+
+#registryForm input[type="button"]:hover {
+  background: var(--brand);
+  color:#fff;
+  box-shadow:0 4px 12px rgba(0,0,0,0.08);
+}

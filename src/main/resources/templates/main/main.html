@@ -1,0 +1,229 @@
+<html layout:decorate="~{common/layout}">	<!--layout.html을 include한 셈-->
+<head>
+	<link rel="stylesheet" th:href="@{/css/main/main.css}" />
+	<!-- 시큐리티에서 ajax 활성화 -->
+	<th:block layout:fragment="head-extra">
+        <meta name="_csrf" th:content="${_csrf.token}">
+        <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    </th:block>
+	<!-- 카카오맵 api sdk -->
+	<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=b4fd57268b42b0698df77c27d1c4e78c&libraries=services"></script>    
+</head>
+
+<div layout:fragment="content" class="container my-3"><!-- 아래가 레이아웃 content 부분에 담김 -->
+
+  <section class="top"><!-- 메인 상단부 -->
+    <div class="container top__inner">
+      <div class="top_left">
+	      <div class="mainCopy">
+	        <h1>동네 빵집의 따끈함을<br/>지금 바로, 집 앞으로</h1>
+	        <p>	지금 우리 동네 빵집에서 판매중인 상품을 확인해보세요!<br> 
+	        	오늘의 빵이 당신의 하루를 책임집니다.</p>
+		  </div>
+		  <div class="location box"><!-- 위치 설정 -->
+			  	<h3>우리 동네 찾기</h3>
+			  	<div>
+				  	<i class="bi bi-geo-alt user_location fs-5"></i>
+				  	<span>를 클릭해 내 위치를 확인해보세요!</span>
+			  	</div>
+		  	<!-- 위치 설정 / 지역 설정 -->
+ 			<div class="text-center m-3">
+	 			<div th:replace="~{common/location :: location}"></div>
+ 			</div>
+	      </div><!-- 위치 설정 박스 -->      
+      </div>
+      <div class="top_right">
+	      <img th:src="@{/image/header/logo.png}" style="max-width:80%;" alt="오늘의빵 로고" /><!-- 메인 이미지 -->
+      </div>
+	</div>
+  </section><!-- 메인 상단부 -->
+  		
+  		<!-- 인기빵 순위 시작-->
+		<div class="popularList" >
+			<!-- 순위 제목 -->
+			<div class="jua-regular fs-2">
+				<span class="sigungu">관악구</span>
+				<span class="jua-regular fs-2">인기 빵</span>
+			</div>
+			
+			<div class="carousel box">
+			<div id="popularListCarousel" class="carousel slide" data-bs-ride="false"><!-- 캐러셀 -->
+				<div class="carousel-inner ps-3 pe-3"><!-- 캐러셀 내부 -->
+				<!-- 시군구 선택 시 출력부 -->
+				<div id="sigunguPopularList" th:fragment="sigunguPopularList"></div>	
+				</div><!-- 캐러셀 내부 -->
+				
+				<!-- 캐러셀 좌우 이동 버튼 -->
+				<div th:replace="~{common/product-card :: carousel-btn('popularListCarousel')}"></div>
+			</div><!-- 캐러셀 끝 -->
+			</div><!--class="carousel box"-->
+		</div><!-- 인기 순위 끝 -->
+		
+		<!-- 최신빵 순위 시작-->
+		<div class="newList" >
+			<!-- 제목 정렬 -->
+			<div class="d-flex justify-content-between">
+				<!-- 순위 제목 -->
+				<div class="jua-regular fs-2">
+					<span class="sigungu">관악구</span>
+					<span class="jua-regular fs-2">최신 빵</span>
+				</div>
+				<a class="btn linkDefault" th:href="@{/product/list/all}" role="button">전체보기</a><!-- 전체보기 버튼 -->
+			</div>
+			
+			
+			<div class="carousel box"><!-- 최신빵 캐러셀 -->
+			<div id="newListCarousel" class="carousel slide" data-bs-ride="false"><!-- 캐러셀 -->
+				<!-- 캐러셀 내부 -->
+				<div class="carousel-inner ps-3 pe-3">
+				<!-- 시군구 선택 시 출력부 -->
+				<div id="sigunguNewList" th:fragment="sigunguNewList"></div>				
+				</div><!-- 캐러셀 내부 -->
+				
+				<!-- 캐러셀 좌우 이동 버튼 -->
+				<div th:replace="~{common/product-card :: carousel-btn('newListCarousel')}"></div>
+			</div><!-- 캐러셀 끝 -->
+			</div><!--class="carousel box"-->
+		</div><!-- 최신빵 순위 끝 -->
+	
+		
+</div><!-- layout:fragment="content" -->
+
+<!-- script -->
+<script layout:fragment="script" type="text/javascript" th:inline="javascript">
+	// 모든 jQuery AJAX 요청에 CSRF 헤더 자동 첨부
+	$(function () {
+	  const token  = $('meta[name="_csrf"]').attr('content');
+	  const header = $('meta[name="_csrf_header"]').attr('content');
+	  $(document).ajaxSend(function (e, xhr) {
+	    if (token && header) xhr.setRequestHeader(header, token);
+	  });
+	});
+	
+	//선택되어있는 지역구로 목록 제목 &목록 변경
+	function changeList(){
+		const selectedSido = $('#sido').val();
+		const selectedSigungu = $('#sigungu').val();
+		//제목 변경
+		$('.sigungu').empty().text(selectedSigungu);
+		//기존 목록 삭제
+		$('#sigunguPopularList').empty();
+		$('#sigunguNewList').empty();
+		//인기 목록 변경
+	 	$.ajax({
+			url : '/sigunguPopularList',
+			method : 'get',
+			data : {
+				sido : selectedSido,
+				sigungu : selectedSigungu
+			},
+			success : function(fragmentHtml){
+				$('#sigunguPopularList').replaceWith(fragmentHtml);
+			},
+			error : function(){
+				showToast("다시 시도해주세요.","error");
+			}
+		});
+		//최신 목록 변경
+	 	$.ajax({
+			url : '/sigunguNewList',
+			method : 'get',
+			data : {
+				sido : selectedSido,
+				sigungu : selectedSigungu
+			},
+			success : function(fragmentHtml){
+				$('#sigunguNewList').replaceWith(fragmentHtml);
+			},
+			error : function(){
+				showToast("다시 시도해주세요.","error");
+			}
+		});
+	}
+	
+	//로그인한 사용자memberno 전역변수 초기화
+	let memberno = /*[[${memberNo}]]*/ 'null';
+	
+	//담기 버튼 클릭 시 장바구니에 상품 추가
+	$(document).on('click','.insertBtn', function(){
+		let productno = $(this).closest(".card").data("productno"); //closest 상위요소 찾기
+		let shopno = $(this).closest('.card').find('[data-shopno]').data("shopno"); //find..data.. 하위요소 찾기
+		let productname = $(this).closest('.card').find('[data-productname]').data("productname");
+		let price = $(this).closest('.card').find('[data-price]').data("price");
+		let quantity = 1; //상품카드에서 '담기'클릭 시 무조건 상품 1개 추가
+		console.log(memberno);
+		
+		//로그인한 사용자만 장바구니 추가 가능하도록
+		if(memberno==null){ //로그인한 회원이 아니라면
+			showConfirmAlert('이용을 위해 로그인 하시겠습니까?',
+					() => { /* 예 */
+						window.location="/member/login";
+					},
+					() => {	/* 아니오 */	}
+			);
+			return; //로그인 안됨
+		}
+		
+		//ajax로 장바구니 추가 처리
+		$.ajax({
+			url : "/order/cartInsert", //장바구니에 추가하는 url 요청
+			method : "POST",
+			contentType : "application/json", //json방식으로 데이터 전송
+			data : JSON.stringify({ //데이터를 key:value의 JSON문자열로 변환
+				productNo : productno,
+				shopNo : shopno,
+				productName : productname,
+				price : price,
+				quantity : 1,
+				memberNo : memberno
+			}),
+			success :function(response){
+				console.log(response);
+				showToast("장바구니에 추가되었습니다.","success",2500);
+			},
+			error : function(error){
+				console.log(error);
+				showToast(error,'error'); //'다시시도해주세요'
+			}
+		}); //ajax종료
+	});
+
+	//찜 토글
+	$(document).on('click','.wish-btn', function(){
+		let thisBtn = $(this);
+		let productno = $(this).closest(".card").data("productno"); //closest 상위요소 찾기
+		//let memberno = /*[[${memberNo}]]*/ 'null';
+
+		//로그인한 사용자만 찜 추가 가능하도록
+		if(memberno==null){ //로그인한 회원이 아니라면
+			showConfirmAlert('이용을 위해 로그인 하시겠습니까?',
+					() => { /* 예 */
+						window.location="/member/login";
+					},
+					() => {	/* 아니오 */	}
+			);
+			return; //로그인 안됨
+		}
+		
+		//ajax로 찜 추가 처리
+		$.ajax({
+			url: '/product/wish/toggle',
+			method: 'post',
+			contentType:'application/json',
+			data: JSON.stringify({
+				productNo : productno
+			}),
+			success:function(response){ //응답JSON
+				const wished = !!response.wished; //응답JSON에 wished가 있으면 true(찜 추가)
+				thisBtn.removeClass('bi-heart bi-heart-fill').addClass(wished ? 'bi-heart-fill' : 'bi-heart'); //원래 아이콘 삭제 후 찜 결과에 따라 아이콘 추가
+				showToast(wished ? '찜했습니다.' : '찜을 취소했습니다.', 'success'); //찜 추가면 true값, 찜 취소면 false값 출력
+			},
+			error:function(response){
+				console.log(error);
+				showToast(error,'error');
+			}
+		});
+	});
+
+</script>
+</html>

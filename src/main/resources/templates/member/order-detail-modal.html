@@ -1,0 +1,333 @@
+<!-- templates/member/order-detail-modal.html -->
+<!--
+  마이페이지 - 주문 내역 - 주문 상세 모달(풀 페이지 + 모달 프래그먼트 겸용)
+  - /member/order-detail/{orderNo} : 전체 페이지 렌더
+  - /member/order-detail/{orderNo}?fragment=true : 아래 od-modal 프래그먼트만 반환
+-->
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{common/layout}">
+<head>
+</head>
+
+<body>
+<div layout:fragment="content" class="container my-3">
+  	<div class="order-detail-page">
+    	<h2 class="od-title">주문 상세</h2>
+
+    	<!-- 상단 메타 -->
+    	<div class="od-meta">
+      		<div><b>주문번호</b> <span th:text="${order.orderNo}">-</span></div>
+      		<div><b>상태</b> <span th:text="${statusText}">-</span></div>
+      		<div><b>주문일시</b>
+        		<span th:text="${order.orderTime != null ? #temporals.format(order.orderTime.orderedAt, 'yyyy-MM-dd HH:mm') : ''}">-</span>
+      		</div>
+      		<div><b>결제번호</b> <span th:text="${order.merchantUid}">-</span></div>
+    	</div>
+
+    	<!-- 상점 정보 -->
+    	<div class="od-shop">
+      		<b>상점</b> :
+      		<a th:text="${order.shop != null ? order.shop.shopName : '상점'}">상점</a>
+    	</div>
+
+    	<!-- 품목 테이블 -->
+    	<table class="od-table">
+      		<thead>
+        		<tr>
+          			<th>상품명</th>
+          			<th style="width:120px">수량</th>
+          			<th style="width:140px">단가</th>
+          			<th style="width:160px">소계</th>
+        		</tr>
+      		</thead>
+      		<tbody>
+        		<tr th:each="it : ${items}">
+          			<td>
+            			<a th:if="${it.product != null}"
+               			   th:href="@{|/product/detail/${it.product.productNo}|}"
+               			   th:text="${it.product.productName}">상품명</a>
+            			<span th:if="${it.product == null}" th:text="'상품번호 ' + ${it.productNo}">상품</span>
+          			</td>
+          			<td th:text="${it.quantity}">1</td>
+          			<td th:text="${#numbers.formatInteger(it.price, 3, 'COMMA')} + '원'">0원</td>
+          			<td th:text="${#numbers.formatInteger(it.price * it.quantity, 3, 'COMMA')} + '원'">0원</td>
+        		</tr>
+        		<tr th:if="${#lists.isEmpty(items)}">
+          			<td colspan="4" style="text-align:center;color:#888">주문 품목이 없습니다.</td>
+        		</tr>
+      		</tbody>
+    	</table>
+
+    	<!-- 합계 + 수령정보 (가로배치) -->
+    	<div class="od-bottom">
+      		<div class="sum">
+        		<div class="od-sum">
+          			<div class="box">
+            			<div class="row"><span>상품 합계</span><b th:text="${#numbers.formatInteger(productTotal, 3, 'COMMA')} + '원'">0원</b></div>
+            			<div class="row"><span>배송비</span><b th:text="${#numbers.formatInteger(deliveryFee, 3, 'COMMA')} + '원'">0원</b></div>
+            			<div class="row total"><span>총 결제금액</span><b th:text="${#numbers.formatInteger(grandTotal, 3, 'COMMA')} + '원'">0원</b></div>
+          			</div>
+        		</div>
+      		</div>
+      		<div class="info">
+        		<div><b>수령인</b> : <span th:text="${order.orderName}">-</span></div>
+        		<div><b>연락처</b> : <span th:text="${order.orderPhone}">-</span></div>
+        		<div><b>배송지</b> : <span th:text="${order.orderAddress}">-</span></div>
+        		<div th:if="${order.orderRequest}"><b>요청사항</b> : <span th:text="${order.orderRequest}"></span></div>
+      		</div>
+    	</div>
+  	</div>
+</div>
+</body>
+</html>
+
+<!-- ========= 모달 프래그먼트 (AJAX로만 삽입/표시) ========= -->
+<th:block th:fragment="od-modal">
+<style id="od-style">
+/* ================================
+   주문 상세 모달 (깔끔 & 모던 스타일)
+   ================================ */
+
+/* 배경 딤드 */
+.od-dimmed {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  z-index: 1200;
+  display: none;
+}
+
+/* 모달 래퍼 */
+.od-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  width: min(920px, 92vw);
+  max-height: 88vh;
+  overflow-y: auto;
+  z-index: 1210;
+  display: none;
+  animation: fadeIn .25s ease;
+}
+
+/* 모달 박스 */
+.od-box {
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 12px 32px rgba(0,0,0,.25);
+  overflow: hidden;
+  font-family: "Noto Sans KR", sans-serif;
+}
+
+/* 헤더 */
+.od-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  background: #fafafa;
+}
+.od-head h6 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+.od-close {
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background .15s, transform .1s;
+}
+.od-close:hover { background: #f3f4f6; }
+.od-close:active { transform: scale(.95); }
+
+/* 바디 */
+.od-body {
+  padding: 20px;
+  background: #fff;
+  font-size: 0.95rem;
+  color: #374151;
+}
+
+/* 메타 정보 */
+.od-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 20px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+.od-meta b {
+  color: #6b7280;
+  margin-right: 4px;
+  font-weight: 600;
+}
+
+/* 테이블 */
+.od-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0 18px;
+  font-size: 0.95rem;
+}
+.od-table th,
+.od-table td {
+  border: 1px solid #e5e7eb;
+  padding: 12px 14px;
+  text-align: left;
+}
+.od-table thead {
+  background: #f3f4f6;
+}
+.od-table th {
+  font-weight: 700;
+  color: #374151;
+}
+.od-table td {
+  color: #374151;
+}
+.od-table tr:nth-child(even) td {
+  background: #fafafa;
+}
+
+/* 합계 + 수령정보 */
+.od-bottom {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  margin-top: 20px;
+}
+.od-bottom .sum { flex: 0 0 300px; }
+.od-bottom .info { flex: 1; font-size: 0.95rem; line-height: 1.6; }
+
+/* 합계 박스 */
+.od-sum {
+  display: flex;
+  justify-content: flex-end;
+}
+.od-sumbox {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 16px;
+  min-width: 240px;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,.04);
+}
+.od-row {
+  display: flex;
+  justify-content: space-between;
+  margin: 8px 0;
+}
+.od-row span { color: #6b7280; }
+.od-row b { font-weight: 600; color: #111827; }
+.od-row.total {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #f46f40;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .od-bottom { flex-direction: column; }
+  .od-bottom .sum { flex: 1; }
+  .od-body { padding: 16px; }
+}
+
+/* 애니메이션 */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translate(-50%,-48%); }
+  to   { opacity: 1; transform: translate(-50%,-50%); }
+}
+</style>
+
+
+<div class="od-dimmed" id="odDimmed" aria-hidden="true"></div>
+  	<div class="od-modal" id="odModal" role="dialog" aria-modal="true" aria-labelledby="odTitle">
+    	<div class="od-box">
+      		<div class="od-head">
+        		<h6 id="odTitle">주문 상세 · <span th:text="${order.orderNo}">-</span></h6>
+        		<button type="button" class="od-close" data-od-close>닫기</button>
+      		</div>
+      		<div class="od-body">
+        		<!-- 메타 -->
+        		<div class="od-meta">
+          			<div><b>상태</b> <span th:text="${statusText}">-</span></div>
+          			<div><b>결제번호</b> <span th:text="${order.merchantUid}">-</span></div>
+          			<div><b>주문일시</b>
+            			<span th:text="${order.orderTime != null ? #temporals.format(order.orderTime.orderedAt, 'yyyy-MM-dd HH:mm') : ''}">-</span>
+          			</div>
+          			<div><b>상점</b>
+            			<a th:text="${order.shop != null ? order.shop.shopName : '상점'}">상점</a>
+          			</div>
+        		</div>
+
+        		<!-- 품목 -->
+        		<table class="od-table">
+          			<thead>
+            			<tr><th>상품명</th><th style="width:120px">수량</th><th style="width:140px">단가</th><th style="width:160px">소계</th></tr>
+          			</thead>
+          			<tbody>
+            			<tr th:each="it : ${items}">
+              				<td>
+                				<a th:if="${it.product != null}"
+                   				   th:href="@{|/product/detail/${it.product.productNo}|}"
+                   				   th:text="${it.product.productName}">상품명</a>
+                				<span th:if="${it.product == null}" th:text="'상품번호 ' + ${it.productNo}">상품</span>
+              				</td>
+              				<td th:text="${it.quantity}">1</td>
+              				<td th:text="${#numbers.formatInteger(it.price, 3, 'COMMA')} + '원'">0원</td>
+              				<td th:text="${#numbers.formatInteger(it.price * it.quantity, 3, 'COMMA')} + '원'">0원</td>
+            			</tr>
+            			<tr th:if="${#lists.isEmpty(items)}">
+              				<td colspan="4" style="text-align:center;color:#888">주문 품목이 없습니다.</td>
+            			</tr>
+          			</tbody>
+        		</table>
+
+        		<!-- 합계 + 수령정보 (가로배치) -->
+        		<div class="od-bottom">
+          			<div class="sum">
+            			<div class="od-sum">
+              				<div class="od-sumbox">
+                				<div class="od-row"><span>상품 합계</span><b th:text="${#numbers.formatInteger(productTotal, 3, 'COMMA')} + '원'">0원</b></div>
+                				<div class="od-row"><span>배송비</span><b th:text="${#numbers.formatInteger(deliveryFee, 3, 'COMMA')} + '원'">0원</b></div>
+                				<div class="od-row total"><span>총 결제금액</span><b th:text="${#numbers.formatInteger(grandTotal, 3, 'COMMA')} + '원'">0원</b></div>
+              				</div>
+            			</div>
+          			</div>
+          			<div class="info">
+            			<div><b>수령인</b> : <span th:text="${order.orderName}">-</span></div>
+            			<div><b>연락처</b> : <span th:text="${order.orderPhone}">-</span></div>
+            			<div><b>배송지</b> : <span th:text="${order.orderAddress}">-</span></div>
+            			<div th:if="${order.orderRequest}"><b>요청사항</b> : <span th:text="${order.orderRequest}"></span></div>
+          			</div>
+        		</div>
+      		</div>
+    	</div>
+  	</div>
+
+<!-- 모달 열고 닫기 제어 스크립트 (이 프래그먼트와 함께 전달됨) -->
+<script>
+	(function(){
+      	const $dim   = $('#odDimmed');
+      	const $modal = $('#odModal');
+      	function open(){ $dim.show(); $modal.show(); }
+      	function close(){
+        	$modal.hide(); $dim.hide();
+        	$('#odDimmed, #odModal, #od-style').remove();
+      	}
+      	open();
+      	$(document).on('click', '[data-od-close], #odDimmed', close);
+      	$(document).on('keydown', function(e){ if(e.key === 'Escape') close(); });
+	})();
+</script>
+</th:block>

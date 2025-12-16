@@ -1,0 +1,38 @@
+	/*상품 카드*/	
+	.image-wrapper { /*이미지*/
+	  aspect-ratio: 1 / 1;     /* 정방형 */
+	  position: relative;      /* overlay 기준 */
+	  overflow: hidden;        /* 넘친 이미지 잘라냄 */
+	}
+	
+	.image-wrapper img {
+	  width: 100%;
+	  height: 100%;
+	  object-fit: cover;       /* 꽉 채우기 */
+	  display: block;
+	}
+	
+	.shoppingCartIcon { /*장바구니 담기 아이콘*/
+		width:25px; 
+		display:inline;
+	}
+	
+	/*찜*/
+	.bi-heart {
+		font-size:clamp(12px, 3vw, 32px);
+	}
+	.bi-heart:hover {
+		cursor:pointer;
+	}
+	.bi-heart-fill{
+		font-size:clamp(12px, 3vw, 32px);
+		color:tomato;
+	}
+	.bi-heart-fill:hover {
+		cursor:pointer;
+	}
+	
+	.badge {
+		min-width:60px;
+	}
+	

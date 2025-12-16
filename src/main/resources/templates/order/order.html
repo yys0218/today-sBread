@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html layout:decorate="~{common/layout}"><!-- layout.html 적용 -->
+<head>
+	<!-- CSS -->
+ 	<link rel="stylesheet" th:href="@{/css/order/order.css}" /> 
+ 	<!-- 포트원 API.js -->
+	<script src="https://cdn.iamport.kr/v1/iamport.js"></script><!-- v1 -->
+	<!--<script type="text/javascript" src="https://cdn.portone.io/v2/browser-sdk.js"></script>--><!-- v2 -->
+	<!-- 우편번호 서비스 -->
+	<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+	<!-- 시큐리티에서 ajax 활성화 -->
+	<th:block layout:fragment="head-extra">
+        <meta name="_csrf" th:content="${_csrf.token}">
+        <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    </th:block>
+</head>
+
+<div layout:fragment="content" class="container my-3"><!-- 아래가 레이아웃 content 부분에 담김 -->
+	<!-- 목록 상단부 -->
+	<section class="top">
+		<!-- 목록 제목 -->
+		<h1 class="jua-regular mt-5 mb-3 text-center">주문/결제</h1>
+	</section>
+	<!-- 목록 상단부 -->
+
+	<form th:object="${orderForm}" th:action="@{/order/checkout}" method="post" id="orderForm">
+	<!-- 유효성 검사 후 에러 있을 경우 경고문 -->
+	<div th:replace="~{/error/formErrors :: formErrorsFragment}" ></div>
+	<div th:if="${#fields.hasGlobalErrors()}">
+		<div th:each="err : ${#fields.globalErrors()}" th:text="${err}"></div>
+	</div>
+	
+		<div class="d-flex justify-content-center">
+			<div th:if="${list != null and #lists.size(list) > 0}"><!-- 조회된 상품이 있을 때 -->
+				<div class="column box"><!-- 장바구니목록 세로 정렬 -->
+					<h4>상품 정보</h4>
+					<div class="d-flex flex-row productList" th:each="product:${list}"><!-- 장바구니에서 선택된 상품 -->
+						<input type="hidden" th:field="*{shopNo}" /><!-- shopNo th:value="${product.shopNo}" -->
+						<input type="hidden" name="cartNos" th:value="${product.cartNo}"/><!-- cartNos orderForm바인딩용-->
+						<div class="p-2 w-25"><!-- 상품 사진 출력 -->
+							<a class="linkDefault" th:href="@{|/product/detail/${product.productNo}|}"> 
+								<span th:if="${product.thumbnailName==null}"><!-- 상품 사진 없을 때--> 
+									<img th:src="@{/image/header/logo.png}" class="w-100" />
+								</span>
+							 	<span th:unless="${product.thumbnailName==null}"><!-- 상품 사진 있을 때--> 
+							 		<img th:src="@{|/upload/product/${product.thumbnailName}|}" class="w-100" />
+								</span>
+							</a>
+						</div>
+						<div class="p-2"><!-- 상품 정보 -->
+							<!--<input type="hidden" th:value="${product.productNo}" th:field="*{productNo}" /> cartNo로 조회하니까..없어도 된다?-->
+							<a class="linkDefault" th:href="@{|/product/detail/${product.productNo}|}">
+								<h6 class="card-subtitle" th:text="${product.shop.shopName}"></h6>
+								<h4 class="card-title" th:text="${product.productName}"></h4>
+							</a>
+							<h6 th:text="${#numbers.formatInteger(product.price, 1, 'COMMA')}+'원'"></h6>
+
+							<!-- 상품 옵션 -->
+							<input type="number" th:value="${product.quantity}" th:name="|quantities[${product.cartNo}]|" disabled />
+							<!-- 수량 Detail에 넣을 때 cart테이블에서 조회 예정이므로 바인딩 안되어도 됨 (?)-->
+						</div>
+					</div><!-- 상품 -->
+				</div>
+				<div class="box">
+					<!-- 구매자 정보 -->
+					<h4>주문자 정보</h4><!-- 구매자 회원번호만 insert예정이므로 form객체에 필요X-->
+					<label for="buyerName">주문자명</label> <br>
+					<input type="text" class="m-1" id="buyerName" name="buyerName" th:value="${session.user.memberName}" readonly /> <br> 
+					<label for="buyerPhone">연락처</label> <br>
+					<input type="text" class="m-1" id="buyerPhone" name="buyerPhone" th:value="${session.user.memberPhone}" readonly /> 
+					<input type="hidden" th:field="*{buyerNo}"/><br>
+					<input type="hidden" id="buyreEmail" th:value="${session.user.memberEmail}" />
+				</div>
+				<div class="box">
+					<!-- 배송 정보 -->
+					<h4>배송 정보</h4>
+					<label for="orderName">받는 사람</label> <br>
+					<input type="text" class="m-1" th:field="*{orderName}" id="orderName" readonly /> <br>
+					<label for="orderPhone">연락처</label> <br>
+					<input type="text" class="m-1" th:field="*{orderPhone}" id="orderPhone" readonly/> <br> 
+					<label for="orderAddress">주소</label> <br>
+					<input type="text" class="m-1" th:field="*{orderAddress}" id="orderAddress" readonly/>
+					<button type="button" id="changeAddress-btn" class="btn btn-warning btn-sm">배송정보 변경</button>
+					<br>
+					<!-- 요청 사항 -->
+					<label for="orderRequest">요청 사항</label><br>
+					<textarea class="m-1" th:field="*{orderRequest}" cols="50" rows="5" maxlength="100"></textarea>
+					<!-- 정기 배송 상품이라면 -->	
+	                <div th:if="${isSubs}">
+						<!-- 정기 배송 상품 배송일 지정 -->
+						<label for="deliveryCycle"><b>배송주기</b></label>
+	                	<input type="checkbox" th:field="*{alert}" id="alert" value="Y" checked/> 결제 하루 전 알림 받기<br>
+						<!-- 배송주기 지정 -->
+	                	<select name="deliveryCycle" id="cycle" class="gap-2 my-2">
+	                		<option value="" selected hidden>배송주기</option>
+	                		<option value="1">한 달마다</option>
+	                		<option value="2">2주마다</option>
+	                		<option value="4">1주마다</option>
+	                	</select>
+	                	
+	                	<label for="deliveryCycle" class="gap-2 my-2">배송받기</label>
+	                	<br>
+	                	<span>※매월 </span><span class="today"></span> <span>결제됩니다.</span>	
+	                </div>
+				</div>
+			<!-- 정기 배송 상품 종료 -->	
+			</div>		
+			
+			<!-- 결제 박스 -->
+			<div class="sticky-wrapper">
+				<div class="box checkout-info">
+					<h4>결제 정보</h4>	
+					<div class="mb-1">
+						<!-- 상품 금액 -->
+						<div class="mb-1 d-flex justify-content-between">
+							<span th:text="상품금액"></span>
+							<span th:text="*{#numbers.formatInteger(totalPrice, 1, 'COMMA')}"></span>
+							<input type="hidden" th:field="*{totalPrice}"/>
+						</div>					
+						<!-- 배송비 -->
+						<div class="mb-1 d-flex justify-content-between">
+							<span th:text="배송비"></span>
+							<span class="deliveryFee" th:text="*{#numbers.formatInteger(deliveryFee, 1, 'COMMA')}"></span>
+							<input type="hidden" th:field="*{deliveryFee}"/>
+						</div>
+						<!-- 정기결제일 시 배송횟수 추가-->
+						<div class="mb-1 d-flex justify-content-between showCycle"></div>					
+						<!-- 주문 결제 금액 -->
+						<div class="mb-1 d-flex justify-content-between">					
+							<span class="fs-5" th:text="결제금액"></span>
+							<span class="fs-5" id="orderPrice" th:text="*{#numbers.formatInteger(orderPrice, 1, 'COMMA')}+'원'"></span>
+						</div>
+		
+					<!-- 일반 결제일 시 -->
+						<th:block th:unless="${isSubs}">
+							<input type="hidden" th:field="*{orderPrice}" class="orderPrice" /><!-- orderForm에 저장해놓은 값 전달하려면 input이여야하나보다.. -->
+							<!-- 일반 상품 결제 버튼 -->
+							<button id="checkout" class="btn btn-warning w-100" type="button">결제</button>
+						</th:block>
+					<!-- 정기 상품일 시 -->
+						<th:block th:if="${isSubs}">
+							<input type="hidden" name="orderPrice" class="orderPrice" th:attr="data-orderprice=*{orderPrice}" /><!-- 새로 부여할 값-->					
+							<!-- 정기 상품 결제 버튼 -->			
+							<button id="checkout_subs" class="btn btn-warning w-100" type="button">정기 배송 결제</button>
+						</th:block>
+					</div>
+				</div>
+			</div>
+		</div><!-- 본문 출력 끝 -->
+	</form>
+
+
+<div th:replace="~{/order/changeAddress :: changeAddress_modal}"></div>
+
+</div>
+<!-- layout:fragment -->
+
+
+
+<script layout:fragment="script" type="text/javascript" th:inline="javascript">
+		// 모든 jQuery AJAX 요청에 CSRF 헤더 자동 첨부
+		$(function () {
+		  const token  = $('meta[name="_csrf"]').attr('content');
+		  const header = $('meta[name="_csrf_header"]').attr('content');
+		  $(document).ajaxSend(function (e, xhr) {
+		    if (token && header) xhr.setRequestHeader(header, token);
+		  });
+		});	
+
+		//"배송지 변경" 클릭 시 모달 띄우기
+		$(document).on('click','#orderName,#orderPhone,#orderAddress,#changeAddress-btn', function(){
+			//어두운 배경과 모달창 보이게
+			$('.dimmed, #modal-changeAddress').show();
+		});
+	  	
+		
+		//정기 결제 배송일 안내 일자 출력
+		$(document).ready(function(){
+			//오늘 일자
+			const today = new Date().getDate();
+			$('.today').text(today+'일에');
+		});
+
+		//배송 주기 선택시
+		$('#cycle').on('change',function(){
+		const cycle = $('#cycle').val();
+			//결제 정보에 추가
+			$('.showCycle').empty(); //이전 주문 목록 비우기
+			$('.showCycle').append('<span>배송 횟수</span>');
+			$('.showCycle').append('<span>×'+cycle+'</span>');
+
+			//orderPrice 반영
+			const newPrice = $('.orderPrice').data('orderprice')*$(this).val();
+			$('.orderPrice').val(newPrice);
+			$('#orderPrice').text(newPrice.toLocaleString()+'원');
+		});
+
+		//처음부터 체크박스가 체크되어있게 하기
+		$('#alert').prop('checked',true);
+
+        //결제 버튼 클릭 시 포트원 API 호출
+        $('#checkout').on('click', function () {
+            //#checkout버튼 클릭 시
+            //유효성 검사
+    		const name = $('#orderName').val().trim();
+    		const phone = $('#orderPhone').val().trim();
+    		const address = $('#orderAddress').val().trim();
+        	//입력값 유효성 검사
+			if(!(name && phone && address)){
+				showToast("모든 항목을 입력해주세요.","warning");
+				if(!name){$('#orderName').focus();}
+				else if(!phone){$('#orderPhone').focus();}
+				else if(!address){$('#orderAddress').focus();}
+				return;
+			}            
+            
+            const orderPrice = $('.orderPrice').val(); //총 결제 금액 가져오기
+            checkout(orderPrice); //결제 API를 호출하는 함수 호출 & DB에 기록 insert
+        });
+        
+        //포트원 SDK 초기화
+        IMP.init('imp22127625'); //가맹점 식별코드 - 포트원에서 사용자를 구분하는 코드 ..v1에만 필요?
+        		
+        //결제API 호출
+        function checkout(orderPrice) {
+            //결제창 호출
+            IMP.request_pay( //IMP.request_pay(param, callback)
+                {//param
+                    
+                    //채널키 - 관리자콘솔에서 생성한 결제를 진행할 채널
+                    //channelKey: '{channel-key-8018838b-284a-4799-a831-5377d32cee50}', //V2에서 필요
+                    //PG사 설정 - 관리자 콘솔에서 추가한 채널의 pg Provider와 동일하게 쓸 것!!
+                    pg: 'nice', //나이스페이먼츠
+                    //결제방식
+                    pay_method: 'card', // 신용카드
+                    //주문고유번호
+                    merchant_uid: new Date().getTime(), // 주문일시 + 가맹점에서 임의로 생성하는 유니크한 주문 식별번호
+                    //결제 정보
+                    name: '테스트결제', //결제할 상품명 또는 주문명
+                    amount: orderPrice, //결제 금액 (최소 100원부터 가능)
+                    //구매자 정보
+/*                  buyer_name : 
+                   	buyer_email :
+                   	buyer_tel : 
+                   	buyer_addr :  */
+                },
+   	            //콜백 함수
+                function (response) {               
+                    if (response.success) {
+                        //결제 성공 시
+                        console.log(response);
+                        let merchantInput = '<input type="text" name="merchantUid" value=' + response.merchant_uid + '>';
+                        $('#orderForm').append(merchantInput);
+                        $('#orderForm').submit(); // form 제출
+                    } else {
+                        //결제 실패 시
+                        console.error(response);
+                        showErrorAlert('결제가 취소되었습니다.');
+                    }
+                } //콜백함수 종료
+            ); //request_pay 종료
+        } //checkout함수 종료
+
+        //정기 결제 상품 클릭 시 포트원 API 호출
+        $('#checkout_subs').on('click', function(){
+    		const name = $('#orderName').val().trim();
+    		const phone = $('#orderPhone').val().trim();
+    		const address = $('#orderAddress').val().trim();
+    		const cycle = $('#cycle').val();
+        	//입력값 유효성 검사
+			if(!(name && phone && address && cycle)){
+				showToast("모든 항목을 입력해주세요.","warning");
+				if(!name){$('#orderName').focus();}
+				else if(!phone){$('#orderPhone').focus();}
+				else if(!address){$('#orderAddress').focus();}
+				else if(!cycle){$('#cycle').focus();}
+				return;
+			}
+
+        	const orderPrice = $('#orderPrice').val();	//총 결제 금액 가져오기
+        	checkout_subs(orderPrice);	//빌링키를 발급하는 비인증 결제API를 호출하는 함수 호출 & DB에 기록 insert
+        });
+        
+        //정기 배송 결제위한 비인증(일회성) 결제 API 생성 >> 빌링키 발급
+        function checkout_subs(orderPrice){
+			//주문자명
+        	const buyerName = $('#buyerName').val();
+        	//주문자 전화번호
+        	const buyerTel = $('#buyerPhone').val();
+        	//주문자 이메일
+        	const buyerEmail = $('#buyerEmail').val();
+        	
+        	//결제창 호출
+            IMP.request_pay( //IMP.request_pay(param, callback)
+                {//param
+                    //채널키 - 관리자콘솔에서 생성한 결제를 진행할 채널
+                    channelKey: '{channel-key-6bc3e2b8-599a-45c2-8178-8259a2994590}',
+                    //PG사 설정 - 관리자 콘솔에서 추가한 채널의 pg Provider와 동일하게 쓸 것!!
+                    pg: 'kicc', //이지페이
+                    //결제방식
+                    pay_method: 'card', // 신용카드
+                    //주문고유번호
+                    merchant_uid: new Date().getTime(), // 주문일시 + 가맹점에서 임의로 생성하는 유니크한 주문 식별번호
+                    //결제수단고유번호 - 빌링키 발급위한 필수 파라미터
+                    customer_uid: 'cu'+new Date().getTime(),
+                    //웹훅 수신을 위한 url - 결제 결과(status)가 전송되는 엔드포인트(callback URL)
+                    //notice_url : '/order/checkout/status',
+                    //결제 정보
+                    name: '빌링키발급', //결제할 상품명 또는 주문명(띄어쓰기가 안먹나..)
+                    amount: orderPrice, //결제 금액 (최소 100원부터 가능)
+                    //구매자 정보 >>왜 빌링키에 같이 저장이 안될까?
+                    buyer_name : buyerName,
+                    buyer_tel : buyerTel,
+                    buyer_email: buyerEmail
+
+                },
+   	            //콜백 함수
+                function (response) {               
+                    if (response.success) { //빌링키 발급 성공
+                        //결제 정보를 서버로 전달, 결제 예약 처리
+                        let nameInput = '<input type="text" name="name" value=' + response.name + '>';
+                        let merchantInput = '<input type="text" name="merchantUid" value=' + response.merchant_uid + '>';
+				        let customerInput = '<input type="text" name="customerUid" value=' + response.customer_uid +'>';
+				        $('#orderForm').attr('action','/order/checkout-subs').append(merchantInput).append(customerInput).append(nameInput);
+				        $('#orderForm').submit(); // form 제출
+                    } else {
+                        //결제창 결제 정보 입력 실패 시
+                        console.error(response);
+                        showErrorAlert('결제가 취소되었습니다.');
+                    }
+                } //콜백함수 종료
+            ); //request_pay 종료
+        } //checkout_subs 함수 종료        	
+        
+        //주소 찾기 API호출
+        function getAddress() {}
+    </script>
+</html>

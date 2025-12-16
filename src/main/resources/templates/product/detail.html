@@ -1,0 +1,1166 @@
+<!-- product/detail.html : 상품 상세 페이지 -->
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{common/layout}">
+
+<head>
+<!-- CSS , 부트스트랩 아이콘 -->
+<link rel="stylesheet" th:href="@{/css/product/detail.css}" />
+<link rel="stylesheet"
+	href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+<!-- CSRF 토큰 -->
+<!-- 시큐리티에서 ajax 활성화 -->
+<th:block layout:fragment="head-extra">
+	<meta name="_csrf" th:content="${_csrf.token}">
+	<meta name="_csrf_header" th:content="${_csrf.headerName}">
+</th:block>
+</head>
+
+
+<div layout:fragment="content" class="container my-3">
+
+<script th:if="${updateSuccess != null}">
+	showToast("[[${updateSuccess}]]","success");
+</script>
+
+	<!-- 아래가 레이아웃 content 부분에 담김 -->
+	<section class="top d-flex justify-content-between mt-5">
+		<!-- 상세페이지 제목 -->
+		<h1 class="jua-regular">상품 정보</h1>
+		<!-- 뒤로가기 버튼 -->
+		<div>
+			<button type="button" class="goBack btn btn-secondary"
+				onclick="history.go(-1);">목록으로</button>
+		</div>
+	</section>
+
+	<!-- 상품 제목 -->
+	<div class="box">
+		<!-- 본문 박스 -->
+
+		<!-- 상단 : 좌(이미지) / 우(상품요약/가격/찜/수량/담기/구매) -->
+		<div class="product-detail-grid">
+			<!-- 좌 : 이미지 슬라이더 -->
+			<div class="slider-container rounded border">
+				<!-- 슬라이드를 담는 슬라이더 트랙 -->
+				<div class="slider-track" id="sliderTrack">
+					<!-- 슬라이드에 담길 이미지들의 묶음 -->
+					<div class="slide" th:each="img : ${images}">
+						<div class="image-wrapper">
+							<img th:src="@{|/upload/product/${img}|}"
+								class="w-100 rounded border" />
+						</div>
+					</div>
+				</div>
+				<!-- 이전/다음 버튼 -->
+				<button class="slide-btn prev">←</button>
+				<button class="slide-btn next">→</button>
+			</div>
+
+			<!-- 우 : 기본정보/가격/찜/수량/담기/구매 -->
+			<aside class="order-panel me-2" style="min-width: 340px;">
+				<form th:object="${shoppingCartForm}" th:action="@{/order/orderNow}"
+					method="post" id="cartForm">
+
+					<!-- 상점 / 상품 이름 / 한줄 소개 -->
+					<div class="productInfo">
+						<a class="linkDefault" th:href="@{|/shop/view/${detail.shopNo}|}"
+							th:attr="data-shopno=${detail.shopNo}"> <span class="mb-1"
+							th:text="${detail.shopName}">상점명</span>
+						</a>
+
+						<h2 class="productName mb-1" th:text="${detail.productName}"
+							th:attr="data-productname=${detail.productName}">상품명</h2>
+
+						<!-- 상품번호 데이터(스크립트에서 사용) -->
+						<input type="hidden" id="productNo"
+							th:attr="data-productno=${detail.productNo}" />
+
+						<!-- 한줄 소개 -->
+						<p class="text-muted" th:text="${detail.productSummary}">상품 한
+							줄 소개</p>
+						<!-- 찜/상태 버튼 -->
+						<div class="d-flex">
+							<!-- 찜 버튼 (하트 + 개수) -->
+							<button type="button"
+								class="wish-btn btn btn-outline-danger btn-sm mb-1">
+								<i class="bi"
+									th:classappend="${wished} ? 'bi-heart-fill' : 'bi-heart'"></i>
+								<span class="ms-1">찜</span> <span id="wishCount" class="ms-1"
+									th:text="${wishCount}">0</span>
+							</button>
+						</div>
+						<!-- 영양/알레르기 정보 -->
+						<div class="mt-1">
+							<b>영양성분</b>
+							<p class="mb-2" th:text="${detail.nutritionInfo}">영양정보 내용</p>
+
+							<b>알레르기 정보</b>
+							<p th:text="${detail.allergyInfo}">알레르기 정보 내용</p>
+						</div>
+
+						<!-- 정기 결제 상품일 시-->
+						<div th:if="${detail.isSubscription == 1}">
+							<button type="button"
+								class="subs-btn btn btn-warning btn-sm mb-1">정기 배송</button>
+							<span>※주문 시 배송주기에 따라 가격이 더해지며, 바로 배송이 시작됩니다.</span>
+						</div>
+					</div>
+
+					<!-- 가격/수량/버튼 -->
+					<div class="orderInfo mt-3">
+						<!-- 상품 옵션 지정 -->
+						<!-- <div th:if="${options != null}">
+                		    <label for="proudct_option" class="gap-2 my-2"><b>상품 옵션</b></label>
+                			<select name="productOption" id="product_option" class="gap-2 my-2">
+                				<option th:each="option : ${options}" th:value="${option.optionName}" th:text="${option.optionName}+'&nbsp;&nbsp;'+${option.optionPrice}+'원'"></option>
+                			</select>              				
+                		</div>-->
+
+						<div class="d-flex flex-column align-items-start">
+							<!-- 가격 -->
+							<h4 class="price mb-2"
+								th:text="'가격 : ' +${#numbers.formatInteger(detail.price, 1, 'COMMA')} + '원'"
+								th:attr="data-price=${detail.price}"></h4>
+						</div>
+
+
+						<!-- 품절/영업상태 또는 구매 버튼 -->
+						<div class="d-flex gap-2 mt-2">
+							<!-- 상품/영업 상태에 따라 구매 불가하게 -->
+							<th:block th:if="${detail.status == 1}">
+								<!-- 품절 -->
+								<button type="button" class="sold-out btn btn-danger w-50"
+									style="max-width: 220px">품절</button>
+							</th:block>
+							<th:block th:if="${detail.shopStatus == 1}">
+								<!-- 영업 준비 중 -->
+								<button type="button" class="closed btn btn-secondary w-50"
+									style="max-width: 220px">영업 준비 중</button>
+							</th:block>
+							<th:block
+								th:unless="${detail.status == 1 or detail.shopStatus == 1}">
+								<!-- 품절이 아니고 영업 중일 때 -->
+								<!-- 수량 -->
+								<div class="d-flex align-items-center mb-2">
+									<label for="quantity" class="form-label me-2"></label>
+									<input type="number" id="quantity" value="1" min="1" max="999"
+										class="form-control" style="width: 120px;" />
+								</div>
+
+								<!-- 장바구니 -->
+								<button class="btn btn-light w-50 insertBtn"
+									style="max-width: 220px" type="button">
+									<img class="shoppingCartIcon"
+										th:src="@{/image/main/add_shopping_cart.png}" alt="장바구니" />&nbsp;담기
+								</button>
+								<!-- 구매 -->
+								<button class="btn btn-dark w-50 orderBtn"
+									style="max-width: 220px" type="button">구매</button>
+							</th:block>
+						</div>
+					</div>
+					<!-- 가격/수량/구매/장바구니 -->
+				</form>
+			</aside>
+			<!-- 상품 구매 정보-->
+		</div>
+		<!-- 사진/구매 정보 나란히 정렬 -->
+
+		<!-- 섹션 탭 (상세/후기/문의) -->
+		<nav id="subnav" class="subnav sticky-subnav mt-4">
+			<div class="d-flex gap-3 py-2">
+				<a href="#detail-info" class="text-decoration-none">상세정보</a> <a
+					href="#reviews" class="text-decoration-none">상품후기</a>
+			</div>
+		</nav>
+
+		<!-- 가게 위치 (주소만 사용) -->
+		<!--		<section id="shop-location" class="pt-5">
+			<h5 class="mb-2">가게 위치</h5>
+			<div id="map" style="width:100%; height:320px; border:1px solid #eee; border-radius: 8px;"></div>
+-->
+		<!-- 주소만 바인딩 -->
+		<!--		<input type="hidden" id="shopAddr" th:value="${detail.shopAddress}" />
+		</section> 
+-->
+		<!-- 가게 위치 (카카오맵 API) -->
+		<!--        <section id="shop-location" class="pt-5">
+	    	<h5 class="mb-2">가게 위치</h5>
+	    	<div id="map" style="width:100%; height:320px; border:1px solid #eee; border-radius:8px;"></div>
+-->
+		<!-- 좌표/주소 데이터 -->
+		<!--	    	<input type="hidden" id="shopLat" th:value="${detail.latitude}" />
+	    	<input type="hidden" id="shopLng" th:value="${detail.longitude}" />
+	    	<input type="hidden" id="shopAddr" th:value="${detail.shopAddress}" />
+	    </section>
+-->
+		<!-- 상세 정보 섹션 -->
+		<section id="detail-info" class="pt-5">
+			<h5 class="mb-3">상세정보</h5>
+			<div th:utext="${detail.productInfo}">
+				<!-- 섬머노트 HTML -->
+			</div>
+		</section>
+
+		<!-- 상품 리뷰 섹션 -->
+		<section id="reviews" class="pt-5">
+			<h5 class="mb-3">상품후기</h5>
+
+			<!-- 요약 상단 : 좌(평균/별점/카운트) / 우(히스토그램) -->
+			<div class="review-summary d-flex flex-wrap gap-4">
+				<!-- 평균/별점 -->
+				<div class="avg-box text-center p-3 border rounded"
+					style="min-width: 220px;">
+					<div class="avg-score display-6 fw-bold" id="rvAvg">0.0</div>
+					<div class="avg-stars mb-1" id="rvAvgStars" aria-label="평균 별점"></div>
+					<div class="text-muted small">
+						후기 <span id="rvTotal">0</span>개
+					</div>
+				</div>
+
+				<!-- 히스토그램 -->
+				<div class="histogram flex-grow-1">
+					<!-- 1 ~ 5 점 까지 -->
+					<div class="hrow d-flex align-items-center mb-1" data-score="5">
+						<div class="label me-2" style="width: 36px;">5점</div>
+						<div class="bar-wrap flex-grow-1">
+							<div class="bar"></div>
+						</div>
+						<div class="count ms-2" id="c5">0</div>
+					</div>
+					<div class="hrow d-flex align-items-center mb-1" data-score="4">
+						<div class="label me-2" style="width: 36px;">4점</div>
+						<div class="bar-wrap flex-grow-1">
+							<div class="bar"></div>
+						</div>
+						<div class="count ms-2" id="c4">0</div>
+					</div>
+					<div class="hrow d-flex align-items-center mb-1" data-score="3">
+						<div class="label me-2" style="width: 36px;">3점</div>
+						<div class="bar-wrap flex-grow-1">
+							<div class="bar"></div>
+						</div>
+						<div class="count ms-2" id="c3">0</div>
+					</div>
+					<div class="hrow d-flex align-items-center mb-1" data-score="2">
+						<div class="label me-2" style="width: 36px;">2점</div>
+						<div class="bar-wrap flex-grow-1">
+							<div class="bar"></div>
+						</div>
+						<div class="count ms-2" id="c2">0</div>
+					</div>
+					<div class="hrow d-flex align-items-center mb-1" data-score="1">
+						<div class="label me-2" style="width: 36px;">1점</div>
+						<div class="bar-wrap flex-grow-1">
+							<div class="bar"></div>
+						</div>
+						<div class="count ms-2" id="c1">0</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- 탭 링크 (상세/리뷰/문의)와 간격 맞추기 위해 구분선 -->
+			<hr class="my-4" />
+
+			<!-- 리뷰 컨트롤 : 사진 리뷰만 / 정렬 -->
+			<div
+				class="review-controls d-flex justify-content-between align-items-center">
+				<!--	    	<div class="d-flex align-items-center gap-2">
+	    			<input type="checkbox" id="photoOnly" class="form-check-input" />
+	    			<label for="photoOnly" class="form-check-label">사진 리뷰만</label>
+	    		</div> -->
+				<div>
+					<select id="reviewSort" class="form-select form-select-sm"
+						style="width: auto; display: inline-block;">
+						<option value="recent">최신순</option>
+						<option value="rating_desc">별점 높은순</option>
+						<option value="rating_asc">별점 낮은순</option>
+					</select>
+				</div>
+			</div>
+
+			<!-- 리뷰 리스트 -->
+			<div id="reviewList" class="mt-3">
+				<ul th:each="review : ${reviewList}">
+					<li>
+						<p th:text="${review.reviewContent}">리뷰 내용</p>
+						<ul>
+							<li th:each="comment : ${review.comments}"><span
+								th:text="${comment.content}">댓글 내용</span></li>
+						</ul>
+					</li>
+				</ul>
+			</div>
+
+			<!-- 더보기 -->
+			<div class="text-center my-3">
+				<button id="reviewLoadMore"
+					class="btn btn-outline-secondary btn-sm d-none" data-page="1">리뷰
+					더보기</button>
+			</div>
+		</section>
+
+		<!-- 상품 문의 섹션 (플레이스홀더) -->
+<!--		<section id="qna" class="pt-5" data-loaded="0">
+			<div class="qna-head mb-3">
+				<h5 class="m-0">상품문의</h5> -->
+				<!-- 문의하기 버튼 : 로그인 필요 시 goLogin() -->
+<!--				<button type="button" class="btn btn-dark btn-sm qna-btn"
+					id="btnQnaWrite">
+					<i class="bi bi-chat-left-text"></i>문의하기
+				</button>
+			</div> -->
+
+			<!-- 문의 목록 테이블 -->
+<!-- 			<table class="table-qna w-100">
+				<thead>
+					<tr>
+						<th style="width: 60%;">제목</th>
+						<th style="width: 12%;">작성자</th>
+						<th style="width: 14%;">작성일</th>
+						<th style="width: 14%">답변상태</th>
+					</tr>
+				</thead>
+				<tbody id="qnaBody"> -->
+					<!-- AJAX로 처리 -->
+<!--				</tbody> -->
+				<!-- QnA 상세 모달 -->
+<!-- 				<div class="modal fade" id="qnaDetailModal" tabindex="-1">
+					<div class="modal-dialog modal-lg">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title">상품 문의</h5>
+								<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+							</div>
+							<div class="modal-body">
+								<p>
+									<b>제목:</b> <span id="qnaModalTitle"></span>
+								</p>
+								<p>
+									<b>작성자:</b> <span id="qnaModalWriter"></span>
+								</p>
+								<p>
+									<b>작성일:</b> <span id="qnaModalDate"></span>
+								</p>
+								<p>
+									<b>답변 여부:</b> <span id="qnaModalAnswered"></span>
+								</p>
+								<p>
+									<b>내용:</b>
+								</p>
+								<pre id="qnaModalContent"></pre>
+							</div>
+						</div>
+					</div>
+				</div>
+			</table>
+-->
+			<!-- 더보기 -->
+<!--			<div class="qna-more">
+				<button type="button"
+					class="btn btn-outline-secondary btn-sm d-none" id="qnaLoadMore">문의
+					더보기</button>
+			</div>
+		</section> -->
+		<!-- 상품 문의 섹션 변경 종료 -->
+
+		<!-- 작성자에게만 노출되는 수정/삭제 -->
+		<div class="mt-3"
+			th:if="${memberNo != null} and ${detail.memberNo != null} and ${memberNo == detail.memberNo}">
+			<a th:href="@{/product/update/{num}(num=${detail.productNo})}"
+				class="btn btn-warning">수정</a>
+
+			<form th:action="@{/product/delete/{num}(num=${detail.productNo})}"
+				method="post" class="deleteForm" style="display: inline;">
+				<button type="button" class="btn btn-danger deleteBtn">삭제</button>
+			</form>
+		</div>
+	</div>
+</div>
+<!-- layout:fragment="content" -->
+
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script th:src="@{/js/comm/sweetalert.noah.js}"></script>
+<script
+	src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- 카카오맵 (키 교체 필수) -->
+<script
+	src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=YOUR_KAKAO_APP_KEY&libraries=services"></script>
+
+<script layout:fragment="script" type="text/javascript"
+	th:inline="javascript">
+	//로그인 확인
+	function goLogin(){
+		if(typeof showWarningAlert === "function"){
+			showConfirmAlert('이용을 위해 로그인 하시겠습니까?',
+					() => { /* 예 */
+						window.location="/member/login";
+					},
+					() => {	/* 아니오 */	}
+			);
+			return; //로그인 안됨
+		}else{
+			showWarnigAlert("로그인이 필요합니다.");
+			showConfirmAlert('이용을 위해 로그인 하시겠습니까?',
+					() => { /* 예 */
+						window.location="/member/login";
+					},
+					() => {	/* 아니오 */	}
+			);
+			return; //로그인 안됨
+		}
+	}
+	
+	// 모든 AJAX 요청마다 CSRF 헤더 자동 첨부
+	$(function () {
+	  const token  = $('meta[name="_csrf"]').attr('content');
+	  const header = $('meta[name="_csrf_header"]').attr('content');
+	  $(document).ajaxSend(function (e, xhr) {
+	    if (token && header) xhr.setRequestHeader(header, token);
+	  });
+	});
+
+	//사진 슬라이더 - 예솔 추가
+	let index = 0; //slider에 현재 보여지는 이미지의 인덱스 번호
+	let track = $('#sliderTrack'); //슬라이더 트랙 선택자
+	let total = $('.slide').length; //슬라이드의 이미지의 개수
+	let prevBtn = $('.prev'); //이전 버튼
+	let nextBtn = $('.next'); //다음 버튼
+	
+	//버튼 초기화
+	$(document).ready(function(){ //문서가 준비되면
+		if(total <= 1){ //사진이 1개 이하라면
+			prevBtn.hide(); //이전 버튼 안보이게
+			nextBtn.hide(); //다음 버튼 안보이게
+		} else { //사진이 여러 장이면
+			prevBtn.hide(); //이전 버튼 안보이게
+			nextBtn.show(); //다음 버튼 보이게
+		}
+	});
+	
+	//버튼 클릭 시 사진 넘기기
+	function moveSlide(step) { //step이 -1이면 이전(왼쪽), +1이면 다음(오른쪽)
+		
+		index += step; //버튼 누르는만큼 인덱스 증감시키기
+		if(index < 0)  index = 0;  //인덱스가 0보다 작아지면 인덱스=0 대입
+		if(index >= total)  index = total-1;  //인덱스가 총 이미지 수보다 커지면 인덱스=총 이미지 수 대입
+		track.css('transform', `translateX(-${index * 100}%)`);	//인덱스 수만큼 슬라이드를 왼쪽으로 이동시켜 이미지 바꾸기
+        //index [0] = 0%, [1] = 100% (다음 장), [2] = 100% (그 다음 장)...
+		
+        //첫 장일 때 이전 버튼 숨김
+        if(index === 0){
+        	prevBtn.hide();
+        } else { //아니면 이전 버튼 보임
+        	prevBtn.show();
+        }
+		
+		//마지막 장일 때 다음 버튼 숨김
+		if(index === total-1 ){
+			nextBtn.hide();
+		} else { //아니면 다음 버튼 보임
+			nextBtn.show();
+		}   
+	}
+	
+	//버튼 클릭 시 이벤트
+	prevBtn.on('click',function(){
+		moveSlide(-1);
+	});
+	nextBtn.on('click',function(){
+		moveSlide(1);
+	});
+	
+	// 페이지 전역 데이터
+	const productNo   = Number($("#productNo").data("productno"));
+	const shopNo      = Number($(".linkDefault").data("shopno"));
+	const productName = $(".productName").data("productname");
+	const price       = Number($(".price").data("price"));
+	const memberno    = /*[[${memberNo}]]*/ '0';
+	const isLogin     = !!(memberno && memberno !== 'null');
+
+	// 수량 입력 카드
+	$('#quantity').on('input', function(){
+		let v = parseInt(String(this.value).replace(/[^0-9]/g,''), 10);
+		if (isNaN(v) || v < 1) v = 1;
+		if (v > 999) v = 999;
+		this.value = v;
+	});
+	
+	// 찜 토글
+	$('.wish-btn').on('click', function(){
+	 if(!isLogin) return goLogin();
+		const $btn = $(this);
+		$.ajax({
+			url: '/product/wish/toggle',
+			method: 'POST',
+			contentType: 'application/json',
+			data: JSON.stringify({ productNo: productNo }),
+			success: function(res){
+				const wished = !!res.wished;
+				const $icon = $btn.find('i.bi');
+				$icon.removeClass('bi-heart bi-heart-fill').addClass(wished ? 'bi-heart-fill' : 'bi-heart');
+				if (typeof res.count === 'number'){
+					$('#wishCount').text(res.count);
+				}
+				if (typeof showToast === "function") {
+					showToast(wished ? '찜했어요.' : '찜을 취소했어요.', 'success', 1800);
+				}else{
+					showSuccessAlert(wished ? '찜했습니다.' : '찜을 취소했습니다.');
+				}
+			},
+			error: function(){
+				if (typeof showToast === "function") {
+					showToast('찜 처리에 실패했어요', 'error', 2000);	
+				}else {
+					showErrorAlert('찜 처리에 실패했어요.');
+				}
+			}
+		});
+	});
+	
+	// 장바구니 담기
+	$('.insertBtn').on('click', function(){
+		if(!isLogin) return goLogin();
+		const quantity = Number($("#quantity").val()) || 1;
+		$.ajax({
+			url : "/order/cartInsert",
+			method : "POST",
+			contentType : "application/json",
+			data : JSON.stringify({
+				productNo, shopNo, productName, price, quantity, memberNo : memberno
+			}),
+			success :function(res){
+				console.log(res);
+				if(typeof showToast==="function") showToast("장바구니에 추가되었습니다.","success",2500);
+				else showSuccessAlert("장바구니에 추가되었습니다.");
+			},
+			error : function(xhr,status,message){
+				console.log(xhr);
+				console.log(status);
+				console.log(message);
+				if(typeof showToast==="function") showToast("다시 시도해주세요.","error",2500);
+				else showErrorAlert("다시 시도해주세요.");
+			}
+		});
+	});
+	
+	// 바로 구매
+	$('.orderBtn').on('click',function(){
+		console.log(isLogin);
+		console.log(memberno);
+		//if(!isLogin) return goLogin();
+		const quantity = Number($("#quantity").val()) || 1;
+		$.ajax({
+			url : "/order/orderNow",
+			method : "POST",
+			contentType : "application/json",
+			data : JSON.stringify({
+				productNo, shopNo, productName, price, quantity, 
+				memberNo : memberno
+			}),
+			success : function(response){
+				if(response.status === "success" && response.url){ //성공응답의 url로 이동
+					window.location = response.url;
+				}else if(response.status === "login"){ //'로그인이 안되어있다'는 응답이 왔다면
+					goLogin();
+				}else if(response.status === "inCart" && response.url){
+					showConfirmAlert('이미 장바구니에 담긴 상품입니다. 장바구니로 이동하시겠습니까?',
+							() => { /* 예 */
+								window.location= response.url;
+							},
+							() => {	/* 아니오 */	}
+					);
+				}else{
+					if (typeof showToast === "function") showToast("처리 중 문제가 발생했습니다.","error",2500);
+					else showWarningAlert("처리 중 문제가 발생했습니다.");
+				}
+			},
+			error : function(){
+				if (typeof showToast === "function") showToast("다시 시도해주세요.","error",2500);
+				else showErrorAlert("다시 시도해주세요.");
+			}
+		});
+	});
+	
+	/* --------------------------------------------------------
+	 * 리뷰 섹션 (요약 / 목록 / 더보기)
+	 * ------------------------------------------------------*/
+	const _rvState = { page: 1, size: 10, sort: 'recent', photoOnly: false, loading: false, done: false };
+
+	function renderStars(score) {
+	   const full = Math.floor(score || 0);
+	   const frac = (score || 0) - full;
+	   const hasHalf = frac >= 0.25 && frac < 0.75 ? 1 : 0;
+	   const extraFull = frac >= 0.75 ? 1 : 0;
+	   const totalFull = Math.min(5, full + extraFull);
+	   const empty = 5 - totalFull - hasHalf;
+
+	   let html = '';
+	   for (let i=0; i<totalFull; i++) html += '<i class="bi bi-star-fill"></i>';
+	   if (hasHalf) html += '<i class="bi bi-star-half"></i>';
+	   for (let i=0; i<empty; i++) html += '<i class="bi bi-star"></i>';
+	   return html;
+	}
+	function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;', "'":'&#39;' }[m])); }
+	function escapeAttr(s){ return escapeHtml(s).replace(/"/g,'&quot;'); }
+
+	function loadReviewSummary(){
+	   if (!$('#rvAvg').length) return;
+	   $.getJSON(`/product/${productNo}/reviews/summary`)
+	     .done(function(sum){
+	       const total = sum?.total ?? 0;
+	       $('#rvAvg').text((sum?.avg ?? 0).toFixed(1));
+	       $('#rvAvgStars').html(renderStars(sum?.avg ?? 0));
+	       $('#rvTotal').text(total);
+	       $('#rvReplies').text(sum?.ownerReplies ?? 0);
+	       const counts = sum?.counts || {};
+	       for (let s=5; s>=1; s--){
+	         const cnt = counts[String(s)] || 0;
+	         const pct = total > 0 ? Math.round((cnt/total)*100) : 0;
+	         $(`.histogram .hrow[data-score="${s}"] .bar`).css('width', pct + '%');
+	         $(`#c${s}`).text(cnt);
+	       }
+	       
+	       if(total === 0){
+	    	   _rvState.done = true;
+	    	   $('#reviewLoadMore').addClass('d-none');
+	    	   $('#reviewList').html(`<div class="text-muted text-center py-4 border rounded bg-light-subtle">등록된 후기가 없습니다.</div>`);
+	    	 }
+	     });
+	}
+
+	function renderReviewItem(r){
+	   const stars = renderStars(r?.rating || 0);
+	   const full = (r?.content || '').trim();
+	   const short = full.length > 180 ? full.slice(0, 180) + '…' : full;
+	   const needMore = full.length > 180;
+	   const imgs = (r?.images || []).map(src => `<img src="${src}" alt="리뷰 사진">`).join('');
+	   const reply = r?.ownerReply ? `
+	     <div class="owner-reply mt-3">
+	       <div class="title">사장님 댓글 · <span class="text-muted small">${r.ownerReply.createdAtStr || ''}</span></div>
+	       <div class="body">${escapeHtml(r.ownerReply.content || '')}</div>
+	     </div>` : '';
+	   return `
+	     <div class="review-item mb-3" data-id="${r.reviewId}">
+	       <div class="rv-header mb-1">
+	         <div class="rv-nick">${escapeHtml(r.memberId || '익명')}</div>
+	         <div class="rv-date">${r.createdAtStr || ''}</div>
+	       </div>
+	       <div class="rv-stars mb-2">${stars}</div>
+	       <div class="rv-content" data-full="${escapeAttr(full)}" data-short="${escapeAttr(short)}" data-open="0">
+	         <div class="text">${escapeHtml(short)}</div>
+	         ${needMore ? `<span class="more">더보기</span>` : ``}
+	       </div>
+	       ${imgs ? `<div class="rv-photos mt-2">${imgs}</div>` : ``}
+	       ${reply}
+	     </div>`;
+	}
+
+	// 리뷰 로더: 버튼은 기본 숨김, 데이터 있을 때만 표시. 204/0건 처리 및 문자열 응답 방어.
+	function loadReviews(reset){
+	   if (!$('#reviewList').length) return;
+	   if (_rvState.loading || _rvState.done) return;
+	   _rvState.loading = true;
+
+	   if (reset){
+	     _rvState.page = 1; _rvState.done = false;
+	     $('#reviewList').empty();
+	     $('#reviewLoadMore').addClass('d-none').prop('disabled', true).text('리뷰 더보기');
+	   } else {
+	     $('#reviewLoadMore').prop('disabled', true).text('로딩중...');
+	   }
+
+	   $.ajax({
+	     url: `/product/${productNo}/reviews`,
+	     method: 'GET',
+	     dataType: 'json',
+	     data: {
+	       page: _rvState.page,
+	       size: _rvState.size,
+	       sort: _rvState.sort,
+	       photoOnly: _rvState.photoOnly ? 1 : 0
+	     },
+	     statusCode: {
+	       204: function(){
+	         _rvState.done = true;
+	         $('#reviewLoadMore').addClass('d-none');
+	         if($('#reviewList .review-item').length === 0){
+	           const msg = _rvState.photoOnly ? '사진 리뷰가 없습니다.' : '등록된 후기가 없습니다.';
+	           $('#reviewList').html(`<div class="text-muted text-center py-4 border rounded bg-light-subtle">${msg}</div>`);
+	         }
+	       }
+	     }
+	   }).done(function(res){
+	     if (typeof res === 'string') {
+	       try { res = JSON.parse(res); } catch(e) { res = null; }
+	     }
+	     const items = res?.items || [];
+	     if (items.length){
+	       const html = items.map(renderReviewItem).join('');
+	       $('#reviewList').append(html);
+	       _rvState.page += 1;
+	       _rvState.done = !res.hasMore;
+	       if (_rvState.done) {
+	         $('#reviewLoadMore').addClass('d-none');
+	       } else {
+	         $('#reviewLoadMore').removeClass('d-none').prop('disabled', false).text('리뷰 더보기');
+	       }
+	     } else {
+	       _rvState.done = true;
+	       $('#reviewLoadMore').addClass('d-none');
+	       if($('#reviewList .review-item').length === 0){
+	    	   const msg = _rvState.photoOnly ? '사진 리뷰가 없습니다.' : '등록된 후기가 없습니다.';
+	    	   $('#reviewList').html(`<div class="text-muted text-center py-4 border rounded bg-light-subtle">${msg}</div>`);
+	       }
+	     }
+	   }).fail(function(){
+	     $('#reviewLoadMore').addClass('d-none').prop('disabled', true).text('리뷰 더보기');
+//	     showErrorAlert('리뷰를 불러오지 못했습니다.');
+	   }).always(function(){
+	     _rvState.loading = false;
+	   });
+	}
+
+	function bindReviewEvents(){
+	   if (!$('#reviewList').length) return;
+
+	   $(document).on('click', '.review-item .rv-content .more', function(){
+	     const $wrap = $(this).closest('.rv-content');
+	     const open = $wrap.data('open') === 1;
+	     if (open) {
+	       $wrap.find('.text').text($wrap.data('short'));
+	       $wrap.data('open', 0);
+	       $(this).text('더보기');
+	     } else {
+	       $wrap.find('.text').text($wrap.data('full'));
+	       $wrap.data('open', 1);
+	       $(this).text('접기');
+	     }
+	   });
+
+	   $(document).on('click', '.review-item .rv-photos img', function(){
+	     const src = $(this).attr('src');
+	     window.open(src, '_blank');
+	   });
+
+	   const $photoOnly = $('#photoOnly, #phtoOnly');
+	   $photoOnly.on('change', function(){
+	     _rvState.photoOnly = this.checked;
+	     loadReviews(true);
+	   });
+
+	   $('#reviewSort').on('change', function(){
+	     _rvState.sort = $(this).val();
+	     loadReviews(true);
+	   });
+
+	   $('#reviewLoadMore').on('click', function(){
+	     loadReviews(false);
+	   });
+	}
+	 
+	// 카카오맵 연동 (주소 + 좌표)
+	function initMapByLatLng(lat, lng, title){
+		const container = document.getElementById('map');
+		if(!container || !window.kakao || !kakao.maps) return;
+		const center = new kakao.maps.LatLng(lat, lng);
+		const map = new kakao.maps.Map(container, { center : center, level : 3 });
+		const marker = new kakao.maps.Marker({ position: center });
+		marker.setMap(map);
+		if(title){
+			const iw = new kakao.maps.InfoWindow({ content: '<div style="padding:6px 8px;">' + title + '</div>' });
+			iw.open(map, marker);
+		}
+	}
+	
+	function geocodeAndInit(addr, title){
+		if(!addr || !kakao.maps || !kakao.maps.services) return;
+		const geocoder = new kakao.maps.services.Geocoder();
+		geocoder.addressSearch(addr, function(result, status){
+			if(status === kakao.maps.services.Status.OK && result[0]){
+				const y = parseFloat(result[0].y);
+				const x = parseFloat(result[0].x);
+				initMapByLatLng(y, x, title);
+			}
+		});
+	}
+
+/* 	// Q&A 목록 로드/이벤트
+	const _qnaState = { page: 1, size: 10, loading: false, done: false };
+	function esc(s){ return String(s||'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[m])); }
+
+	// Q&A 한 행 렌더러
+	function renderQnaRow(item){
+	  	const badge = item.answered
+	  	  ? '<span class="badge green">답변완료</span>'
+	  	  : '<span class="badge gray">미답변</span>';
+	  	return `
+	    <tr>
+	      	<td><a href="#" class="qna-title" data-id="${item.qnaId}">${esc(item.title || '')}</a></td>
+	      	<td>${esc(item.writer || '')}</td>
+	      	<td>${esc(item.createdAt || '')}</td>
+	      	<td>${badge}</td>
+	    </tr>`;
+	}
+
+
+	// 목록 로드(초기/더보기)
+	function loadQna(reset){
+		if(!$('#qnaBody').length) return;
+	    if(_qnaState.loading || _qnaState.done) return;
+	    _qnaState.loading = true;
+
+	    if(reset){
+	      	_qnaState.page = 1; _qnaState.done = false;
+	      	$('#qnaBody').empty();
+	      	$('#qnaLoadMore').addClass('d-none').prop('disabled', true).text('문의 더보기');
+	    } else {
+	      	$('#qnaLoadMore').prop('disabled', true).text('로딩중...');
+	    }
+
+	    $.ajax({
+	      	url: `/product/${productNo}/qna`,
+	      	method: 'GET',
+	      	dataType: 'json',
+	      	data: { page: _qnaState.page, size: _qnaState.size },
+	      	statusCode: {
+	        	204: function(){
+	          		_qnaState.done = true;
+	          		$('#qnaLoadMore').addClass('d-none');
+	          		if($('#qnaBody tr').length === 0){
+	            		$('#qnaBody').append(`<tr><td colspan="4" class="text-muted text-center py-4">등록된 문의가 없습니다.</td></tr>`);
+	          		}
+	        	}
+	      	}
+	    }).done(function(res){
+	      	if (typeof res === 'string') { try { res = JSON.parse(res); } catch(e) { res = null; } }
+	      	const items = res?.items || [];
+	      	if(items.length){
+	        	const html = items.map(renderQnaRow).join('');
+	        	$('#qnaBody').append(html);
+	        	_qnaState.page += 1;
+	        	_qnaState.done = !res.hasMore;
+	        	if(_qnaState.done){
+	          		$('#qnaLoadMore').addClass('d-none');
+	        	} else {
+	          		$('#qnaLoadMore').removeClass('d-none').prop('disabled', false).text('문의 더보기');
+	        	}
+	      	}else{
+	        	_qnaState.done = true;
+	        	$('#qnaLoadMore').addClass('d-none');
+	        	if($('#qnaBody tr').length === 0){
+	          		$('#qnaBody').append(`<tr><td colspan="4" class="text-muted text-center py-4">등록된 문의가 없습니다.</td></tr>`);
+	        	}
+	      	}
+	    }).always(function(){ _qnaState.loading = false; });
+	}
+
+	// Q&A 이벤트 바인딩(더보기/작성 버튼)
+	function bindQnaEvents(){
+		if(!$('#qna').length) return;
+	    $('#qnaLoadMore').on('click', function(){ loadQna(false); });
+
+	    // [문의하기] 버튼 클릭 → 동적 모달 열기(로그인 필요)
+	    $('#btnQnaWrite').on('click', function(){
+	      	if(!isLogin) return goLogin();
+	      	const pn   = Number($("#productNo").data("productno"));
+	      	const pnme = ($('.productName').data('productname') || $('.productName').text() || '').trim();
+	      	const sname= ($('.linkDefault span').text() || '').trim();
+	      	openOrderQnaModal({ productNo: pn, productName: pnme, shopName: sname });
+	    });
+	}	
+	// 최초 1회만 Q&A 초기화
+	function initQnaOnce(){
+		if($('#qna').data('loaded') === 1) return;
+		$('#qna').data('loaded', 1);
+		bindQnaEvents();
+		loadQna(true);
+	} */
+	
+	// 탭/오프셋 스크롤 & 섹션 진입 시 초기화
+	$(function(){
+		(function(){
+		  	const OFFSET = 70;	// 고정 헤더만큼 보정
+		  	$('#subnav a[href^="#"]').on('click', function(e){
+		    	const id = $(this).attr('href');
+		    	const $t = $(id);
+		    	if($t.length){
+		      		e.preventDefault();
+		      		const top = $t.offset().top - OFFSET;
+		      		window.scrollTo({ top, behavior:'smooth' });
+		      		history.replaceState(null, '', id);
+		      		if(id === '#reviews') initReviewsOnce();
+		      		/* if(id === '#qna') initQnaOnce(); */
+		    	}
+		  	});
+		  	const sections = ['#shop-location','#detail-info','#reviews','#qna']
+		    	.map(s => document.querySelector(s))
+		    	.filter(Boolean);
+		  	if('IntersectionObserver' in window && sections.length){
+		    	const links = Array.from(document.querySelectorAll('#subnav a'));
+		    	const byId  = href => links.find(a => a.getAttribute('href') === href);
+		    	const io = new IntersectionObserver((entries)=>{
+		      		const visible = entries
+		        		.filter(e => e.isIntersecting)
+		        		.sort((a,b)=> b.intersectionRatio - a.intersectionRatio);
+		      		if(!visible.length) return;
+		      		links.forEach(a => a.classList.remove('active'));
+		      		const id = '#'+visible[0].target.id;
+		      		const link = byId(id);
+		      		if(link) link.classList.add('active');
+		    	}, { rootMargin:'-30% 0px -60% 0px', threshold:[0,0.25,0.5,0.75,1] });
+		    	sections.forEach(sec => io.observe(sec));
+		  	}
+		})();
+
+		function initReviewsOnce(){
+			if(window.__rvInited) return;
+			window.__rvInited = true;
+			bindReviewEvents();
+			loadReviewSummary();
+			loadReviews(true);
+		}
+		
+		// URL 해시로 바로 진입 시 초기화
+		if(location.hash === '#reviews'){
+			initReviewsOnce();
+			document.getElementById('reviews')?.scrollIntoView({ behavior: 'smooth' });
+		}
+/* 		if(location.hash === '#qna'){
+			initQnaOnce();
+			document.getElementById('qna')?.scrollIntoView({ behavior: 'smooth' });
+		} */
+		
+		// 뷰 포트에 들어오면 1회만 초기화
+		const $reviews = $('#reviews');
+		if($reviews.length && 'IntersectionObserver' in window){
+			const io = new IntersectionObserver((entries) => {
+				if(entries.some(e => e.isIntersecting)){
+					initReviewsOnce();
+					io.disconnect();
+				}
+			}, { rootMargin: '0px 0px -35% 0px' });
+			io.observe($reviews[0]);
+		}
+		/* const $qna = $('#qna');
+		if($qna.length && 'IntersectionObserver' in window){
+			const io2 = new IntersectionObserver((entries) => {
+				if(entries.some(e => e.isIntersecting)){
+					//initQnaOnce();
+					io2.disconnect();
+				}
+			}, { rootMargin: '0px 0px -35% 0px' });
+			io2.observe($qna[0]);
+		} */
+		
+		// 지도 초기화
+		const $map = $('#map');
+		if ($map.length) {
+			const addrEl = document.getElementById('shopAddr');
+			const addr   = addrEl ? addrEl.value : '';
+			const title  = $('.productName').text();
+			if(addr) geocodeAndInit(addr, title);
+		}
+	});
+	
+	// 페이지 진입 시 미리 로드하고 싶다면 유지, lazy만 원하면 이 줄은 지워도 됨
+	//initQnaOnce();
+	
+	// 삭제 버튼 confirm
+	$(document).ready(function() {
+		// 삭제 버튼 클릭 이벤트
+	    $('.deleteBtn').on('click', function(e) {
+			e.preventDefault();
+	        const $form = $(this).closest('form.deleteForm');
+
+	        if(typeof showConfirmAlert === "function"){
+				showConfirmAlert(
+	                '정말 삭제하시겠습니까?', // 메시지
+	                () => { // 예 클릭
+	                    $form.submit(); // 실제 삭제 form 제출
+	                },
+	                () => { // 아니오 클릭
+	                    if(typeof showToast === "function") showToast('삭제가 취소되었습니다.', 'error', 1500);
+	                }
+	            );
+	        } else {
+	            // showConfirmAlert가 없으면 기본 confirm 사용
+	            if(confirm('정말 삭제하시겠습니까?')) {
+	                $form.submit();
+	            }
+	        }
+	    });
+	});
+	
+/* 	// 상품 상세 - 판매자 문의 동적 모달
+	// 등록 성공 시 Q&A 목록 즉시 갱신
+  	(function ProductQnaModalIIFE(){
+    	// 안전한 문자열 변환
+    	function esc(s){ return String(s||'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[m])); }
+
+    	// 동적 모달 오픈(주문내역과 동일 톤)
+    	window.openOrderQnaModal = function(opts){
+      		const { productNo, productName, shopName } = opts || {};
+      		if(!productNo){ alert('상품 정보가 없습니다.'); return; }
+
+      		// 기존 모달 제거(중복 방지)
+      		$('#qnaModal').remove();
+
+      		// 모달 마크업 생성
+      		const $modal = $(`
+        		<div id="qnaModal" style="position:fixed; inset:0; background:rgba(0,0,0,.4); display:flex; align-items:center; justify-content:center; z-index:1500;">
+          			<div style="background:#fff; width:min(560px,92%); border-radius:12px; padding:16px; border:1px solid #eee;">
+            			<div class="d-flex justify-content-between align-items-center mb-2">
+              				<div>
+                				<h6 class="m-0">판매자 문의</h6>
+                				<div class="text-muted small mt-1">
+                  					${shopName ? `<span class="me-2"><i class="bi bi-shop"></i> ${esc(shopName)}</span>` : ``}
+                  					${productName ? `<span><i class="bi bi-box"></i> ${esc(productName)}</span>` : ``}
+                				</div>
+              				</div>
+              				<button type="button" class="btn btn-sm btn-outline-secondary" id="qnaModalClose">닫기</button>
+            			</div>
+
+            			<div class="mb-2">
+              				<label class="form-label">제목</label>
+              				<input type="text" class="form-control" id="qnaTitle" placeholder="예) 배송/픽업 문의" />
+            			</div>
+            			<div class="mb-2">
+              				<label class="form-label">내용</label>
+              				<textarea class="form-control" id="qnaContent" rows="6" placeholder="문의 내용을 입력하세요. (최소 10자)"></textarea>
+            			</div>
+
+            			<div class="form-check mb-3">
+              				<input class="form-check-input" type="checkbox" id="qnaSecret" />
+              				<label class="form-check-label" for="qnaSecret">비밀글</label>
+            			</div>
+
+            			<div class="text-end">
+              				<button type="button" class="btn btn-dark" id="qnaSubmit">등록</button>
+            			</div>
+          			</div>
+        		</div>
+      		`);
+
+      		// DOM 부착 + 기본 제목
+      		$('body').append($modal);
+//      		$('#qnaTitle').val(productName ? `[${productName}] 문의` : '상품 문의');
+
+      		// 닫기(바깥 클릭/버튼/Escape)
+      		$('#qnaModalClose, #qnaModal').on('click', function(e){
+        		if(e.target.id === 'qnaModalClose' || e.target.id === 'qnaModal'){ $('#qnaModal').remove(); }
+      		});
+      		$(document).on('keydown.qnaModalEsc', function(e){
+        		if(e.key === 'Escape'){ $('#qnaModal').remove(); $(document).off('keydown.qnaModalEsc'); }
+      		});
+
+      		// 등록
+      		$('#qnaSubmit').on('click', function(){
+				const title   = ($('#qnaTitle').val()   || '').trim();
+        		const content = ($('#qnaContent').val() || '').trim();
+        		const secret  = $('#qnaSecret').is(':checked');
+
+        		if(title.length < 1){ alert('제목을 입력하세요.'); return; }
+        		if(content.length < 10){ alert('내용은 최소 10자 이상 입력하세요.'); return; }
+
+        		$(this).prop('disabled', true).text('등록중…');
+
+        		$.ajax({
+          			url: `/product/${productNo}/qna`,
+          			method: 'POST',
+          			contentType: 'application/json',
+          			dataType: 'json',
+          			data: JSON.stringify({ title, content, secret })
+        		})
+        		.done(function(res){
+          			if(typeof showToast === "function") showToast('문의가 등록되었습니다.','success',1500);
+          			$('#qnaModal').remove();
+
+          			// Q&A 섹션이 아직 초기화 전이면 먼저 초기화
+          			if($('#qna').data('loaded') !== 1 && typeof initQnaOnce === 'function') initQnaOnce();
+          			// 즉시 목록 갱신(1페이지부터)
+          			if (typeof loadQna === 'function') loadQna(true);
+          			// Q&A 섹션으로 부드럽게 스크롤
+          			document.getElementById('qna')?.scrollIntoView({ behavior:'smooth' });
+        		})
+        		.fail(function(xhr){
+        			if(xhr && xhr.status === 401){ return goLogin(); }
+          			const msg = (xhr && xhr.responseJSON && xhr.responseJSON.msg) ? xhr.responseJSON.msg : '문의 등록에 실패했습니다.';
+          			if(typeof showToast === 'function') showToast(msg,'error',2000); else alert(msg);
+        		})
+        		.always(()=> $('#qnaSubmit').prop('disabled', false).text('등록'));
+      		});
+    	};
+	})(); */
+	
+	function renderReviewItem(r){
+		   const stars = renderStars(r?.rating || 0);
+		   const full = (r?.content || '').trim();
+		   const short = full.length > 180 ? full.slice(0, 180) + '…' : full;
+		   const needMore = full.length > 180;
+		   const imgs = (r?.images || []).map(src => `<img src="${src}" alt="리뷰 사진">`).join('');
+
+		   // 일반 댓글 렌더링
+		   let commentsHtml = '';
+		   if(r.comments && r.comments.length){
+		       commentsHtml = '<ul class="review-comments mt-2">';
+		       r.comments.forEach(c => {
+		           commentsHtml += `<li><b>${escapeHtml(c.nickname || '익명')}:</b> ${escapeHtml(c.content)}</li>`;
+		       });
+		       commentsHtml += '</ul>';
+		   }
+
+		   // 사장님 댓글
+		   const reply = r?.ownerReply ? `
+		     <div class="owner-reply mt-3">
+		       <div class="title">사장님 댓글 · <span class="text-muted small">${r.ownerReply.createdAtStr || ''}</span></div>
+		       <div class="body">${escapeHtml(r.ownerReply.content || '')}</div>
+		     </div>` : '';
+
+		   return `
+		     <div class="review-item mb-3" data-id="${r.reviewId}">
+		       <div class="rv-header mb-1">
+		         <div class="rv-nick">${escapeHtml(r.nickname || '익명')}</div>
+		         <div class="rv-date">${r.createdAtStr || ''}</div>
+		       </div>
+		       <div class="rv-stars mb-2">${stars}</div>
+		       <div class="rv-content" data-full="${escapeAttr(full)}" data-short="${escapeAttr(short)}" data-open="0">
+		         <div class="text">${escapeHtml(short)}</div>
+		         ${needMore ? `<span class="more">더보기</span>` : ``}
+		       </div>
+		       ${imgs ? `<div class="rv-photos mt-2">${imgs}</div>` : ``}
+		       ${commentsHtml}
+		       ${reply}
+		     </div>`;
+		}
+	/* // QnA 제목 클릭 → Ajax로 상세 조회 → 모달 오픈
+	$(document).on("click", ".qna-title", function (e) {
+	  	e.preventDefault();
+	  	const qnaId = $(this).data("id");
+	
+	  	$.ajax({
+	    	url: `/product/${productNo}/qna/${qnaId}`,
+	    	method: "GET",
+	    	success: function (res) {
+	      		$("#qnaModalTitle").text(res.title);
+	      		$("#qnaModalWriter").text(res.writer);
+	      		$("#qnaModalDate").text(res.createdAt);
+	      		$("#qnaModalAnswered").text(res.answered ? "답변완료" : "미답변");
+	      		$("#qnaModalContent").text(res.content);
+	
+	      		const modalEl = document.getElementById("qnaDetailModal");
+	      		const modal = new bootstrap.Modal(modalEl);
+	      		modal.show();
+	    	},
+	    	error: function () {
+	      		showErrorAlert("문의 상세를 불러오지 못했습니다.");
+	    	}
+	  	});
+	}); */
+
+</script>
+</html>

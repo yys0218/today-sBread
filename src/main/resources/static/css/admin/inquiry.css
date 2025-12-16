@@ -1,0 +1,400 @@
+/* ========== 1:1 문의 관리 공통 스타일 ========== */
+.il-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  max-width: 1100px;
+  color: var(--brand);
+  border-left: 5px solid var(--brand);
+  padding-left: 10px;
+}
+
+/* ===== 필터 박스 ===== */
+.il-filter {
+  margin: 15px 0;
+  max-width: 1100px;
+  padding: 12px 15px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.il-filter label {
+  margin-right: 6px;
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--ink);
+}
+.il-filter select {
+  padding: 5px 8px;
+  font-size: 13px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+}
+.il-filter select:focus {
+  border-color: var(--brand);
+  outline: none;
+}
+
+/* ===== 카테고리/상태 탭 버튼 ===== */
+.il-tabs {
+  display: flex;
+  gap: 12px;   /* ← 간격 넓힘 (기존 8px → 12px) */
+  flex-wrap: wrap;
+    max-width: 1100px;      /* 테이블과 동일한 최대 너비 */
+  margin-bottom: 12px; /* 버튼 그룹 아래에도 살짝 여백 */
+}
+
+.il-tabs button {
+  flex: 1;
+  text-align: center;
+  padding: 10px 0;   /* ← 기존 8px → 10px */
+  border-radius: 6px; /* ← 살짝 둥글게 */
+  background: #f8f5f1;
+  font-size: 14px;   /* ← 살짝 키움 */
+  color: var(--ink);
+  border: 1px solid var(--line);
+  transition: all 0.2s;
+  cursor: pointer;
+  position: relative;
+  min-width: 100px;  /* 버튼 최소 너비 보장 */
+}
+.il-tabs button:hover {
+  background: #f2e2d2;
+}
+.il-tabs button.active {
+  background: var(--brand);
+  color: #fff !important;
+  font-weight: bold;
+  border-color: var(--brand);
+}
+
+
+/* 정렬 방향 화살표 */
+.il-tabs button.asc::after,
+.il-tabs button.desc::after {
+  position: absolute;
+  right: 6px;
+  font-size: 10px;
+  font-weight: bold;
+}
+.il-tabs button.asc::after { content: "▲"; }
+.il-tabs button.desc::after { content: "▼"; }
+
+/* 활성 버튼일 경우 화살표도 흰색 */
+.il-tabs button.active.asc::after,
+.il-tabs button.active.desc::after {
+  color: #fff;
+}
+/* 비활성 버튼일 경우 화살표는 기본 색 */
+.il-tabs button:not(.active).asc::after,
+.il-tabs button:not(.active).desc::after {
+  color: var(--ink);
+}
+
+/* ===== 목록 테이블 ===== */
+.il-table {
+  width: 100%;
+  max-width: 1100px; 
+  margin: 0px; 
+  border-collapse: collapse;  
+  background: #fff;
+  border: 1px solid var(--line);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+
+  table-layout: fixed;   /* ← 고정 레이아웃 */
+
+}
+
+/* 컬럼 폭 비율 지정 */
+.il-table th:nth-child(1), .il-table td:nth-child(1) { width: 5%; }   /* 번호 */
+.il-table th:nth-child(2), .il-table td:nth-child(2) { width: 10%; }  /* 유형 */
+.il-table th:nth-child(3), .il-table td:nth-child(3) { width: 10%; }  /* 상태 */
+.il-table th:nth-child(4), .il-table td:nth-child(4) { width: 40%; }  /* 제목 */
+.il-table th:nth-child(5), .il-table td:nth-child(5) { width: 20%; }  /* 작성자 */
+.il-table th:nth-child(6), .il-table td:nth-child(6) { width: 15%; }  /* 작성일 */
+
+.il-table th,
+.il-table td {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  text-align: center;
+  font-size: 14px;
+  word-wrap: break-word;  /* 긴 단어 줄바꿈 */
+  overflow: hidden;
+  text-overflow: ellipsis; /* 너무 긴 텍스트 ... 처리 */
+  white-space: nowrap;     /* 제목 컬럼 제외 가능 */
+}
+/* 제목 컬럼만 여러 줄 허용 */
+.il-table td:nth-child(4) {
+  white-space: normal;
+  text-align: center;
+}
+
+.il-table th {
+  background: #f8f5f1;
+  color: var(--ink);
+  font-weight: bold;
+}
+.il-table tr:hover {
+  background: #fdf1e6;
+}
+.il-table td a {
+  color: var(--brand);
+  text-decoration: none;
+  font-weight: 600;
+}
+.il-table td a:hover {
+  text-decoration: underline;
+}
+
+/* ===== 상태 뱃지 ===== */
+.il-status {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: 12px;
+  font-weight: bold;
+}
+.il-status--wait {
+  background: #fff3cd;
+  color: #856404;
+}
+.il-status--done {
+  background: #d4edda;
+  color: #155724;
+}
+.il-status--withdraw {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/* --- 페이징 (공지/FAQ와 동일 톤) --- */
+.pagination{
+  display:flex;
+  gap:6px;
+  list-style:none;
+  padding:0;
+  margin:16px 0 0;
+  max-width: 1100px;
+  justify-content:center;
+  align-items:center;
+}
+.page-item .page-link{
+  display:inline-block;
+  min-width:40px;
+  text-align:center;
+  padding:8px 12px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:#fff;
+  text-decoration:none;
+  color:var(--ink);
+  font-weight:600;
+  transition: all .12s ease;
+}
+.page-item:hover .page-link{
+  border-color: color-mix(in srgb, var(--brand) 40%, var(--line) 60%);
+  color: var(--brand);
+}
+.page-item.active .page-link{ border-color: var(--brand); color: var(--brand); }
+.page-item.disabled .page-link{ opacity:.45; pointer-events:none; }
+
+.il-tabs button.active {
+  background: var(--brand);
+  color: #fff !important;
+  font-weight: bold;
+  border-color: var(--brand);
+}
+
+/* 오름차순/내림차순 화살표 */
+.il-tabs button.asc::after,
+.il-tabs button.desc::after {
+  position: absolute;
+  right: 6px;
+  font-size: 10px;
+  font-weight: bold;
+}
+.il-tabs button.asc::after { content: "▲"; }
+.il-tabs button.desc::after { content: "▼"; }
+
+.il-tabs button.active.asc::after,
+.il-tabs button.active.desc::after {
+  color: #fff;
+}
+/* ===== 1:1 문의 상세 ===== */
+
+/* 전체 박스 */
+.id-wrap {
+  max-width: 1100px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* 제목 */
+.id-title {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: var(--brand);
+  border-left: 5px solid var(--brand);
+  padding-left: 10px;
+}
+
+/* 메타 정보 */
+.id-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px,1fr));
+  gap: 10px 16px;
+  font-size: 14px;
+  color: var(--ink);
+  margin-bottom: 15px;
+}
+.id-meta b {
+  font-weight: bold;
+  margin-right: 4px;
+}
+
+/* 본문 */
+.id-content {
+  margin: 20px 0;
+}
+.id-content pre {
+  background: #fafafa;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  padding: 15px;
+  font-size: 15px;
+  line-height: 1.6;
+  white-space: pre-line;
+  min-height: 120px;
+}
+
+/* 답변 폼 */
+.id-reply {
+  margin-top: 24px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  padding: 18px 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.id-reply-form {
+  margin-top: 25px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fafafa;
+}
+.id-reply-form h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.id-reply-form textarea {
+  width: 100%;
+  padding: 12px;
+  font-size: 14px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  resize: vertical;
+  margin-bottom: 12px;
+  transition: border-color .2s;
+}
+.id-reply-form textarea:focus {
+  border-color: var(--brand);
+  outline: none;
+}
+.id-reply-form button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  background: var(--brand);
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  transition: background .2s;
+}
+.id-reply-form button:hover {
+  background: #b36d3d;
+}
+
+/* 하단 액션 */
+.id-actions {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+}
+.id-actions a {
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid var(--line);
+  background: #f8f5f1;
+  color: var(--ink);
+  transition: all .2s ease;
+}
+.id-actions a:hover {
+  background: #f2e2d2;
+  border-color: var(--brand);
+  color: var(--brand);
+}
+/* Image List in Inquiry Detail */
+.image-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px; /* Space between images */
+  margin-top: 20px;
+  justify-content: flex-start; /* Align images to the left */
+}
+
+.image-list img {
+  width: 240px;
+  height: 240px;
+  object-fit: cover; /* Crop image to fit the dimensions */
+  cursor: pointer;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  /* transition: all 0.1s ease; Smooth transition for size change */
+}
+
+.image-list img.enlarged {
+  width: auto; /* Revert to original width */
+  height: auto; /* Revert to original height */
+  max-width: 90vw; /* Limit enlarged image to viewport width */
+  max-height: 90vh; /* Limit enlarged image to viewport height */
+  object-fit: contain; /* Show entire image, even if it means letterboxing */
+  position: fixed; /* Position relative to viewport */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* Center the image */
+  z-index: 2500; /* Bring to front */
+  background-color: rgba(0, 0, 0, 0.8); /* Dark overlay */
+  padding: 6px; /* Padding around the image */
+  border-radius: 12px;
+}
+
+/* Optional: Overlay for enlarged image */
+.image-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 2000;
+  display: none; /* Hidden by default, shown when image is enlarged */
+}
+
+.image-overlay.active {
+  display: block;
+}

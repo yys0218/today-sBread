@@ -1,0 +1,77 @@
+/* ===== Closing Page (cl-*) ===== */
+:root{
+  --bg:#FFF6E9; --ink:#3D2B1F; --ink-weak:#6C5243;
+  --brand:#D95C43; --brand-2:#E7B674; --line:#E8D8C6; --card:#FFFFFF; --ok:#31B76A;
+}
+
+.cl-title {
+  font-weight:800; letter-spacing:-.3px;
+  font-size: clamp(20px, 3vw, 28px);
+  margin: 6px 0 14px;
+}
+
+.cl-container {
+  padding: 24px;
+}
+
+.shop-info {
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+}
+
+.shop-info h3 {
+  font-weight: 700;
+  font-size: 1.2rem;
+  margin-bottom: 12px;
+}
+
+.closing-warning {
+  margin-bottom: 24px;
+  padding: 16px;
+  background-color: #FFF3F1;
+  border: 1px solid #FFD3C9;
+  border-radius: 8px;
+}
+
+.closing-warning h4 {
+  font-weight: 700;
+  color: var(--brand);
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.closing-warning ul {
+  padding-left: 20px;
+  margin-bottom: 0;
+}
+
+.closing-form {
+  text-align: center;
+}
+
+.btn-close {
+  width: 30%;
+  margin: 10px auto 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--brand);
+  color: #fff;
+  font-weight: bold;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background .2s ease;
+}
+
+.btn-close:hover {
+  background: #b44733;
+}
+
+.no-shop {
+  text-align: center;
+  padding: 40px 0;
+  color: var(--ink-weak);
+}

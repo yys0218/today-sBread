@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html layout:decorate="~{/common/layout}">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/css/shop/shopmain.css">
+
+    <style>
+        /* 컨테이너 */
+        .settlement-container {
+            max-width: 900px;
+            margin: 30px auto;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        /* 테이블 기본 스타일 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 15px;
+            background: #fff;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        thead {
+            background: #f46f40;
+            color: #fff;
+        }
+
+        thead th {
+            padding: 12px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        tbody td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            text-align: center;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #fafafa;
+        }
+
+        /* 금액 강조 */
+        td.amount {
+            font-weight: bold;
+            color: #2d7dd2;
+        }
+
+        td.balance {
+            font-weight: bold;
+            color: #e63946;
+        }
+
+        /* hover 효과 */
+        tbody tr:hover {
+            background: #f1f7ff;
+            transition: 0.2s;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content" class="container my-3 settlement-container">
+	    <!-- 버튼 -->
+	    <div class="button-container" style="text-align: right; margin-bottom: 20px;">
+	        <button onclick="location.href='/shop/shopmain'" style="
+	            padding: 8px 14px;
+	            background: #ff6600; 
+	            color: #fff; 
+	            border-radius: 6px; 
+	            border: none; 
+	            cursor: pointer;
+	            transition: background 0.2s;">
+	            내 상점으로
+	        </button>
+        <h1>정산 내역</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>구별 번호</th>
+                    <th>유형</th>
+                    <th>금액</th>
+                    <th>잔액</th>
+                    <th>등록일시</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="h : ${historyList}">
+                    <td th:text="${h.salesNo}"></td>
+                    <td>
+                    	<span th:if="${h.salesType==1}">입금</span>
+                    	<span th:if="${h.salesType==2}">환불</span>
+                    	<span th:if="${h.salesType==3}">정산</span>
+                    </td>
+                    <td class="amount" th:text="${h.salesAmount} + ' 원'"></td>
+                    <td class="balance" th:text="${h.salesBalance} + ' 원'"></td>
+                    <td th:text="${#temporals.format(h.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+    
+<script>
+</script>
+</body>
+</html>

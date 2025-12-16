@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{admin/adminLayout}">
+
+<head>
+  <meta charset="UTF-8">
+  <title>입점 신청 상세</title>
+  <link rel="stylesheet" th:href="@{/css/admin/registry.css}">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script th:src="@{/js/comm/sweetalert.noah.js}"></script>
+  <style>
+    #result {
+      margin-top: 15px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .result-success {
+      color: blue;
+      font-weight: bold;
+    }
+
+    .result-fail {
+      color: red;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<div layout:fragment="content" class="registry-detail">
+  <h2 class="admin-title">입점 신청 상세</h2>
+
+  <!-- 빵집 정보 -->
+  <section class="section-box">
+    <h3>빵집 정보</h3>
+    <table class="detail-table">
+      <tr>
+        <th>빵집 이름</th>
+        <td th:text="${shop.shopName}"></td>
+      </tr>
+      <tr>
+        <th>연락처</th>
+        <td th:text="${shop.shopContact}"></td>
+      </tr>
+      <tr>
+        <th>소개 문구</th>
+        <td th:text="${shop.shopInfo}"></td>
+      </tr>
+      <tr>
+        <th>전체 주소</th>
+        <td th:text="${shop.shopAddress}"></td>
+      </tr>
+      <tr>
+        <th>시/도</th>
+        <td th:text="${shop.shopSido}"></td>
+      </tr>
+      <tr>
+        <th>시/군/구</th>
+        <td th:text="${shop.shopSigungu}"></td>
+      </tr>
+      <tr>
+        <th>동/리</th>
+        <td th:text="${shop.shopBname}"></td>
+      </tr>
+    </table>
+  </section>
+
+  <!-- 사업자 정보 -->
+  <section class="section-box">
+    <h3>사업자 정보</h3>
+    <table class="detail-table">
+      <tr>
+        <th>사업자 등록번호</th>
+        <td th:text="${shop.tinNo}" name="tinNo" id="tinNo"></td>
+      </tr>
+      <tr>
+        <th>사업자 이름</th>
+        <td th:text="${shop.businessName}" name="businessName" id="businessName"></td>
+      </tr>
+      <tr>
+        <th>개업 일자</th>
+        <td th:text="${#temporals.format(shop.businessOpenAt, 'yyyy-MM-dd')}" name="businessOpenAt" id="businessOpenAt">
+        </td>
+      </tr>
+      <tr>
+        <th>전화번호</th>
+        <td th:text="${shop.businessContact}"></td>
+      </tr>
+      <tr>
+        <th>이메일</th>
+        <td th:text="${shop.businessMail}"></td>
+      </tr>
+      <tr>
+        <th>은행</th>
+        <td th:text="${shop.businessBank}"></td>
+      </tr>
+      <tr>
+        <th>예금주</th>
+        <td th:text="${shop.businessAccName}"></td>
+      </tr>
+      <tr>
+        <th>계좌번호</th>
+        <td th:text="${shop.businessAccNum}"></td>
+      </tr>
+    </table>
+    <div class="btn-box" style="margin-top: 10px;">
+      <button type="button" id="validateBtn" class="btn-primary">사업자 진위 확인</button>
+      <button type="button" id="statusBtn" class="btn-secondary">사업자 상태 조회</button>
+    </div>
+    <div id="result"></div>
+  </section>
+
+  <!-- 버튼 영역 -->
+  <div class="btn-box">
+    <button type="button" id="approveBtn" class="btn-primary" th:if="${shop.shopRegResult==null}"
+      th:data-shop-no="${shop.shopNo}">신청 수락</button>
+    <select id="shopRegReason" name="shopRegReason" th:if="${shop.shopRegResult==null}">
+      <option value="0">필수 서류 미비</option>
+      <option value="1">자격 요건 불충족</option>
+      <option value="2">품질 기준 미달</option>
+      <option value="3">중복,허위 기재</option>
+    </select>
+    <button type="button" id="refuseBtn" class="btn-primary" th:if="${shop.shopRegResult==null}"
+      th:data-shop-no="${shop.shopNo}">신청 거절</button>
+    <a th:href="@{/admin/user/registry/list}" class="btn-back">목록으로</a>
+  </div>
+
+  <script th:inline="javascript">
+    document.addEventListener("DOMContentLoaded", function () {
+      // CSRF 토큰
+      const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+      const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+      const serviceKey = "yodndq1a1d72MICjMc6wO%2FTCnnUuQesHhdBthtVfKbNd8u9xAVGGRChxOdscMIeC3zvOu4z2dH54BuVhqsJJZg%3D%3D";
+      const resultDiv = document.getElementById("result");
+
+      const tinNo = document.getElementById("tinNo").innerText.trim().replace(/\D/g, "");
+      const businessOpenAt = document.getElementById("businessOpenAt").innerText.trim().replace(/-/g, "");
+      const businessName = document.getElementById("businessName").innerText.trim();
+
+      // 진위 확인 버튼 이벤트
+      document.getElementById("validateBtn").addEventListener("click", function () {
+        if (!tinNo || !businessOpenAt || !businessName) {
+          resultDiv.innerHTML = `<div class="result-fail">페이지에 사업자등록번호, 개업일자, 대표자명이 모두 표시되어야 합니다.</div>`;
+          return;
+        }
+
+        const data =
+        {
+          "businesses": [
+            {
+              "b_no": tinNo,
+              "start_dt": businessOpenAt,
+              "p_nm": businessName,
+              "p_nm2": "",
+              "b_nm": "",
+              "corp_no": "",
+              "b_sector": "",
+              "b_type": "",
+              "b_adr": ""
+            }
+          ]
+        }
+
+        $.ajax({
+          url: `https://api.odcloud.kr/api/nts-businessman/v1/validate?serviceKey=${serviceKey}`,
+          type: "POST",
+          data: JSON.stringify(data),
+          dataType: "JSON",
+          contentType: "application/json",
+          accept: "application/json",
+          success: function (response) {
+            console.log("Validate API Response:", response);
+            if (response.data && response.data.length > 0) {
+              const firstData = response.data[0];
+              if (firstData.valid === "01") {
+                resultDiv.innerHTML = `<div class="result-success">[진위 확인 성공] 등록된 사업자 정보와 일치합니다.</div>`;
+              } else {
+                resultDiv.innerHTML = `<div class="result-fail">[진위 확인 실패] ${firstData.valid_msg}</div>`;
+              }
+            } else {
+              resultDiv.innerHTML = `<div class="result-fail">[진위 확인 실패] 응답 데이터가 없습니다.</div>`;
+            }
+          },
+          error: function (error) {
+            console.log("Validate API Error:", error);
+            resultDiv.innerHTML = `<div class="result-fail">[진위 확인 실패] API 호출 중 오류가 발생했습니다.</div>`;
+          }
+        });
+      });
+
+      // 상태 조회 버튼 이벤트
+      document.getElementById("statusBtn").addEventListener("click", function () {
+        if (!tinNo) {
+          resultDiv.innerHTML = `<div class="result-fail">페이지에 사업자등록번호가 표시되어야 합니다.</div>`;
+          return;
+        }
+
+        const data = {
+          "b_no": [tinNo]
+        };
+
+        $.ajax({
+          url: `https://api.odcloud.kr/api/nts-businessman/v1/status?serviceKey=${serviceKey}`,
+          type: "POST",
+          data: JSON.stringify(data),
+          dataType: "JSON",
+          contentType: "application/json",
+          accept: "application/json",
+          success: function (response) {
+            console.log("Status API Response:", response);
+            if (response.match_cnt === 1 && response.data.length > 0) {
+              const statusInfo = response.data[0];
+              let resultHtml = `
+                            <div class="result-success">[상태 조회 성공]</div>
+                            <ul>
+                                <div><strong>사업자번호:</strong> ${statusInfo.b_no}</div>
+                                <div><strong>납세자상태:</strong> ${statusInfo.b_stt}</div>
+                                <div><strong>과세유형:</strong> ${statusInfo.tax_type}</div>
+                            </ul>
+                        `;
+              resultDiv.innerHTML = resultHtml;
+            } else {
+              resultDiv.innerHTML = `<div class="result-fail">[상태 조회 실패] 해당 사업자번호로 조회된 정보가 없습니다.</div>`;
+            }
+          },
+          error: function (error) {
+            console.log("Status API Error:", error);
+            resultDiv.innerHTML = `<div class="result-fail">[상태 조회 실패] API 호출 중 오류가 발생했습니다.</div>`;
+          }
+        });
+      });
+
+      // 신청 수락 버튼 이벤트
+      document.getElementById("approveBtn").addEventListener("click", function () {
+        const shopNo = this.dataset.shopNo;
+
+        showConfirmTitleAlert(
+          '입점 신청을 승인하시겠습니까?',  // 제목
+          '',                               // 메시지
+          () => { // 확인(승인) 클릭 시
+            $.ajax({
+              url: `/admin/user/registry/approve/${shopNo}`,
+              type: "POST",
+              beforeSend: function (xhr) {
+                xhr.setRequestHeader(csrfHeader, csrfToken);
+              },
+              success: function (response) {
+                if (response === "success") {
+                  showSuccessTitleAlert(
+                    '승인 완료!',
+                    '입점 신청이 승인되었습니다.',
+                    '/admin/user/registry/list' // 승인 후 목록 페이지 이동
+                  );
+                } else {
+                  showErrorTitleAlert(
+                    '오류 발생',
+                    '처리 중 문제가 발생했습니다: ' + response
+                  );
+                }
+              },
+              error: function () {
+                showErrorTitleAlert(
+                  'AJAX 오류',
+                  '서버와 통신 중 오류가 발생했습니다.'
+                );
+              }
+            });
+          },
+          () => { // 취소 버튼 클릭 시
+            showToast('승인이 취소되었습니다.', 'info');
+          }
+        );
+
+      });
+      document.getElementById("refuseBtn").addEventListener("click", function () {
+        const shopNo = this.dataset.shopNo;
+        const reason = document.getElementById("shopRegReason").value;
+
+        showConfirmTitleAlert(
+          '입점 신청을 거절하시겠습니까?',  // 제목
+          '',                                // 메시지
+          () => { // 확인(거절) 클릭 시
+            $.ajax({
+              url: `/admin/user/registry/refuse/${shopNo}`,
+              type: "POST",
+              data: { shopRegReason: reason },
+              beforeSend: function (xhr) {
+                xhr.setRequestHeader(csrfHeader, csrfToken);
+              },
+              success: function (response) {
+                if (response === "success") {
+                  showSuccessTitleAlert(
+                    '거절 완료!',
+                    '입점 신청이 거절되었습니다.',
+                    '/admin/user/registry/list' // 거절 후 목록으로 이동
+                  );
+                } else {
+                  showErrorTitleAlert(
+                    '오류 발생',
+                    '처리 중 문제가 발생했습니다: ' + response
+                  );
+                }
+              },
+              error: function () {
+                showErrorTitleAlert(
+                  'AJAX 오류',
+                  '서버와 통신 중 오류가 발생했습니다.'
+                );
+              }
+            });
+          },
+          () => { // 취소 버튼 클릭 시
+            showToast('거절 처리가 취소되었습니다.', 'info');
+          }
+        );
+
+      });
+    });
+  </script>
+</div>
+
+</html>

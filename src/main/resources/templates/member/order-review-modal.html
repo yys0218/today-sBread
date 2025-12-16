@@ -1,0 +1,61 @@
+<!-- ========= 모달 프래그먼트 ========= -->
+<th:block th:fragment="rv-modal">
+  <div class="rv-dimmed" id="rvDimmed" aria-hidden="true"></div>
+  <div class="rv-modal" id="rvModal" role="dialog" aria-modal="true" aria-labelledby="rvTitle"
+       th:attr="data-product-no=${productNo},data-order-no=${orderNo}">
+    <div class="rv-box">
+      <div class="rv-title">
+        <h6 id="rvTitle">후기 작성 · <span th:text="${productName}">상품</span></h6>
+        <button type="button" class="rv-close" data-rv-close>닫기</button>
+      </div>
+
+      <form id="rvForm" autocomplete="off">
+        <input type="hidden" id="rvProductNo" name="productNo" th:value="${productNo}">
+        <input type="hidden" id="rvOrderNo"   name="orderNo"   th:value="${orderNo}">
+        <input type="hidden" id="rvRating"    name="rating">
+
+        <label class="rv-label">별점</label>
+        <div class="rv-stars" id="rvStars" aria-label="별점 선택">
+          <button type="button" class="star" data-val="1" aria-label="1점">★</button>
+          <button type="button" class="star" data-val="2" aria-label="2점">★</button>
+          <button type="button" class="star" data-val="3" aria-label="3점">★</button>
+          <button type="button" class="star" data-val="4" aria-label="4점">★</button>
+          <button type="button" class="star" data-val="5" aria-label="5점">★</button>
+        </div>
+        <div class="rv-help" id="rvScoreLabel">점수를 선택하세요.</div>
+
+        <div class="mt-2">
+          <label class="rv-label" for="rvContent">후기 내용</label>
+          <textarea id="rvContent" name="reviewContent" class="form-control rv-ta"
+                    placeholder="최소 10자 이상 입력해주세요." maxlength="2000"></textarea>
+        </div>
+
+        <div class="rv-actions">
+          <button type="button" class="rv-btn" data-rv-close>취소</button>
+          <button type="submit" class="rv-btn primary" id="rvSubmit">등록</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <style id="rv-style">
+  .rv-dimmed { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 1600; display: none; }
+  .rv-modal  { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+               z-index: 1610; display: none; width: min(560px, 92%); }
+  .rv-box{ background: #fff; color: #222; border-radius: 12px; padding: 18px;
+           box-shadow: 0 10px 32px rgba(0,0,0,.35); border: 1px solid #eee; }
+  .rv-title  { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .rv-title h6 { margin: 0; font-size: 1.05rem; font-weight: 700; }
+  .rv-title .rv-close { border: 1px solid #ddd; background: #fff; border-radius: 8px; padding: 6px 10px; cursor: pointer; }
+  .rv-help  { color: #888; font-size: .9rem; }
+  .rv-stars { display: inline-flex; gap: 6px; user-select: none; }
+  .rv-stars .star { border: none; background: transparent; font-size: 28px; line-height: 1; padding: 0 3px; cursor: pointer; color: #d0d0d0; transition: transform .06s, color .15s;}
+  .rv-stars .star:hover { transform: translateY(-1px); color: #ffa94d; }
+  .rv-stars .star.filled { color: #f08c00; }
+  .rv-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+  .rv-btn { display: inline-flex; align-items: center; justify-content: center; min-width: 96px; height: 40px; padding: 0 14px;
+            border-radius: 8px; border: 1px solid #ddd; background: #fff; cursor: pointer; }
+  .rv-btn.primary { background: #222; color: #fff; border-color: #222; }
+  .rv-btn:disabled { opacity: .6; cursor: not-allowed; }
+  .my-swal-container{ z-index: 9999 !important;}
+  </style>
+</th:block>

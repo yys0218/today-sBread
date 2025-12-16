@@ -1,0 +1,371 @@
+<html layout:decorate="~{common/layout}">
+
+<head>
+  <title>내 신고 목록</title>
+  <meta charset="UTF-8">
+  <meta th:name="_csrf" th:content="${_csrf.token}">
+  <meta th:name="_csrf_header" th:content="${_csrf.headerName}">
+  <link rel="stylesheet" th:href="@{/css/center/help-center.css}">
+  <link rel="stylesheet" th:href="@{/css/center/centerSidebar.css}">
+  <link rel="stylesheet" th:href="@{/css/main/main.css}" />
+  <link rel="stylesheet" th:href="@{/css/center/report.css}">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script th:src="@{/js/comm/sweetalert.noah.js}"></script>
+</head>
+
+<div layout:fragment="content" class="container my-3">
+  <div class="container hc-layout">
+    <!-- 좌측 사이드바 -->
+    <div th:replace="~{center/centerSidebar :: centerMenu('report')}"></div>
+
+    <!-- 우측 본문 -->
+    <main class="hc-main">
+      <h2 class="il-title">내 신고</h2>
+      <!-- 메인 작성 영역 -->
+
+      <form th:object="${reportForm}" method="post" enctype="multipart/form-data" id="reportForm">
+        <h1 th:text="${reportNo != null} ? '신고 수정' : '신고 작성'"></h1>
+        <div th:replace="~{error/formErrors :: formErrorsFragment}"></div>
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+        <!-- ================= 신고 유형 / 사유 / 기타 입력 ================= -->
+        <div>
+          <label for="reportType">신고유형</label>
+          <select th:field="*{reportType}" id="reportType">
+            <option value="0" selected>회원</option>
+            <option value="1">매장</option>
+            <option value="2">기타</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="reportRef">신고대상</label>
+          <input type="text" th:field="*{reportRef}" id="reportRef" placeholder="닉네임(상점이름) " />
+        </div>
+
+        <div>
+          <label for="reportReason">신고사유</label>
+          <!-- 회원용 -->
+          <select th:field="*{reportReason}" id="memberReason" disabled style="display:none;">
+            <option value="0" selected>별점 테러(악성 리뷰)</option>
+            <option value="1">허위주문, 노쇼(허위 주문)</option>
+            <option value="2">악성 행위(욕설 비방)</option>
+            <option value="3">부정 이용(다계정 이용)</option>
+            <option value="8">기타</option>
+          </select>
+
+          <!-- 매장용 -->
+          <select th:field="*{reportReason}" id="shopReason" disabled style="display:none;">
+            <option value="4">위생 문제(유통기한 도과, 위생상태 불량)</option>
+            <option value="5">상품 문제(불량 제품)</option>
+            <option value="6">배송 문제(배달 지연, 누락)</option>
+            <option value="7">불친절(고객 응대 불만)</option>
+            <option value="8">기타</option>
+          </select>
+        </div>
+
+        <div id="etcBox" style="display:none;">
+          <label for="reportEtc">기타 이유</label>
+          <input type="text" th:field="*{reportEtc}" id="reportEtc" disabled placeholder="기타이유" />
+        </div>
+        <!-- ============================================================= -->
+
+        <div>
+          <label for="reportTitle">제목</label>
+          <input type="text" th:field="*{reportTitle}" placeholder="제목" />
+        </div>
+
+        <div>
+          <label for="reportContent">내용</label>
+          <textarea th:field="*{reportContent}" rows="10" placeholder="내용"></textarea>
+        </div>
+
+        <!-- <div>
+          <label for="reportMail">이메일</label>
+          <input type="email" th:field="*{reportMail}" />
+        </div> -->
+
+        <div>
+
+          <label>이미지(최대 5장)<small>jpg, png, gif, webp파일 만 가능합니다</small></label>
+
+          <div id="image-container">
+            <!-- 기존 이미지 미리보기 -->
+            <div th:each="img : ${images}" class="preview">
+              <img th:src="@{${img.filePath}}" th:alt="${img.originFilename}" onerror="this.parentElement.remove();">
+              <button type="button" class="remove-btn" th:attr="data-id=${img.reportImgNo}">x</button>
+            </div>
+            <!-- + 버튼 -->
+            <label for="image-input" id="add-btn">+</label>
+          </div>
+          <input id="image-input" name="images" type="file" accept="image/*" multiple style="display:none"></input>
+
+        </div>
+        <div id="delete-container"></div>
+
+        <div>
+          <button type="submit" th:text="${reportNo != null} ? '수정' : '등록'"></button>
+          <a th:href="@{/center/report}">목록으로</a>
+        </div>
+      </form>
+    </main>
+
+    <!-- ===== 이미지 업로드/삭제 스크립트 ===== -->
+    <div layout:fragment="script">
+      <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+      <script th:src="@{/js/comm/sweetalert.noah.js}"></script>
+      <script>
+        const imageInput = document.getElementById("image-input");
+        const container = document.getElementById("image-container");
+        const addBtn = document.getElementById("add-btn");
+        addBtn.style.display = "flex"; // Ensure initial display is flex for centering
+        const form = document.getElementById("reportForm");
+        const deleteContainer = document.getElementById("delete-container");
+
+        let files = []; // 새로 선택한 파일
+        let deleteIds = []; // 삭제할 기존 이미지 ID
+
+        // === 기존 이미지 삭제(X 버튼) ===
+        document.querySelectorAll(".remove-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const id = btn.getAttribute("data-id");
+            deleteIds.push(id);
+
+            // hidden input 추가
+            const hidden = document.createElement("input");
+            hidden.type = "hidden";
+            hidden.name = "deleteImgIds";
+            hidden.value = id;
+            deleteContainer.appendChild(hidden);
+
+            btn.parentElement.remove(); // 미리보기 제거
+
+            // 삭제 후 버튼 다시 보이게 (5개 미만이면)
+            const totalCount = container.querySelectorAll(".preview").length;
+            if (totalCount < 5) addBtn.style.display = "flex";
+          });
+        });
+
+        // === 새 이미지 선택 시 미리보기 ===
+        imageInput.addEventListener("change", (e) => {
+          const selected = Array.from(e.target.files);
+
+          // 현재 화면의 개수(기존 + 신규)
+          let currentCount = container.querySelectorAll(".preview").length;
+
+          // 추가 가능한 개수
+          const available = 5 - currentCount;
+
+          // 초과된 파일은 잘라냄
+          const addFiles = selected.slice(0, available);
+
+          addFiles.forEach(file => {
+            files.push(file);
+            previewImage(file);
+            currentCount++; // 추가될 때마다 카운트 증가
+          });
+
+          // 5개 딱 채워진 순간 버튼 숨김
+          addBtn.style.display = currentCount >= 5 ? "none" : "flex";
+
+          // 선택창 초기화 (같은 파일 다시 선택 가능하게)
+          imageInput.value = "";
+        });
+
+        function previewImage(file) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const div = document.createElement("div");
+            div.classList.add("preview");
+
+            const img = document.createElement("img");
+            img.src = e.target.result;
+
+            const removeBtn = document.createElement("button");
+            removeBtn.innerText = "x";
+            removeBtn.classList.add("remove-btn");
+
+            removeBtn.onclick = () => {
+              files = files.filter(f => f !== file);
+              div.remove();
+              const totalCount = container.querySelectorAll(".preview").length;
+              if (totalCount < 5) addBtn.style.display = "flex";
+            };
+
+            div.appendChild(img);
+            div.appendChild(removeBtn);
+            container.insertBefore(div, addBtn);
+          };
+          reader.readAsDataURL(file);
+        }
+
+        // === submit 시 files를 input에 반영 ===
+        form.addEventListener("submit", (e) => {
+          const dataTransfer = new DataTransfer();
+          files.forEach(f => dataTransfer.items.add(f));
+          imageInput.files = dataTransfer.files;
+        });
+
+        // ====== 신고유형/사유/기타 입력 제어 스크립트 ======
+        document.addEventListener("DOMContentLoaded", function () {
+          const reportType = document.querySelector("#reportType");
+          const memberReason = document.querySelector("#memberReason");
+          const shopReason = document.querySelector("#shopReason");
+          const etcBox = document.querySelector("#etcBox");
+          const etcInput = document.querySelector("#reportEtc");
+
+          function updateUI() {
+            const type = reportType.value;
+
+            // 초기화
+            memberReason.style.display = "none";
+            shopReason.style.display = "none";
+            etcBox.style.display = "none";
+            memberReason.disabled = true;
+            shopReason.disabled = true;
+            etcInput.disabled = true;
+
+            if (type === "0") { // 회원
+              memberReason.style.display = "block";
+              memberReason.disabled = false;
+            } else if (type === "1") { // 매장
+              shopReason.style.display = "block";
+              shopReason.disabled = false;
+            } else if (type === "2") { // 기타
+              // ✅ 여기 수정
+              memberReason.style.display = "block";
+              memberReason.disabled = false;
+              memberReason.value = "8";   // "기타"로 강제 선택
+
+              etcBox.style.display = "block";  // 추가 입력칸 표시
+              etcInput.disabled = false;
+            }
+          }
+
+          // 유형 변경 시 UI 갱신
+          reportType.addEventListener("change", updateUI);
+          updateUI();
+
+          // 사유 선택에 따른 기타 입력칸 활성화
+          [memberReason, shopReason].forEach(select => {
+            select.addEventListener("change", function () {
+              if (this.value === "8") {
+                etcBox.style.display = "block";
+                etcInput.disabled = false;
+              } else {
+                etcBox.style.display = "none";
+                etcInput.disabled = true;
+              }
+            });
+          });
+        });
+      </script>
+      <script>
+        document.getElementById('reportForm').addEventListener('submit', async function (event) {
+          event.preventDefault();
+
+          const refInput = document.getElementById("reportRef");
+          const refValue = refInput.value.trim();
+
+          const fieldsToValidate = [
+            { id: 'reportType', message: '신고 유형을 선택해주세요.' },
+            { id: 'reportRef', message: '신고 대상을 입력해주세요.' },
+            { id: 'reportReason', message: '신고 사유를 선택해주세요.' },
+            { id: 'reportTitle', message: '신고 제목을 입력해주세요.' },
+            { id: 'reportContent', message: '신고 내용을 입력해주세요.' },
+          ];
+
+          for (const field of fieldsToValidate) {
+            if (field.id === 'reportReason') {
+              const reasonSelects = document.getElementsByName('reportReason');
+              let activeSelect = null;
+              for (const sel of reasonSelects) {
+                if (!sel.disabled && sel.style.display !== "none") {
+                  activeSelect = sel;
+                  break;
+                }
+              }
+              if (!activeSelect || !activeSelect.value.trim()) {
+
+                Swal.fire({
+                  icon: 'warning',
+                  title: '입력 오류',
+                  text: field.message,
+                  confirmButtonText: '확인',
+                  confirmButtonColor: '#ff6600',
+                  didClose: () => {
+                    if (activeSelect) {
+                      activeSelect.focus({ preventScroll: true });
+                      activeSelect.scrollIntoView({
+                        behavior: 'auto',
+                        block: 'center'
+                      });
+                    }
+                  }
+                });
+                return;
+              }
+              continue;
+            }
+
+            const inputElement = document.getElementById(field.id);
+            if (!inputElement || !inputElement.value.trim()) {
+              Swal.fire({
+                icon: 'warning',
+                title: '입력 오류',
+                text: field.message,
+                confirmButtonText: '확인',
+                confirmButtonColor: '#ff6600',
+                didClose: () => {
+                  inputElement.focus({ preventScroll: true });
+                  inputElement.scrollIntoView({
+                    behavior: 'auto',
+                    block: 'center'
+                  });
+                }
+              });
+              return;
+            }
+          }
+
+          try {
+            const response = await fetch(`/center/report/checkReportRef?reportRef=${encodeURIComponent(refValue)}`);
+            const result = await response.text();
+
+            if (result === "MEMBER" || result === "SHOP") {
+              // ✅ 통과일 때만 제출
+              event.target.submit();
+            } else {
+              Swal.fire({
+                icon: 'error',
+                title: '대상 없음',
+                text: '해당하는 회원/상점이 없습니다. 다시 입력해주세요.',
+                confirmButtonText: '확인',
+                confirmButtonColor: '#ff6600',
+                didClose: () => {
+                  refInput.focus({ preventScroll: true });
+                  refInput.scrollIntoView({
+                    behavior: 'auto',
+                    block: 'center'
+                  });
+                }
+              });
+            }
+          } catch (err) {
+            console.error("검증 오류:", err);
+            Swal.fire({
+              icon: 'error',
+              title: '서버 오류',
+              text: '신고 대상 확인 중 오류가 발생했습니다.',
+              confirmButtonText: '확인',
+              confirmButtonColor: '#ff6600'
+            });
+          }
+        });
+      </script>
+
+    </div>
+  </div>
+</div>
+
+</html>

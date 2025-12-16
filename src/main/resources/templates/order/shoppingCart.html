@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html layout:decorate="~{common/layout}"><!-- layout.html 적용 -->
+<head>
+	<link rel="stylesheet" th:href="@{/css/order/shoppingCart.css}" />
+	<!-- 시큐리티에서 ajax 활성화 -->
+	<th:block layout:fragment="head-extra">
+        <meta name="_csrf" th:content="${_csrf.token}">
+        <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    </th:block>
+</head>
+<div layout:fragment="content" class="container my-3"><!-- 아래가 레이아웃 content 부분에 담김 -->
+
+<!-- 목록 상단부 -->
+<section class="top">
+   <h1 class="jua-regular mt-5 mb-3 text-center"><!-- 목록 제목 -->
+	장바구니
+   </h1>
+   <p class="text-center">1개의 가게에서만 주문이 가능합니다.</p>
+</section><!-- 목록 상단부 /{memberNo}-->
+
+		
+<form th:action="@{/order/order}" class="cartForm" method="post">
+<div class="d-flex justify-content-center">
+	<!-- 상품 박스 -->
+	<div class="box">
+		<!-- 삭제 버튼 -->
+		<div class="text-end m-2">
+			<button class="btn btn-warning delete-btn" type="button">선택 상품 삭제</button>
+			<button class="btn btn-secondary deleteAll-btn" type="button">장바구니 비우기</button>
+			<script th:if="${showToast != null}"> //showToast가 전달되었다면
+				showToast("[[${showToast}]]","success"); //toast 띄우기
+			</script>
+			<script th:if="${showError != null}"> //showError가 전달되었다면
+				showToast("[[${showError}]]","error"); //toast 띄우기				
+			</script>
+		</div>
+		
+		<!-- 일반/정기 구분 탭 -->
+		<ul class="nav nav-tabs">
+			<li class="nav-item">
+				<a class="linkDefault nav-link active normal" th:href="@{/order/cart/normal}">일반 상품</a>
+			</li>
+			<li class="nav-item">
+				<a class="linkDefault nav-link subs" th:href="@{/order/cart/subs}">정기 배송</a>
+			</li>
+		</ul>
+		<!-- 상품목록 출력부 -->
+		<div class="productList">
+		<div class="text-center" th:if="${cartGroup.size<1}"><!-- 조회된 상품이 없을 때 -->
+			<p class="fs-3 mt-5">담긴 상품이 없습니다.</p>
+		</div>
+	
+		<div th:if="${cartGroup.size>=1}"><!-- 조회된 상품이 있을 때 -->
+			<!-- 장바구니목록 세로 정렬 -->
+			<div class="column">
+				<!-- 가게 단위 구분 -->
+				<div class="shop-sector m-3" th:each="entry :${cartGroup}">
+					<!-- entry.key = 상점 / entry.value = 장바구니 레코드 -->
+					<div class="border bg-warning-subtle"><!-- 상점 -->
+					<!-- 영업중이지 않다면 -->
+					<th:block th:if="${entry.key.isOpened==1}">
+						<button type="button" class="closed btn btn-sm btn-dark">준비 중</button>	
+					</th:block>		
+					<th:block th:unless="${entry.key.isOpened==1}">
+						<input type="checkbox" name="shopNo" class="shopNo" th:value="${entry.key.shopNo}"/>					
+					</th:block>
+						<a class="linkDefault" th:href="@{|/shop/view/${entry.key.shopNo}|}">
+							<span class="shopName fs-5" th:text="${entry.key.shopName}"></span>	
+						</a>
+					</div>
+					<div class="d-flex flex-row card w-100" th:each="product : ${entry.value}"><!-- 상품 -->
+						<!-- 상품이 품절 or 상점이 준비 중일 때 -->
+						<th:block th:if="${product.status==1 or entry.key.isOpened==1}">
+ 							<button class="btn btn-warning deleteThis" type="button" th:attr="data-cartno=${product.cartNo}">삭제</button>
+						</th:block>
+						<!-- 상품이 정상일 때 -->
+						<th:block th:unless="${product.status==1 or entry.key.isOpened==1}">
+							<input type="checkbox" name="cartNos" class="cartNo" th:value="${product.cartNo}"/>
+						</th:block>
+							<div class="p-2 w-25 image-wrapper"><!-- 상품 사진 출력 -->
+								<a class="linkDefault" th:href="@{|/product/detail/${product.productNo}|}">
+								<span th:if="${product.thumbnailName==null}"><!-- 상품 사진 없을 때-->
+									<img th:src="@{/image/header/logo.png}" class="w-100"/>
+								</span>
+								<span th:unless="${product.thumbnailName==null}"><!-- 상품 사진 있을 때-->
+									<img th:src="@{|/upload/product/${product.thumbnailName}|}" class="w-100"/>
+								</span>
+								</a>				
+							</div>
+							<div class="p-2 card-body"><!-- 상품 정보 -->
+								<a class="linkDefault" th:href="@{|/product/detail/${product.productNo}|}">
+									<h4 class="card-title" th:text="${product.productName}"></h4>
+									<h6 th:text="${#numbers.formatInteger(product.price, 1, 'COMMA')}+'원'" class="price" th:attr="data-price=${product.price}"></h6>
+								</a>
+								<!-- 상품 수량 -->
+								<input type="number" th:value="${product.quantity}" th:name="|quantities[${product.cartNo}]|" class="quantity"
+									style="width:120px;" min="1" max="999"/>
+								<!-- 품절이라면 -->
+								<th:block th:if="${product.status==1}">
+									<button type="button" class="sold-out btn btn-sm btn-danger">품절</button>	
+								</th:block>
+							</div>
+							<div class="d-flex flex-column m-3">
+							<!-- 찜버튼 -->
+							<th:block th:if="${product.isWished==1}"><!-- 찜 되어있는 상품은 -->			
+								<i class="wish-btn position-absolute bottom-0 end-0 p-3 bi bi-heart-fill" th:attr="data-productno=${product.productNo}"></i>
+							</th:block>
+							<th:block th:unless="${product.isWished==1}"><!-- 찜 안되어있다면 -->
+								<i class="wish-btn position-absolute bottom-0 end-0 p-3 bi bi-heart" th:attr="data-productno=${product.productNo}"></i>
+							</th:block> 								
+ 							</div>
+					</div><!-- 상품 -->
+				
+				<!-- 주문 가격 -->
+				<div class="text-center fs-5">
+					상품 <span class="selectedPrice">0</span>원 + 배송비 <span class="deliveryFee" th:text="${#numbers.formatInteger(entry.key.deliveryFee, 1, 'COMMA')}" th:attr="data-deliveryfee=${entry.key.deliveryFee}"></span>원
+					= <span class="totalPrice">상품을 선택해주세요.</span>
+				</div>
+				</div><!-- 가게 단위 구분 -->
+			</div><!-- 장바구니목록 세로 정렬 -->
+		</div><!-- 조회된 상품이 있을 때 -->
+		</div><!-- 상품 목록 출력부 -->
+	</div><!-- 상품 박스 -->
+
+	<!-- 주문 박스 -->
+	<div class="sticky-wrapper">
+		<div class="box shop-total">
+			<h5>가게별 합계</h5>
+			<div class="shop-summary"></div>	
+		</div>	
+		<div class="box order-info">
+			<h4>주문 정보</h4>
+				<div class="mt-1 mb-1 order-list">선택된 상품이 없습니다.</div>
+			<!-- 주문 예정 금액 -->
+			<div class="mb-1 d-flex justify-content-between">
+				<span class="fs-5">결제 금액</span>
+				<span class="fs-5 orderPrice">0원</span>
+			</div>
+			<br>
+			<!-- 일반상품이라면 -->
+			<th:block th:unless="${isSubs}">
+				<button class="btn btn-warning submit-btn w-100" type="button">주문</button>
+			</th:block>
+			<!-- 정기 배송 목록이라면 -->
+			<th:block th:if="${isSubs}">
+				<button class="btn btn-warning submit-btn w-100" type="button">정기 배송 주문</button>
+				<input type="hidden" name="isSubs" th:value="${isSubs}" />
+			</th:block>
+		</div>
+	
+	</div>
+</div>	
+</form>
+</div><!-- fragment -->
+
+<script layout:fragment="script" type="text/javascript" th:inline="javascript">
+
+	// 모든 jQuery AJAX 요청에 CSRF 헤더 자동 첨부
+	$(function () {
+	  const token  = $('meta[name="_csrf"]').attr('content');
+	  const header = $('meta[name="_csrf_header"]').attr('content');
+	  $(document).ajaxSend(function (e, xhr) {
+	    if (token && header) xhr.setRequestHeader(header, token);
+	  });
+	});
+
+	// 페이지 로드 시 현재 URL에 따라 active 적용
+	$(document).ready(function () { //문서가 준비되면
+	    const path = window.location.pathname; //현재 페이지의 경로 가져오기
+
+	    if (path.includes("/order/cart/normal")) { //일반 상품이면
+	        $('.nav-link.normal').addClass('active'); //일반 상품 tab 앞으로 나오게
+	        $('.nav-link.subs').removeClass('active');
+	    } 
+	    else if (path.includes("/order/cart/subs")) { //정기 상품이면
+	        $('.nav-link.subs').addClass('active'); //정기 상품 tab 앞으로 나오게
+	        $('.nav-link.normal').removeClass('active');
+	    }
+	    //가게별 합계 출력
+		updateShopTotals();
+	});
+	
+	//구매 불가한 상품 장바구니에서 삭제
+	$('.deleteThis').on('click',function(){
+		const cartNo = $(this).data('cartno'); //이 버튼의 cartNo값
+		
+		//선택창 
+		showConfirmAlert(
+			'선택한 상품을 삭제하시겠습니까?', // 표시할 메시지
+			() => {// 사용자가 '예'를 눌렀을 때 실행
+				$('.cartForm').append('<input type="hidden" name="cartNos" value="'+cartNo+'"/>'); //해당 버튼의 cartNo 추가
+				$('.cartForm').attr('action','/order/cartDelete').submit();
+			},
+			() => {// 사용자가 '아니오'를 눌렀을 때 실행
+				showToast('삭제가 취소되었습니다.', 'error');
+			}
+		);
+	});
+	
+	//구매 불가한 상점 장바구니에서 삭제
+	$('.closed').on('click',function(){
+				
+	});
+	
+	//선택한 상품 장바구니에서 삭제
+	$('.delete-btn').on('click',function(){ //삭제 버튼이 클릭되면
+		//선택창 
+		showConfirmAlert(
+		        '선택한 상품을 삭제하시겠습니까?', // 표시할 메시지
+		        () => {// 사용자가 '예'를 눌렀을 때 실행
+		          	$('.cartForm').attr('action','/order/cartDelete').submit();
+		        },
+		        () => {// 사용자가 '아니오'를 눌렀을 때 실행
+		          showToast('삭제가 취소되었습니다.', 'error');
+		        }
+		      );
+	});
+	
+	//모든 장바구니 상품 삭제
+	$('.deleteAll-btn').on('click',function(){ //모든 상품 비우기가 클릭되면
+		//선택창 
+		showConfirmAlert(
+		        '장바구니를 모두 비우시겠습니까?', // 표시할 메시지
+		        () => {// 사용자가 '예'를 눌렀을 때 실행
+		          	$('.cartForm').attr('action','/order/cartDeleteAll').submit();
+		        },
+		        () => {// 사용자가 '아니오'를 눌렀을 때 실행
+		          	showToast('삭제가 취소되었습니다.', 'error');
+		        }
+		      );
+	});
+	
+	//가게 선택/해제 시
+	$('.shopNo').on('change',function(){ //가게의 체크박스가 선택/해제되면
+		
+		//체크박스 체크 여부 확인
+		if($(this).is(':checked')){ //가게가 체크되었다면
+
+			//선택안된 가게&상품 체크 해제
+			$('.shopNo').not(this).prop('checked',false); //다른 가게 체크 해제
+			$('.shop-sector').not(this).find('.cartNo').prop('checked',false); //다른 가게의 모든 상품 체크 해제
+			
+			//선택된 가게의 모든 상품 체크
+			$(this).closest('.shop-sector').find('.cartNo').prop('checked',true);
+			
+		} else { //가게 체크가 해제되었다면
+			//현재 가게의 모든 상품 체크 해제
+			$(this).closest('.shop-sector').find('.cartNo').prop('checked',false);
+		}
+		checkPrice();//선택된 상품의 가격 반영
+		checkProduct(); //선택된 상품의 정보 반영
+	});
+	 
+	//상품 선택/해제 시
+	$('.cartNo').on('change',function(){ //상품 체크박스가 선택/해제되면
+		
+		const thisShop = $(this).closest('.shop-sector').find('.shopNo'); //선택된 상품의 가게
+		const thisSector = $(this).closest('.shop-sector'); //선택된 상품의 가게sector
+		
+		if($(this).is(':checked')){ //상품이 체크되었다면
+			//다른 가게 체크 해제
+			$('.shopNo').not(thisShop).prop('checked',false);
+			//다른 가게의 상품 선택 해제
+			$('.shop-sector').not(thisSector).find('.cartNo').prop('checked',false);
+			
+			//해당 상품의 가게 체크
+			thisSector.find('.shopNo').prop('checked',true); 
+		} else { //상품이 체크해제되고
+			if(thisSector.find('.cartNo:checked').length === 0){ //현재 가게 상품 중 선택되어있는 상품이 없다면
+				thisSector.find('.shopNo').prop('checked',false); //현재 가게 체크 해제
+			}
+		}
+		checkPrice();//선택된 상품의 가격 반영
+		checkProduct(); //선택된 상품의 정보 반영
+	});	
+	
+	//수량 변경 시
+	$('.quantity').on('change',function(){
+		$(this).closest('.card').find('.cartNo').prop('checked',true); //해당 체크박스 선택
+		checkPrice();//선택된 상품의 가격 반영
+		checkProduct(); //선택된 상품의 정보 반영
+	});
+	
+	//선택한 상품의 가격 반영하는 함수
+	function checkPrice(){
+		let orderPrice = 0;		//주문 예정 금액
+		
+		//가게별 가격 계산
+		$('.shop-sector').each(function(){
+		let selectedPrice =0;	//상품 총 금액 초기화
+		const deliveryFee = $(this).find('[data-deliveryfee]').data('deliveryfee');	//배달비
+			
+			//선택된 상품 총 금액 계산
+			$(this).find('.cartNo:checked').each(function(){ //선택된 상품 각각
+				const thisCard = $(this).closest('.card'); //선택된 상품이 있는 card div
+				const price = thisCard.find('[data-price]').data('price'); //상품 가격 가져오기
+				const quantity = thisCard.find('.quantity').val();//상품 수량 가져오기
+				selectedPrice += price * quantity; //해당 가게의 selectedPrice 계산
+			});
+			//가게당 총 금액
+			totalPrice = selectedPrice + deliveryFee; //상품 금액 + 배송비
+			
+			//가격 표시
+			$(this).find('.selectedPrice').text(selectedPrice); //상품 금액 표시
+			if(selectedPrice>0){ //선택된 상품이 있다면
+				$(this).find('.totalPrice').text(totalPrice+'원');//주문 금액 표시
+			}else{ //선택된 상품이 없으면
+				$(this).find('.totalPrice').text('상품을 선택해주세요.'); //주문 금액 표시 원상복귀
+			}
+
+			//선택된 가게의 금액만 주문 금액에 담기게
+			if(totalPrice > deliveryFee){ //주문 금액이 배송비보다 많으면
+				orderPrice += totalPrice; //주문 예정 금액에 더하고 대입
+			}
+		}); //가게별 반복 종료
+		
+		//결제 예정 금액 표시
+		$('.orderPrice').text(orderPrice.toLocaleString()+'원');
+	}
+
+	//가게별 합계 계산
+	function updateShopTotals(){
+	    const $summary = $('.shop-summary');
+	    $summary.empty(); // 기존 내용 초기화
+
+	    $('.shop-sector').each(function(){
+	        let totalPrice = 0;
+	        const deliveryFee = $(this).find('[data-deliveryfee]').data('deliveryfee') || 0;
+
+	        // 삭제되지 않은 카드만 계산
+	        $(this).find('.card').each(function(){
+	            const $card = $(this);
+	            if($card.closest('.shop-sector').length){ // 카드가 존재하면
+	                const price = $card.find('[data-price]').data('price') || 0;
+	                const quantity = parseInt($card.find('.quantity').val()) || 1;
+	                totalPrice += price * quantity;
+	            }
+	        });
+
+	        const shopTotal = totalPrice + deliveryFee;
+	        const shopName = $(this).find('.shopName').text();
+
+	        $summary.append(
+	            `<div class="d-flex justify-content-between mb-1">
+	                <span>${shopName}</span>
+	                <span>${shopTotal.toLocaleString()}원</span>
+	            </div>`
+	        );
+	    });
+	}
+
+	//상품 선택/해제, 수량 변경, 삭제 시마다 호출
+	$('.quantity, .deleteThis, .delete-btn, .deleteAll-btn').on('click change', function(){
+	    // 삭제 버튼 처리 후 DOM이 바뀌었으면 업데이트
+	    setTimeout(updateShopTotals, 100); // 삭제 DOM 반영 후 실행
+	});	
+		
+	//선택된 상품 '주문 목록'에 추가
+	function checkProduct(){
+		$('.order-list').empty(); //이전 주문 목록 비우기
+		let deliveryFee=0; //배달비 초기화
+		
+		$('.shop-sector').find('.cartNo:checked').each(function(){ //선택된 상품 각각
+			const thisCard = $(this).closest('.card'); //선택된 상품이 있는 card div
+			const price = thisCard.find('[data-price]').data('price'); //상품 가격 가져오기
+			const quantity = thisCard.find('.quantity').val();//상품 수량 가져오기
+			deliveryFee = $(this).closest('.shop-sector').find('[data-deliveryfee]').data('deliveryfee');	//배달비
+			const selectedPrice = price * quantity;
+			//결제정보에 선택된 상품 출력
+			const name = thisCard.find('.card-title').text(); //선택된 상품명
+			$('.order-list').append('<div class="d-flex justify-content-between">'+'<span>'+name+'*'+quantity+'</span>'+'<span>'+selectedPrice.toLocaleString()+'</span>'+'</div>');
+		});
+		if($('.cartNo:checked').length>0){ //선택된 상품이 있다면
+			$('.order-list').append('<div class="d-flex justify-content-between"><span>배송비</span><span>'+deliveryFee.toLocaleString()+'</span></div>')		
+		}else{ //선택된 상품이 없다면
+			$('.order-list').append('<div>선택된 상품이 없습니다.</div>')		
+		}
+	}
+	
+	//찜하기
+	$('.wish-btn').on('click',function(){
+		let thisBtn = $(this);
+		let productno = $(this).data("productno"); //클릭된 버튼의 productno
+		
+		$.ajax({ //ajax로 찜 추가 처리
+			url: '/product/wish/toggle',
+			method: 'post',
+			contentType:'application/json',
+			data: JSON.stringify({
+				productNo : productno
+			}),
+			success:function(response){ //응답JSON
+				const wished = !!response.wished; //응답JSON에 wished가 있으면 true(찜 추가)
+				thisBtn.removeClass('bi-heart bi-heart-fill').addClass(wished ? 'bi-heart-fill' : 'bi-heart'); //원래 아이콘 삭제 후 찜 결과에 따라 아이콘 추가
+				showToast(wished ? '찜했습니다.' : '찜을 취소했습니다.', 'success'); //찜 추가면 true값, 찜 취소면 false값 출력
+			},
+			error:function(response){
+				showToast('다시 시도해주세요.','error',2000);
+			}
+		});
+	});	
+	
+	//주문 버튼 클릭 시
+	$('.submit-btn').on('click',function(){
+		//상품이 체크되었을 때만 폼제출
+		if($('.cartNo:checked').length>0){ //상품이 선택되었다면
+			//폼 제출
+			$('.cartForm').submit();			
+		}else{ //선택된 상품이 없다면
+			showToast('상품을 선택해주세요','error');
+		}
+	});
+	
+</script>
+</html>

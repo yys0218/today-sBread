@@ -1,0 +1,375 @@
+/* ===== Notice List (nl-*) ===== */
+:root{
+  --bg:#FFF6E9; --ink:#3D2B1F; --ink-weak:#6C5243;
+  --brand:#D95C43; --brand-2:#E7B674; --line:#E8D8C6; --card:#FFFFFF;
+}
+
+/* 전체 톤 */
+body {
+  margin:0;
+  padding: 0;   /* ← 좌우 padding 제거 (main과 통일) */
+  color:var(--ink);
+  font-family:'Noto Sans KR', system-ui, -apple-system, Segoe UI, Roboto, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  background: var(--bg);
+}
+
+/* 제목 */
+h1.nl-title{
+  font-weight:800; letter-spacing:-.3px; 
+  font-size: clamp(20px, 3vw, 28px);
+  margin: 6px 0 14px;
+}
+
+/* --- 검색/필터 영역 --- */
+#searchForm{
+  display:flex; flex-wrap:wrap; align-items:center; gap:10px;
+  padding: 12px; border:1px solid var(--line); border-radius:16px; background:#fff;
+  box-shadow: 0 10px 24px rgba(0,0,0,.04);
+  margin-bottom: 16px;
+}
+#searchForm label{ font-weight:700; color:var(--ink-weak); }
+#searchForm select,
+#searchForm input[type="text"]{
+  appearance: none; outline:none;
+  border:1px solid var(--line); border-radius:10px; background:#FAF6EF;
+  padding: 10px 12px; font-size:15px;
+}
+#searchForm select{ min-width: 140px; background:#fff; }
+#searchForm input[type="text"]{ width:min(360px, 60vw); }
+#searchForm button{
+  display:inline-flex; align-items:center; justify-content:center;
+  padding: 10px 16px; border-radius:12px; border:1px solid var(--line);
+  background: var(--brand); color:#fff; font-weight:700; cursor:pointer;
+  transition: transform .08s ease, box-shadow .12s ease;
+}
+#searchForm button:hover{ transform: translateY(-1px); box-shadow:0 8px 18px rgba(0,0,0,.06); }
+
+/* --- 리스트 테이블 --- */
+table.nl-table{
+  width:100%; border-collapse: separate; border-spacing:0;
+  background:#fff; border:1px solid var(--line); border-radius:18px; overflow:hidden;
+  box-shadow: 0 8px 20px rgba(0,0,0,.04);
+}
+table.nl-table thead th{
+  text-align:left; font-weight:800; color:var(--ink);
+  background:#FFFDF8; border-bottom:1px solid var(--line);
+  padding: 12px 14px;
+}
+table.nl-table tbody td{
+  border-bottom:1px solid var(--line);
+  padding: 12px 14px; color:var(--ink);
+}
+table.nl-table tbody tr:hover{ background:#FFF9F1; }
+table.nl-table tbody tr:last-child td{ border-bottom:0; }
+
+/* 제목 링크 */
+table.nl-table td a{
+  color:var(--ink); font-weight:700; text-decoration:none;
+}
+table.nl-table td a:hover{ color:var(--brand); }
+
+/* 빈 목록 메시지 */
+table.nl-table td[colspan]{ text-align:center; color:var(--ink-weak); padding: 18px; }
+
+/* --- 글쓰기 버튼 --- */
+.nl-actions > a{
+  display:inline-block; margin-top:12px;
+  padding:10px 14px; border-radius:12px; border:1px solid var(--line);
+  background:#fff; text-decoration:none; color:var(--ink); font-weight:700;
+  transition: all .15s ease;
+}
+.nl-actions > a:hover{
+  border-color: color-mix(in srgb, var(--brand) 40%, var(--line) 60%);
+  color: var(--brand);
+}
+
+/* ===== Notice List (nl-*) ===== */
+:root{
+  --bg:#FFF6E9; --ink:#3D2B1F; --ink-weak:#6C5243;
+  --brand:#D95C43; --brand-2:#E7B674; --line:#E8D8C6; --card:#FFFFFF;
+}
+
+/* 전체 톤 */
+body {
+  margin:0;
+  padding: 0;   /* ← 좌우 padding 제거 (main과 통일) */
+  color:var(--ink);
+  font-family:'Noto Sans KR', system-ui, -apple-system, Segoe UI, Roboto, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  background: var(--bg);
+}
+
+/* 제목 */
+h1.nl-title{
+  font-weight:800; letter-spacing:-.3px; 
+  font-size: clamp(20px, 3vw, 28px);
+  margin: 6px 0 14px;
+}
+
+/* --- 검색/필터 영역 --- */
+#searchForm{
+  display:flex; flex-wrap:wrap; align-items:center; gap:10px;
+  padding: 12px; border:1px solid var(--line); border-radius:16px; background:#fff;
+  box-shadow: 0 10px 24px rgba(0,0,0,.04);
+  margin-bottom: 16px;
+}
+#searchForm label{ font-weight:700; color:var(--ink-weak); }
+#searchForm select,
+#searchForm input[type="text"]{
+  appearance: none; outline:none;
+  border:1px solid var(--line); border-radius:10px; background:#FAF6EF;
+  padding: 10px 12px; font-size:15px;
+}
+#searchForm select{ min-width: 140px; background:#fff; }
+#searchForm input[type="text"]{ width:min(360px, 60vw); }
+#searchForm button{
+  display:inline-flex; align-items:center; justify-content:center;
+  padding: 10px 16px; border-radius:12px; border:1px solid var(--line);
+  background: var(--brand); color:#fff; font-weight:700; cursor:pointer;
+  transition: transform .08s ease, box-shadow .12s ease;
+}
+#searchForm button:hover{ transform: translateY(-1px); box-shadow:0 8px 18px rgba(0,0,0,.06); }
+
+/* --- 리스트 테이블 --- */
+table.nl-table{
+  width:100%; border-collapse: separate; border-spacing:0;
+  background:#fff; border:1px solid var(--line); border-radius:18px; overflow:hidden;
+  box-shadow: 0 8px 20px rgba(0,0,0,.04);
+}
+table.nl-table thead th{
+  text-align:left; font-weight:800; color:var(--ink);
+  background:#FFFDF8; border-bottom:1px solid var(--line);
+  padding: 12px 14px;
+}
+table.nl-table tbody td{
+  border-bottom:1px solid var(--line);
+  padding: 12px 14px; color:var(--ink);
+}
+table.nl-table tbody tr:hover{ background:#FFF9F1; }
+table.nl-table tbody tr:last-child td{ border-bottom:0; }
+
+/* 제목 링크 */
+table.nl-table td a{
+  color:var(--ink); font-weight:700; text-decoration:none;
+}
+table.nl-table td a:hover{ color:var(--brand); }
+
+/* 빈 목록 메시지 */
+table.nl-table td[colspan]{ text-align:center; color:var(--ink-weak); padding: 18px; }
+
+/* --- 글쓰기 버튼 --- */
+.nl-actions > a{
+  display:inline-block; margin-top:12px;
+  padding:10px 14px; border-radius:12px; border:1px solid var(--line);
+  background:#fff; text-decoration:none; color:var(--ink); font-weight:700;
+  transition: all .15s ease;
+}
+.nl-actions > a:hover{
+  border-color: color-mix(in srgb, var(--brand) 40%, var(--line) 60%);
+  color: var(--brand);
+}
+
+/* --- 페이징 (faq/inquiry와 동일 톤) --- */
+.pagination{
+  display:flex; gap:6px; list-style:none; padding:0; margin:16px 0 0;
+  justify-content:center; align-items:center;
+}
+.page-item .page-link{
+  display:inline-block; min-width:40px; text-align:center;
+  padding:8px 12px; border-radius:12px; border:1px solid var(--line);
+  background:#fff; text-decoration:none; color:var(--ink); font-weight:600;
+  transition: all .12s ease;
+}
+.page-item:hover .page-link{
+  border-color: color-mix(in srgb, var(--brand) 40%, var(--line) 60%); color: var(--brand);
+}
+.page-item.active .page-link{ border-color: var(--brand); color: var(--brand); }
+.page-item.disabled .page-link{ opacity:.45; pointer-events:none; }
+
+/* 반응형 */
+@media (max-width: 640px){
+  #searchForm{ padding:10px; }
+  #searchForm input[type="text"]{ width:100%; }
+  table.nl-table thead{ display:none; }
+  table.nl-table, table.nl-table tbody, table.nl-table tr, table.nl-table td{ display:block; width:100%; }
+  table.nl-table tbody tr{ border-bottom:1px solid var(--line); }
+  table.nl-table tbody td{ border:0; padding:10px 12px; }
+  table.nl-table tbody td::before{
+    content: attr(data-th); display:block; font-size:12px; color:var(--ink-weak); margin-bottom:4px;
+  }
+}
+
+/* ===== Notice Form (nf-*) ===== */
+.nf-container {
+  padding: 24px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 8px 20px rgba(0,0,0,.04);
+}
+.nf-group {
+  margin-bottom: 16px;
+}
+.nf-group label {
+  display: block;
+  font-weight: 700;
+  color: var(--ink-weak);
+  margin-bottom: 8px;
+}
+.nf-group input[type="text"],
+.nf-group select,
+.nf-group textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #FAF6EF;
+  outline: none;
+  font-size: 15px;
+  transition: border-color .15s ease;
+}
+.nf-group input[type="text"]:focus,
+.nf-group select:focus,
+.nf-group textarea:focus {
+  border-color: var(--brand);
+}
+.nf-actions {
+  margin-top: 24px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+.nf-actions button,
+.nf-actions a {
+  padding: 12px 20px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: #fff;
+  text-decoration: none;
+  color: var(--ink);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .15s ease;
+}
+.nf-actions button[type="submit"] {
+  background: var(--brand);
+  color: #fff;
+  border-color: var(--brand);
+}
+.nf-actions a:hover,
+.nf-actions button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(0,0,0,.06);
+}
+
+
+/* 반응형 */
+@media (max-width: 640px){
+  #searchForm{ padding:10px; }
+  #searchForm input[type="text"]{ width:100%; }
+  table.nl-table thead{ display:none; }
+  table.nl-table, table.nl-table tbody, table.nl-table tr, table.nl-table td{ display:block; width:100%; }
+  table.nl-table tbody tr{ border-bottom:1px solid var(--line); }
+  table.nl-table tbody td{ border:0; padding:10px 12px; }
+  table.nl-table tbody td::before{
+    content: attr(data-th); display:block; font-size:12px; color:var(--ink-weak); margin-bottom:4px;
+  }
+}
+/* ========== 공지사항 상세 페이지 (nd-*) ========== */
+
+/* 제목 */
+.nd-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #3D2B1F;
+  margin-bottom: 12px;
+  line-height: 1.3;
+}
+
+/* 본문 카드 */
+.nd-article {
+  max-width: 1100px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.04);
+}
+
+/* 메타 정보 */
+.nd-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px 18px;
+  font-size: 14px;
+  color: var(--ink-weak);
+  margin-top: 10px;
+}
+.nd-meta div span:first-child {
+  font-weight: 700;
+  color: var(--ink);
+  margin-right: 6px;
+}
+
+/* 구분선 */
+.nd-divide {
+  margin: 20px 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+
+/* 본문 내용 */
+.nd-content p {
+  background: #FAF6EF;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 18px;
+  font-size: 15px;
+  line-height: 1.7;
+  white-space: pre-line;
+  color: var(--ink);
+  min-height: 120px;
+}
+
+/* 상태 뱃지 */
+.nd-status {
+  display: inline-block;
+  padding: 4px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 20px;
+}
+.nd-status.show {
+  background: #fdf1e6;
+  color: var(--brand);
+  border: 1px solid var(--brand);
+}
+.nd-status.hide {
+  background: #f2e2d2;
+  color: #6F4F37;
+  border: 1px solid #d8bba7;
+}
+
+/* 하단 액션 버튼 */
+.nd-actions {
+  max-width: 1100px;
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+.nd-actions a {
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  transition: all .2s ease;
+}
+.nd-actions a:hover {
+  background: #f2e2d2;
+  border-color: var(--brand);
+  color: var(--brand);
+}

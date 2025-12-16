@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta th:name="_csrf" th:content="${_csrf.token}">
+    <meta th:name="_csrf_header" th:content="${_csrf.headerName}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" th:href="@{/css/admin/login.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/admin.css}">
+    <script src="/js/comm/sweetalert.noah.js"></script>
+    <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <title>Document</title>
+</head>
+
+<body>
+
+    <div class="login-card">
+        <form th:action="@{/admin/login}" method="post" id="loginForm">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+            <div>
+                <label for="username">아이디</label>
+                <input type="text" name="username" id="username" />
+            </div>
+
+            <div>
+                <label for="password">비밀번호</label>
+                <input type="password" name="password" id="password" />
+            </div>
+            <div th:if="${param.error}">
+                <script>
+                    showErrorTitleAlert('로그인 실패', '사용자 이름 또는 비밀번호를 확인해주세요.', '');
+                </script>
+                <div class="alert alert-danger text-center">사용자 이름 또는 비밀번호를 확인해주세요.</div>
+            </div>
+
+            <div>
+                <button type="submit">로그인</button>
+            </div>
+        </form>
+        <div>
+            <a th:href="@{/}">메인으로</a>
+        </div>
+    </div>
+
+    <div th:replace="~{/admin/footer :: footer}"></div>
+
+</body>
+
+</html>

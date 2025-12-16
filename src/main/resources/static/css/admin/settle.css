@@ -1,0 +1,230 @@
+/* 제목 */
+.admin-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  max-width: 1100px;
+  color: var(--brand);
+  border-left: 5px solid var(--brand);
+  padding-left: 10px;
+}
+
+/* 정산 설정 요약 */
+.settle-config-box {
+  max-width: 1100px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.settle-config-box p {
+  margin: 5px 0;
+  font-size: 14px;
+}
+.settle-config-box button {
+  margin-right: 10px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: #f8f5f1;
+  cursor: pointer;
+}
+.settle-config-box button:hover {
+  background: #f2e2d2;
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+/* 검색 영역 */
+.filter-bar {
+  display: flex;
+  gap: 10px;
+  margin: 15px 0 20px;
+  max-width: 1100px;
+  background: #fff;
+  padding: 12px 15px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.filter-bar input[type="text"] {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-size: 14px;
+}
+.filter-bar button,
+.filter-bar a {
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+  background: #f8f5f1;
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--ink);
+  font-size: 14px;
+}
+.filter-bar button:hover,
+.filter-bar a:hover {
+  background: #f2e2d2;
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+/* 테이블 */
+.admin-table {
+  width: 1100px;
+  border-collapse: collapse;
+  background: #fff;
+  border: 1px solid var(--line);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.admin-table th, .admin-table td {
+  border: 1px solid var(--line);
+  padding: 10px 12px;
+  text-align: center;
+  font-size: 14px;
+}
+.admin-table th {
+  background: #f8f5f1;
+  font-weight: bold;
+}
+.admin-table tr:hover {
+  background: #fdf1e6;
+}
+
+/* 페이징 */
+.pagination {
+  display: flex;
+  gap: 6px;
+  list-style: none;
+  padding: 0;
+  margin: 16px 0 0;
+  max-width: 1100px;
+  justify-content: center;
+  align-items: center;
+}
+.page-item .page-link {
+  display: inline-block;
+  min-width: 40px;
+  text-align: center;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: #fff;
+  text-decoration: none;
+  color: var(--ink);
+  font-weight: 600;
+  transition: all .12s ease;
+}
+.page-item:hover .page-link {
+  border-color: color-mix(in srgb, var(--brand) 40%, var(--line) 60%);
+  color: var(--brand);
+}
+.page-item.active .page-link {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+.page-item.disabled .page-link {
+  opacity: .45;
+  pointer-events: none;
+}
+
+/* 모달 */
+.modal {
+  display: none;
+  position: fixed;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 20px;
+  z-index: 999;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+.modal h3 {
+  margin-bottom: 15px;
+}
+.modal table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.modal th, .modal td {
+  border: 1px solid var(--line);
+  padding: 8px 10px;
+  text-align: center;
+}
+.modal th {
+  background: #f8f5f1;
+}
+.modal button {
+  margin-top: 15px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: #f8f5f1;
+  cursor: pointer;
+}
+.modal button:hover {
+  background: #f2e2d2;
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+/* ─ 기본 버튼 스타일 ─ */
+.btn {
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: #f8f5f1;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--ink);
+  transition: all .2s ease;
+}
+.btn:hover {
+  background: #f2e2d2;
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+/* ─ 주요 버튼 (확인, 저장 등 강조용) ─ */
+.btn-primary {
+  background: var(--brand);
+  border: 1px solid var(--brand);
+  color: #fff;
+  font-weight: 600;
+}
+.btn-primary:hover {
+  background: #b36d3d;
+  border-color: #b36d3d;
+}
+
+/* ─ 취소 버튼 ─ */
+.btn-cancel {
+  background: #fff;
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+.btn-cancel:hover {
+  background: #f8f5f1;
+  border-color: var(--brand);
+  color: var(--brand);
+}
+/* 정렬 버튼 화살표 */
+.btn.active.asc::after {
+  content: " ▲";
+  font-size: 12px;
+  color: var(--brand);
+}
+.btn.active.desc::after {
+  content: " ▼";
+  font-size: 12px;
+  color: var(--brand);
+}

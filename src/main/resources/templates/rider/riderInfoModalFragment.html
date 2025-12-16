@@ -1,0 +1,193 @@
+<th:block id="riderInfoModal" th:fragment="riderInfoModal">
+    <div id="changeRiderInfoModal" class="modal_layer" style="display: none">
+        <div class="modal_box" style="height: 90vh !important">
+            <!-- 모달 상단에 나가기(X) 버튼 -->
+            <div class="modal_top_btn">
+                <div class="close_modal">
+                    <i class="bi bi-x-square"></i>
+                </div>
+            </div>
+
+            <div class="modal_title">
+                <h5 class="title_bottom">정보 수정</h5>
+            </div>
+            <div class="modal_content">
+                <div class="delivery_title">
+                    <span>아이디</span>
+                    <div class="d-flex">
+                        <input type="text" name="text" id="modalId" class="custom-h-input" th:value="${#authentication.principal.member.memberId}" />
+                    </div>
+                </div>
+                <div class="delivery_title">
+                    <span>이름</span>
+                    <div class="d-flex">
+                        <input type="text" name="text" id="modalName" class="custom-r-input" th:value="${#authentication.principal.member.memberName}" />
+                    </div>
+                </div>
+                <div class="delivery_title">
+                    <span>연락처</span>
+                    <div class="d-flex">
+                        <input type="text" name="text" id="modalPhone" class="custom-r-input" th:value="${#authentication.principal.member.memberPhone}" />
+                    </div>
+                </div>
+                <div class="delivery_title">
+                    <span>이메일</span>
+                    <div class="d-flex">
+                        <input type="text" name="text" id="modalEmail" class="custom-r-input" th:value="${#authentication.principal.member.memberEmail}" />
+                    </div>
+                </div>
+                <!-- <div class="btn" id="ckEmail" style="color: #fff">이메일 인증</div> -->
+                <div class="delivery_title">
+                    <span>주소</span>
+                    <div class="d-flex flex-column" style="gap: 20px">
+                        <input type="text" name="text" id="modalAddress1" class="custom-r-input" th:value="${#authentication.principal.member.memberAddress}" />
+                        <!-- <input type="text" name="text" id="modalAddress2" class="custom-r-input" /> -->
+                    </div>
+                </div>
+                <div class="delivery_title">
+                    <span>가입일</span>
+                    <div class="d-flex">
+                        <input type="text" name="text" id="modalReg" class="custom-h-input" th:value="${#temporals.format(#authentication.principal.member.memberReg, 'yyyy-MM-dd')}" />
+                    </div>
+                </div>
+                <div class="btn" id="changePw" style="color: #fff; border: 1px solid">비밀번호 변경</div>
+                <!-- <div class="delivery_title">
+                    <span>비밀번호</span>
+                    <div class="d-flex">
+                        <input type="password" name="text" id="modalPassword1" class="custom-r-input" />
+                    </div>
+                </div>
+                <div class="delivery_title">
+                    <span>비밀번호 확인</span>
+                    <div class="d-flex">
+                        <input type="password" name="text" id="modalPassword2" class="custom-r-input" />
+                    </div>
+                </div> -->
+            </div>
+
+            <!-- 버튼 -->
+            <div class="modal_btns">
+                <a href="javascript:;" class="btn close-btn btn-group1"><span class="btn_text">취소</span></a>
+                <a href="javascript:;" class="btn btn-group1 btn-orange" id="updateMemberInfoBtn"><span class="btn_text">수정</span></a>
+                <a href="javascript:;" class="btn btn-none" id="id_insert_btn" style="display: none"><span class="btn_text">확인</span></a>
+            </div>
+        </div>
+    </div>
+
+    <div id="emailModal" class="modal" style="display: none">
+        <div class="modal-content">
+            <span class="closeBtn">&times;</span>
+            <h2>이메일 인증</h2>
+            <p>메일로 전송된 인증번호를 입력해 주세요.</p>
+            <input type="text" id="authCodeInput" placeholder="인증번호 입력" />
+            <button id="submitAuthCode">확인</button>
+            <div id="authMsg"></div>
+            <div class="modal-time"></div>
+        </div>
+    </div>
+
+    <div id="riderDeleteModal" class="modal_layer" style="display: none">
+        <div class="content-area" style="min-width: 400px; max-width: 600px; min-height: 300px; max-height: 800px; border: 1px solid black; padding: 20px; margin: 0 auto">
+            <h2>회원 탈퇴</h2>
+            <p class="desc">탈퇴하시기 전에 아래 항목을 확인해 주세요.</p>
+
+            <!-- 1) 탈퇴 사유 (단일 선택: 라디오) -->
+            <section class="section">
+                <h3 class="section-title">탈퇴 사유</h3>
+                <ul class="radios">
+                    <li>
+                        <label>
+                            <input type="radio" name="reason" value="고객/점주 관련" th:checked="${selectedReason == '원하는 제품/빵집이 없음'}" />
+                            고객/점주 관련
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="radio" name="reason" value="플랫폼 정책 관련" th:checked="${selectedReason == '가격/혜택 불만'}" />
+                            플랫폼 정책 관련 (수수료/정책 불만족)
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="radio" name="reason" value="앱/웹 오류 잦음" th:checked="${selectedReason == '앱/웹 오류 잦음'}" />
+                            앱/시스템 관련 (앱/웹 오류 잦음)
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="radio" id="reasonOther" name="reason" value="기타" th:checked="${selectedReason == '기타'}" />
+                            기타
+                        </label>
+
+                        <textarea id="otherText" name="otherReason" class="other-text" rows="3" style="display: none" placeholder="기타 사유를 입력하세요."></textarea>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- 2) 유의사항 + 동의 -->
+            <section class="section">
+                <h3 class="section-title">탈퇴 시 유의사항</h3>
+                <div class="terms">
+                    <p>• 탈퇴 시 주문/후기/문의 등 회원 정보는 관련 법령에 따라 보관 또는 즉시 삭제됩니다.</p>
+                    <p>• 정기 결제가 설정된 경우 먼저 해지 후 탈퇴해 주세요.</p>
+                    <p>• 탈퇴 후 동일 아이디 재사용은 제한될 수 있습니다.</p>
+                </div>
+                <label class="agree">
+                    <input type="checkbox" id="agree" name="agree" th:checked="${agreeChecked}" />
+                    위 내용을 모두 확인했으며 탈퇴에 동의합니다.
+                </label>
+            </section>
+
+            <!-- 버튼 -->
+            <div class="btn-row">
+                <button type="button" id="deleteModalHide" class="btn btn-ghost">취소</button>
+                <button type="button" class="btn btn-danger" id="riderDelete">회원 탈퇴</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="riderDeliveryFeeModal" class="modal_layer" style="display: none">
+        <div class="modal_box" style="height: 90vh !important ; width: 40vw">
+            <!-- 닫기 버튼 -->
+            <div class="modal_top_btn">
+                <div class="close_modal">
+                    <i class="bi bi-x-square"></i>
+                </div>
+            </div>
+
+            <!-- 타이틀 -->
+            <div class="modal_title">
+                <h5 class="title_bottom">배달비 내역</h5>
+            </div>
+
+            <div class="d-flex deliverySelect justify-content-end mb-3">
+                <select name="deliveryYearSelect" id="deliveryYearSelect"></select>
+                <select name="deliveryMonthSelect" id="deliveryMonthSelect"></select>
+            </div>
+
+            <!-- 리스트 컨텐츠 -->
+            <div class="modal_content" style="overflow-y: auto; max-height: 75vh">
+                <table class="table table-bordered table-striped text-center align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col">유형</th>
+                            <th scope="col">금액</th>
+                            <th scope="col">잔액</th>
+                            <th scope="col">등록일시</th>
+                        </tr>
+                    </thead>
+                    <tbody id="deliveryFeeListBody">
+                        <!-- Ajax로 데이터가 들어올 영역 -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 하단 버튼 -->
+            <div class="modal_btns">
+                <a href="javascript:;" class="btn close-btn btn-group1">
+                    <span class="btn_text">닫기</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</th:block>

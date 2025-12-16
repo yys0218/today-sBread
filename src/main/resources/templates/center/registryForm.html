@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{common/layout}">
+
+<head>
+    <title>입점신청 작성</title>
+    <meta charset="UTF-8">
+    <meta th:name="_csrf" th:content="${_csrf.token}">
+    <meta th:name="_csrf_header" th:content="${_csrf.headerName}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" th:href="@{/css/center/registry.css}">
+    <link rel="stylesheet" th:href="@{/css/center/help-center.css}">
+    <link rel="stylesheet" th:href="@{/css/center/centerSidebar.css}">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script th:src="@{/js/comm/sweetalert.noah.js}"></script>
+</head>
+
+<div layout:fragment="content" class="container my-3">
+    <div class="container hc-layout">
+        <!-- 좌측 사이드바 -->
+        <div th:replace="~{center/centerSidebar :: centerMenu('registry')}"></div>
+        <!-- 본문 -->
+        <main class="hc-main">
+            <form id="registryForm" th:object="${registryForm}" method="post">
+                <h1>입점 신청</h1>
+                <div th:replace="~{error/formErrors :: formErrorsFragment}"></div>
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+                <div>
+                    <label for="tinNo">사업자 등록 번호</label>
+                    <input type="text" th:field="*{tinNo}" placeholder="-를 포함하셔도 됩니다." />
+                </div>
+
+                <div>
+                    <label for="businessName">대표자 이름</label>
+                    <input type="text" th:field="*{businessName}" placeholder="사업자번호를 등록한 대표자 이름을 기입해주세요." />
+                </div>
+
+                <div>
+                    <label for="businessOpenAt">개업 날짜</label>
+                    <input type="date" th:field="*{businessOpenAt}" placeholder="개업일자를 기입해주세요." />
+                </div>
+
+                <div>
+                    <label for="businessContact">사업자 전화번호</label>
+                    <input type="text" th:field="*{businessContact}" placeholder="사업자 연락처를 기입해주세요." />
+                </div>
+
+                <div>
+                    <label for="businessMail">사업자 이메일</label>
+                    <input type="email" th:field="*{businessMail}" placeholder="연락받으실 이메일을 기입해주세요." />
+                </div>
+
+                <div>
+                    <label for="businessBank">정산 받을 은행명</label>
+                    <input type="text" th:field="*{businessBank}" placeholder="정산받을 계좌의 은행을 기입해주세요." />
+                </div>
+
+                <div>
+                    <label for="businessAccName">정산 받는 계좌 예금주 명</label>
+                    <input type="text" th:field="*{businessAccName}" placeholder="정산받을 계좌의 예금주명을 기입해주세요." />
+                </div>
+
+                <div>
+                    <label for="businessAccNum">정산 받는 계좌 계좌번호</label>
+                    <input type="text" th:field="*{businessAccNum}" placeholder="정산받을 계좌번호를 입력해주세요" />
+                </div>
+                <hr>
+                <h5>빵집에 대한 세부 정보는 추후 수정 가능 합니다.</h5>
+
+                <div>
+                    <label for="shopName">빵집 이름</label>
+                    <input type="text" th:field="*{shopName}" id="shopName" />
+                </div>
+
+                <div>
+                    <label for="shopContact">빵집 연락처</label>
+                    <input type="text" th:field="*{shopContact}" id="shopContact" />
+                </div>
+
+                <div>
+                    <label for="openTime">영업 오픈시간</label>
+                    <input type="time" th:field="*{openTime}" />
+                </div>
+                <div>
+                    <label for="closeTime">영업 마감시간</label>
+                    <input type="time" th:field="*{closeTime}" />
+                </div>
+                <div>
+                    <label for="deliveryFeeDisplay">배달 수수료</label>
+                    <input type="text" id="deliveryFeeDisplay" placeholder="예: 3,000원">
+                    <input type="hidden" th:field="*{deliveryFee}" id="deliveryFee">
+                </div>
+
+
+                <div>
+                    <label for="shopInfo">빵집 소개 문구</label>
+                    <textarea th:field="*{shopInfo}"></textarea>
+                </div>
+                <input type="button" onclick="execDaumPostcode()" value="우편번호 찾기"><br>
+                <div id="wrap"
+                    style="display:none;border:1px solid;width:500px;height:300px;margin:5px 0;position:relative"></div>
+                <div>
+                    <div>
+                        <label for="shopRoadAdd">빵집 주소</label>
+                        <input type="text" id="roadAddress" th:field="*{shopRoadAdd}" readonly />
+                    </div>
+                    <div>
+                        <label for="shopDetailAdd">빵집 상세 주소</label>
+                        <input id="detailAddress" type="text" th:field="*{shopDetailAdd}" />
+                    </div>
+                    <input id="sido" type="hidden" th:field="*{shopSido}" />
+                    <input id="sigungu" type="hidden" th:field="*{shopSigungu}" />
+                    <input id="bname" type="hidden" th:field="*{shopBname}" />
+                </div>
+
+                <div class="rf-actions">
+                    <button type="submit" onfocus="this.blur()">입점 신청</button>
+                    <a th:href="@{/center/registry}">목록으로</a>
+                </div>
+            </form>
+        </main>
+
+        <div layout:fragment="script">
+            <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+            <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+            <script th:src="@{/js/comm/sweetalert.noah.js}"></script>
+            <script>
+                var element_wrap = document.getElementById('wrap');
+
+                function foldDaumPostcode() {
+                    element_wrap.style.display = 'none';
+                }
+
+                function execDaumPostcode() {
+                    var currentScroll = Math.max(document.body.scrollTop, document.documentElement.scrollTop);
+                    new daum.Postcode({
+                        oncomplete: function (data) {
+                            var addr = '';
+                            var sido = '';
+                            var sigungu = '';
+                            var bname = '';
+                            var extraAddr = '';
+                            if (data.userSelectedType === 'R') {
+                                addr = data.roadAddress;
+                            } else {
+                                addr = data.roadAddress;
+                            }
+                            if (data.bname !== '' && /[동|로|가]$/g.test(data.bname)) {
+                                extraAddr += data.bname;
+                            }
+                            if (data.buildingName !== '' && data.apartment === 'Y') {
+                                extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+                            }
+                            if (extraAddr !== '') {
+                                extraAddr = extraAddr;
+                            }
+                            sido = data.sido;
+                            sigungu = data.sigungu;
+                            bname = data.bname;
+                            extraAddr = extraAddr.replace(/,/g, '');
+
+                            document.getElementById("roadAddress").value = addr;
+                            document.getElementById("sido").value = sido;
+                            document.getElementById("sigungu").value = sigungu;
+                            document.getElementById("bname").value = bname;
+                            document.getElementById("detailAddress").value = extraAddr;
+                            document.getElementById("detailAddress").focus();
+
+                            element_wrap.style.display = 'none';
+                            document.body.scrollTop = currentScroll;
+                        },
+                        onresize: function (size) {
+                            element_wrap.style.height = size.height + 'px';
+                        },
+                        width: '100%',
+                        height: '100%'
+                    }).embed(element_wrap);
+
+                    element_wrap.style.display = 'block';
+                }
+
+                // 배달 수수료 포맷팅
+                document.addEventListener("DOMContentLoaded", () => {
+                    const displayInput = document.getElementById("deliveryFeeDisplay");
+                    const hiddenInput = document.getElementById("deliveryFee");
+
+                    if (!displayInput || !hiddenInput) return;
+
+                    // 입력 중에는 콤마만 표시 (원 제외)
+                    displayInput.addEventListener("input", () => {
+                        const rawValue = displayInput.value.replace(/[^0-9]/g, "");
+                        hiddenInput.value = rawValue;
+
+                        if (rawValue) {
+                            displayInput.value = Number(rawValue).toLocaleString("ko-KR");
+                        } else {
+                            displayInput.value = "";
+                        }
+                    });
+
+                    // 포커스 시 → 숫자만 보여줌
+                    displayInput.addEventListener("focus", () => {
+                        const rawValue = hiddenInput.value;
+                        if (rawValue) displayInput.value = rawValue;
+                    });
+
+                    // 포커스 아웃 시 → "원" 붙여서 보여줌
+                    displayInput.addEventListener("blur", () => {
+                        const rawValue = hiddenInput.value;
+                        if (rawValue) {
+                            displayInput.value = Number(rawValue).toLocaleString("ko-KR") + "원";
+                        }
+                    });
+
+                    // 초기 값 있으면 "원" 붙여서 표시
+                    if (hiddenInput.value) {
+                        displayInput.value = Number(hiddenInput.value).toLocaleString("ko-KR") + "원";
+                    }
+                });
+
+
+                // 전화번호 자동 하이픈
+                function formatPhoneNumber(value) {
+                    value = value.replace(/[^0-9]/g, "");
+                    if (value.length < 4) return value;
+                    if (value.length < 8) return value.substring(0, 3) + "-" + value.substring(3);
+                    return value.substring(0, 3) + "-" + value.substring(3, 7) + "-" + value.substring(7, 11);
+                }
+
+                const phoneInputs = [document.getElementById("businessContact"), document.getElementById("shopContact")];
+                phoneInputs.forEach(input => {
+                    if (!input) return;
+                    input.addEventListener("input", function () {
+                        this.value = formatPhoneNumber(this.value);
+                    });
+                });
+
+                // 유효성 검사
+                document.getElementById('registryForm').addEventListener('submit', async function (event) {
+                    event.preventDefault();
+
+                    // 사업자 전화번호
+                    const businessContactInput = document.getElementById("businessContact");
+                    const businessContactVal = businessContactInput.value.replace(/-/g, "");
+                    if (businessContactVal && businessContactVal.length < 10) {
+                        Swal.fire({
+                            icon: 'warning', title: '입력 오류', text: '사업자 전화번호는 최소 10자리 이상 입력해야 합니다.',
+                            confirmButtonText: '확인',
+                            confirmButtonColor: '#ff6600',
+                            returnFocus: false,
+                            didClose: () => businessContactInput.focus()
+                        });
+                        return;
+                    }
+
+                    // 빵집 전화번호
+                    const shopContactInput = document.getElementById("shopContact");
+                    const shopContactVal = shopContactInput.value.replace(/-/g, "");
+                    if (shopContactVal && shopContactVal.length < 9) {
+                        Swal.fire({
+                            icon: 'warning', title: '입력 오류', text: '빵집 전화번호는 최소 9자리 이상 입력해야 합니다.',
+                            confirmButtonText: '확인',
+                            confirmButtonColor: '#ff6600',
+                            returnFocus: false,
+                            didClose: () => shopContactInput.focus()
+                        });
+                        return;
+                    }
+
+                    // 사업자 등록번호
+                    const tinNoInput = document.getElementById('tinNo');
+                    let tinNo = tinNoInput.value.replace(/-/g, '');
+                    if (tinNo && (!/^[0-9]+$/.test(tinNo) || tinNo.length !== 10)) {
+                        Swal.fire({
+                            icon: 'warning', title: '입력 오류', text: '사업자 등록번호는 10자리 숫자여야 합니다.',
+                            confirmButtonText: '확인',
+                            confirmButtonColor: '#ff6600',
+                            returnFocus: false,
+                            didClose: () => tinNoInput.focus()
+                        });
+                        return;
+                    }
+                    tinNoInput.value = tinNo;
+
+                    // 이메일 형식 검사
+                    const emailInput = document.getElementById("businessMail");
+                    const emailVal = emailInput.value.trim();
+                    if (emailVal && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: '입력 오류',
+                            text: '올바른 이메일 주소를 입력해주세요. (예: example@mail.com)',
+                            confirmButtonText: '확인',
+                            confirmButtonColor: '#ff6600',
+                            returnFocus: false,
+                            didClose: () => emailInput.focus()
+                        });
+                        return;
+                    }
+
+                    // 계좌번호
+                    const accNumInput = document.getElementById('businessAccNum');
+                    const accNum = accNumInput.value;
+                    if (accNum && (!/^[0-9]+$/.test(accNum) || accNum.length < 10 || accNum.length > 16)) {
+                        Swal.fire({
+                            icon: 'warning', title: '입력 오류', text: '계좌번호를 정확히 입력해주세요.',
+                            confirmButtonText: '확인',
+                            confirmButtonColor: '#ff6600',
+                            returnFocus: false,
+                            didClose: () => accNumInput.focus()
+                        });
+                        return;
+                    }
+
+                    // 배달 수수료
+                    const deliveryFeeInput = document.getElementById("deliveryFee");
+                    if (deliveryFeeInput.value && (isNaN(deliveryFeeInput.value) || Number(deliveryFeeInput.value) <= 0)) {
+                        Swal.fire({
+                            icon: 'warning', title: '입력 오류', text: '배달 수수료는 0보다 큰 숫자여야 합니다.',
+                            confirmButtonText: '확인',
+                            confirmButtonColor: '#ff6600',
+                            returnFocus: false,
+                            didClose: () => deliveryFeeInput.focus()
+                        });
+                        return;
+                    }
+
+                    const fieldsToValidate = [
+                        { id: 'tinNo', message: '사업자 등록 번호를 입력해주세요.' },
+                        { id: 'businessName', message: '대표자 이름을 입력해주세요.' },
+                        { id: 'businessOpenAt', message: '개업 날짜를 선택해주세요.' },
+                        { id: 'businessContact', message: '사업자 전화번호를 입력해주세요.' },
+                        { id: 'businessMail', message: '사업자 이메일을 입력해주세요.' },
+                        { id: 'businessBank', message: '정산 받을 은행명을 입력해주세요.' },
+                        { id: 'businessAccName', message: '예금주 명을 입력해주세요.' },
+                        { id: 'businessAccNum', message: '계좌번호를 입력해주세요.' },
+                        { id: 'shopName', message: '빵집 이름을 입력해주세요.' },
+                        { id: 'shopContact', message: '빵집 연락처를 입력해주세요.' },
+                        { id: 'openTime', message: '영업 오픈시간 입력해주세요.' },
+                        { id: 'closeTime', message: '영업 마감시간 입력해주세요.' },
+                        { id: 'deliveryFeeDisplay', message: '배달 수수료를 입력해주세요.' },
+                        { id: 'shopInfo', message: '빵집 소개 문구 입력해주세요.' },
+                        { id: 'roadAddress', message: '빵집 주소를 입력해주세요.' },
+                        { id: 'detailAddress', message: '빵집 상세 주소를 입력해주세요.' }
+                    ];
+
+                    for (const field of fieldsToValidate) {
+                        const inputElement = document.getElementById(field.id);
+                        if (!inputElement.value.trim()) {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: '입력 오류',
+                                text: field.message,
+                                confirmButtonText: '확인',
+                                confirmButtonColor: '#ff6600',
+                                returnFocus: false,
+                                didClose: () => inputElement.focus()
+                            });
+                            return;
+                        }
+                    }
+
+                    // 가게명 중복 체크
+                    const shopNameInput = document.getElementById('shopName');
+                    const shopName = document.getElementById('shopName').value.trim();
+                    try {
+                        const response = await fetch(`/center/registry/checkShopName?shopName=${encodeURIComponent(shopName)}`);
+                        if (await response.json()) {
+                            Swal.fire({
+                                icon: 'error', title: '가게명 중복', text: '이미 존재하는 가게 이름입니다.',
+                                confirmButtonText: '확인',
+                                confirmButtonColor: '#ff6600',
+                                returnFocus: false,
+                                didClose: () => shopNameInput.focus()
+                            });
+                            return;
+                        }
+                    } catch (err) {
+                        Swal.fire({
+                            icon: 'error', title: '서버 오류', text: '가게명 중복 체크 중 오류가 발생했습니다.',
+                            confirmButtonText: '확인',
+                            confirmButtonColor: '#ff6600',
+                            returnFocus: false,
+                            didClose: () => shopName.focus()
+                        });
+                        return;
+                    }
+
+                    // 연락처 중복 체크
+                    const shopContact = document.getElementById('shopContact').value.trim();
+                    try {
+                        const response = await fetch(`/center/registry/checkShopContact?shopContact=${encodeURIComponent(shopContact)}`);
+                        if (await response.json()) {
+                            Swal.fire({
+                                icon: 'error', 
+                                title: '연락처 중복', 
+                                text: '이미 존재하는 가게 연락처입니다.',
+                                confirmButtonText: '확인',
+                                confirmButtonColor: '#ff6600',
+                                returnFocus: false,
+                                didClose: () => shopContactInput.focus()
+                            });
+                            return;
+                        }
+                    } catch (err) {
+                        Swal.fire({
+                            icon: 'error', 
+                            title: '서버 오류', 
+                            text: '연락처 중복 체크 중 오류가 발생했습니다.',
+                            confirmButtonText: '확인',
+                            confirmButtonColor: '#ff6600',
+                            returnFocus: false,
+                            didClose: () => shopContact.focus()
+                        });
+                        return;
+                    }
+
+                    // 어우 끝났다
+                    Swal.fire({
+                        icon: "success",
+                        title: "입점 신청 완료",
+                        text: "입점신청이 정상적으로 접수되었습니다.",
+                        confirmButtonText: "확인",
+                        confirmButtonColor: "#ff6600"
+                    }).then(() => {
+                        event.target.submit();
+                    });
+                });
+            </script>
+
+        </div>
+    </div>
+</div>
+
+</html>

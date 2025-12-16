@@ -1,0 +1,7 @@
+/*  <link rel="stylesheet" th:href="@{/css/member/change-pw.css}"> */
+
+        body {background-color: #f8f9fa;font-family: "Noto Sans KR", sans-serif;}
+        .change-pw-box {background: #fff;padding: 30px;border-radius: 12px;box-shadow: 0 4px 15px rgba(0,0,0,0.1);max-width: 400px;margin: 80px auto;}
+        .btn-submit {background-color: #f44336;color: #fff;}
+        .btn-submit:hover {background-color: #d7372f;}
+        #result {margin-top: 15px;}

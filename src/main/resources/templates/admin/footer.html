@@ -1,0 +1,6 @@
+<div th:fragment="footer">
+    <script th:inline="javascript">
+        const memberNo = [[${session.user != null ? session.user.memberNo : 0}]];
+    </script>
+    <script th:src="@{/js/comm/webSocket.js}"></script>
+</div>

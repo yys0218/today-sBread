@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{common/layout}">
+
+<head>
+  <title>1:1 문의 상세</title>
+  <meta charset="UTF-8">
+  <meta th:name="_csrf" th:content="${_csrf.token}">
+  <meta th:name="_csrf_header" th:content="${_csrf.headerName}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" th:href="@{/css/center/inquiry.css}">
+  <link rel="stylesheet" th:href="@{/css/center/help-center.css}">
+  <link rel="stylesheet" th:href="@{/css/center/centerSidebar.css}">
+</head>
+
+<div layout:fragment="content" class="container my-3">
+  <div class="container hc-layout">
+    <!-- 좌측 사이드바 -->
+    <div th:replace="~{center/centerSidebar :: centerMenu('inquiry')}"></div>
+
+    <main class="hc-main">
+      <div class="id-wrap">
+        <h2 class="id-title">내 1:1 문의 내용</h2>
+
+        <section th:if="${inquiry != null}">
+          <div class="id-meta">
+            <div><b>제목:</b> <span th:text="${inquiry.inquiryTitle}"></span></div>
+            <div><b>문의유형:</b>
+              <span th:if="${inquiry.inquiryType==0}">회원</span>
+              <span th:if="${inquiry.inquiryType==1}">매장</span>
+              <span th:if="${inquiry.inquiryType==2}">주문/배송</span>
+              <span th:if="${inquiry.inquiryType==3}">결제</span>
+              <span th:if="${inquiry.inquiryType==4}">기타</span>
+                        </div>
+            <div><b>작성자:</b> <span th:text="${memberNick}"></span></div>
+            <div><b>작성일:</b> <span th:text="${#temporals.format(inquiry.inquiryAt,'yyyy-MM-dd HH:mm')}"></span></div>
+            <div>
+              <b>상태:</b>
+              <span th:if="${inquiry.inquiryStatus==0}" class="il-status il-status--wait">미답변</span>
+              <span th:if="${inquiry.inquiryStatus==1 or inquiry.inquiryStatus==2}" class="il-status il-status--done">답변완료</span>
+            </div>
+          </div>
+
+          <article class="id-content">
+            <pre th:text="${inquiry.inquiryContent}"></pre>
+          </article>
+
+          <div th:if="${!#lists.isEmpty(images)}" class="image-list">
+            <div th:each="img : ${images}">
+              <img th:src="${img.filePath}" th:alt="${img.originFilename}" onerror="this.parentElement.remove();">
+            </div>
+          </div>
+
+          <section class="id-reply">
+            <h3>답변</h3>
+            <div th:if="${inquiry.inquiryReply != null and inquiry.inquiryReply != ''}">
+              <pre th:text="${inquiry.inquiryReply}"></pre>
+              <small th:if="${inquiry.inquiryReplyAt != null}"
+                th:text="${#temporals.format(inquiry.inquiryReplyAt,'yyyy-MM-dd HH:mm')}"></small>
+            </div>
+            <div th:if="${inquiry.inquiryReply == null or inquiry.inquiryReply == ''}">
+              답변 준비 중입니다.
+            </div>
+          </section>
+
+          <div class="id-actions">
+            <a th:href="@{/center/inquiry}">목록으로</a>
+            <a th:if="${inquiry.inquiryStatus==0}" th:href="@{|/center/inquiry/update/${inquiry.inquiryNo}|}">수정</a>
+            <form th:if="${inquiry.inquiryStatus==0}" th:action="@{|/center/inquiry/delete/${inquiry.inquiryNo}|}" method="post">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+              <button type="submit">철회</button>
+            </form>
+          </div>
+        </section>
+
+        <section th:if="${inquiry == null}">
+          <p>존재하지 않는 문의이거나 권한이 없습니다.</p>
+          <a th:href="@{/center/inquiry}">목록으로</a>
+        </section>
+      </div>
+    </main>
+    <div class="image-overlay"></div>
+
+    <script th:inline="javascript">
+      document.addEventListener('DOMContentLoaded', function () {
+        const images = document.querySelectorAll('.image-list img');
+        const imageOverlay = document.querySelector('.image-overlay');
+        let currentEnlargedImage = null;
+
+        images.forEach(img => {
+          img.addEventListener('click', function () {
+            if (this.classList.contains('enlarged')) {
+              // If already enlarged, shrink it
+              this.classList.remove('enlarged');
+              imageOverlay.classList.remove('active');
+              currentEnlargedImage = null;
+            } else {
+              // If not enlarged, enlarge it
+              if (currentEnlargedImage) {
+                currentEnlargedImage.classList.remove('enlarged'); // Shrink previous if any
+              }
+              this.classList.add('enlarged');
+              imageOverlay.classList.add('active');
+              currentEnlargedImage = this;
+            }
+          });
+        });
+
+        // Click on overlay to shrink image
+        imageOverlay.addEventListener('click', function () {
+          if (currentEnlargedImage) {
+            currentEnlargedImage.classList.remove('enlarged');
+            imageOverlay.classList.remove('active');
+            currentEnlargedImage = null;
+          }
+        });
+
+        // Optional: Close with ESC key
+        document.addEventListener('keydown', function(event) {
+          if (event.key === 'Escape' && currentEnlargedImage) {
+            currentEnlargedImage.classList.remove('enlarged');
+            imageOverlay.classList.remove('active');
+            currentEnlargedImage = null;
+          }
+        });
+      });
+    </script>
+  </div>
+</div>
+
+</html>

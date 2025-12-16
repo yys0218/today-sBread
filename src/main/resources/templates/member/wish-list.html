@@ -1,0 +1,224 @@
+<!-- 스윗 얼랏 적용 완료 -->
+<!-- 마이페이지 - 찜 목록 페이지 -->
+<!-- MyPageController, MyPageService, WishDTO, WishMapper, wish.xml -->
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="ko"
+	layout:decorate="~{common/layout}">
+<head>
+<link rel="stylesheet" th:href="@{/css/product/detail.css}">
+<link rel="stylesheet"
+	href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+<meta name="_csrf" th:content="${_csrf.token}">
+<meta name="_csrf_header" th:content="${_csrf.headerName}">
+<link rel="stylesheet" th:href="@{/css/member/mypage.css}">
+<link rel="stylesheet" th:href="@{/css/member/wish-list.css}">
+<script th:src="@{/js/comm/sweetalert.noah.js}"></script>
+<!-- 공용 무한 스크롤 스크립트 -->
+<script th:src="@{/js/member/mypage.js}"></script>
+</head>
+
+<body>
+	<div layout:fragment="content" class="container my-3 mypage">
+		<div class="main-wrapper">
+
+			<!-- ===== 왼쪽 사이드바 ===== -->
+			<div class="sidebar">
+				<ul>
+					<li><a class="mypage-title" th:href="@{/member/mypage}">마이페이지</a></li>
+					<li><a th:href="@{/member/order-list}">주문 내역</a></li>
+					<li><a th:href="@{/member/wish-list}" class="is-active"
+						aria-current="page">찜 목록</a></li>
+					<li><a th:href="@{/member/subscription}">정기 결제 조회/해지</a></li>
+					<li><a th:href="@{/member/review-list}">상품 후기</a></li>
+					<li><a th:href="@{/member/address}">배송지 관리</a></li>
+					<li><a th:href="@{/member/account-info}">회원 정보 관리</a></li>
+					<li><a th:href="@{/center}">고객 센터</a></li>
+					<li><a th:href="@{/center/report/list}">신고 내역</a></li>
+					<li><a th:href="@{/center/inquiry/list}">문의 내역</a></li>
+				</ul>
+			</div>
+
+			<!-- ===== 오른쪽 content-area : 찜 목록 ===== -->
+			<div class="content-right">
+				<div class="page-header">
+					<h3 class="page-title">찜 목록</h3>
+					<div class="wish-search-wrap">
+						<form class="wish-search" th:action="@{/member/wish-list}"
+							method="get" id="wishSearchForm">
+							<input type="hidden" name="page" value="1" /> <input
+								type="hidden" name="size" th:value="${size}" /> <input
+								type="text" name="q" id="wishSearch" placeholder="상품명/상점명 검색"
+								th:value="${param.q}" />
+							<button type="submit" title="검색">
+								<i class="bi bi-search"></i>
+							</button>
+						</form>
+					</div>
+				</div>
+				<div id="content-area" class="content-area">
+
+					<!-- 삭제 전용 폼 -->
+					<form th:action="@{/member/wish-delete-bulk}" method="post"
+						id="bulkForm">
+						<input type="hidden" th:name="${_csrf.parameterName}"
+							th:value="${_csrf.token}"> <input type="hidden"
+							name="page" th:value="${page}"> <input type="hidden"
+							name="size" th:value="${size}">
+
+						<div class="wish-box">
+							<div class="wish-topbar">
+								<div class="left">
+									<input type="checkbox" id="chkAll"> <label for="chkAll"
+										class="m-0">전체선택</label> <span class="wish-sum"
+										th:text="'총 ' + ${total} + '개'">총 0개</span>
+								</div>
+
+								<div>
+									<button type="submit" class="btn btn-outline-danger btn-sm"
+										th:disabled="${#lists.isEmpty(wishes)}">
+										<i class="bi bi-trash"></i> 선택삭제
+									</button>
+								</div>
+							</div>
+
+							<div class="wish-grid">
+								<!-- 비어있을 때 -->
+								<div class="wish-empty" th:if="${#lists.isEmpty(wishes)}">
+									아직 찜한 상품이 없어요.</div>
+
+								<!-- 찜 아이템 -->
+								<div class="wish-item" th:each="w : ${wishes}"
+									th:with="p=${productMap[w.productNo]},
+	             			 		  s=${(p != null and storeMap != null) ? storeMap[p.storeNo] : null}">
+									<div>
+										<input type="checkbox" name="wishNos" th:value="${w.wishNo}">
+									</div>
+
+									<div
+										style="display: grid; grid-template-columns: 80px 1fr; gap: 12px; align-items: center;">
+										<a th:if="${p != null}"
+											th:href="@{/product/detail/{num}(num=${p.productNo})}"> <img
+											class="wish-thumb"
+											th:src="${p.thumbnailPath + p.thumbnailName}" alt="상품 썸네일">
+										</a>
+										<div th:if="${p == null}" class="wish-sum">이미 삭제된 상품</div>
+
+										<div class="store-line" th:if="${s != null}">
+											<i class="bi bi-shop"></i> <a
+												th:href="@{/shop/view/{num}(num=${s.storeNo})}"
+												th:text="${s.storeName}">상점</a>
+										</div>
+
+										<a th:if="${p != null}"
+											class="wish-title text-decoration-none"
+											th:href="@{/product/detail/{num}(num=${p.productNo})}"
+											th:text="${p.productName}">상품명</a>
+										<div th:if="${p == null}" class="wish-title">삭제된 상품</div>
+										<div class="wish-price" th:if="${p != null}"
+											th:text="${#numbers.formatInteger(p.price, 1, 'COMMA')} + '원'">0원</div>
+									</div>
+
+									<div class="wish-actions">
+										<button class="btn btn-outline-primary btn-to-cart"
+											type="button" th:if="${p != null}"
+											th:attr="data-product-no=${w.productNo}">
+											<i class="bi bi-cart-plus"></i>장바구니
+										</button>
+
+										<button
+											class="btn btn-outline-secondary btn-sm btn-delete-one"
+											type="button"
+											th:attr="data-form-id=${'delForm__' + w.wishNo}">
+											<i class="bi bi-x-circle"></i> 삭제
+										</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</form>
+
+					<!-- 개별삭제 전용 숨은 폼 -->
+					<div aria-hidden="true" style="display: none;">
+						<form th:each="w : ${wishes}" th:id="${'delForm__' + w.wishNo}"
+							th:action="@{/member/wish-delete-one}" method="post">
+							<input type="hidden" th:name="${_csrf.parameterName}"
+								th:value="${_csrf.token}"> <input type="hidden"
+								name="wishNo" th:value="${w.wishNo}"> <input
+								type="hidden" name="page" th:value="${page}"> <input
+								type="hidden" name="size" th:value="${size}">
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script>
+// 장바구니 담기 스크립트
+document.addEventListener("DOMContentLoaded", function() {
+  document.querySelectorAll(".btn-to-cart").forEach(btn => {
+    btn.addEventListener("click", function() {
+      const productNo = this.dataset.productNo;
+
+      if (!productNo) {
+        showErrorAlert("상품 번호가 없습니다.");
+        return;
+      }
+
+      fetch("/member/wish-add-cart", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          [document.querySelector("meta[name='_csrf_header']").content]:
+            document.querySelector("meta[name='_csrf']").content
+        },
+        body: JSON.stringify({ productNo: productNo, qty: 1 })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === "ok") {
+          showSuccessAlert("장바구니에 담겼습니다!");
+        } else if (data.status === "login") {
+          showWarningAlert("로그인 후 이용 가능합니다.", "/member/login");
+        } else {
+          showErrorAlert(data.msg || "장바구니 담기 실패");
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        showErrorAlert("서버 오류가 발생했습니다.");
+      });
+    });
+  });
+});
+</script>
+
+		<script>
+// 개별 삭제 (이벤트 위임)
+document.addEventListener('click', function (e) {
+  const btn = e.target.closest('.btn-delete-one');
+  if (!btn) return;
+
+  const formId = btn.dataset.formId;
+  const form = document.getElementById(formId);
+  if (!form) {
+    showErrorAlert("삭제 폼을 찾을 수 없습니다.");
+    return;
+  }
+
+  // 확인 알림
+  showConfirmAlert(
+    "삭제하시겠어요?\n선택한 찜 항목이 삭제됩니다.",
+    () => { form.submit(); },                // 확인 눌렀을 때
+    () => { console.log("삭제 취소"); }      // 취소 눌렀을 때
+  );
+});
+
+// 전체선택 토글
+document.addEventListener('change', function (e) {
+  if (e.target.id !== 'chkAll') return;
+  const checked = e.target.checked;
+  document.querySelectorAll('input[name="wishNos"]').forEach(chk => chk.checked = checked);
+});
+</script>
+</body>
+</html>

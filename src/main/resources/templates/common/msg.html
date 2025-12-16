@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8" />
+        <title>메세지</title>
+        <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    </head>
+    <body>
+        <div style="display: none">
+            <div id="title" th:text="${title}"></div>
+            <div id="msg" th:text="${msg}"></div>
+            <div id="icon" th:text="${icon}"></div>
+            <div id="loc" th:text="${loc}"></div>
+        </div>
+        <script>
+            const titleVal = $('#title').text();
+            console.log(titleVal);
+            const title = document.querySelector('#title').innerText;
+            const msg = document.querySelector('#msg').innerText;
+            const icon = document.querySelector('#icon').innerText;
+            const loc = document.querySelector('#loc').innerText;
+            Swal.fire({
+                title: title,
+                text: msg,
+                icon: icon,
+                confirmButtonColor: '#ff6600', // 강조 버튼 (주황)
+            }).then(function () {
+                location.href = loc; // 메인페이지 이동 '/'
+            });
+        </script>
+    </body>
+</html>

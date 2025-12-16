@@ -1,0 +1,178 @@
+<div th:fragment="changeAddress_modal">
+	
+	<!-- 배송지 입력 모달 -->
+	<div class="dimmed" aria-hidden="true" id="dimmed" style="display:none"></div>
+	<div id="modal-changeAddress" class="modal_layer" style="display:none">		
+		<div class="modal_box">
+			<div class="modal_title d-flex justify-content-between">
+				<h4>배송정보 변경</h4>
+<!-- 				<button type="button" class="btn btn-warning">주소록</button>							
+-->			</div>
+	      	<div class="modal_content">
+	      		<div class="addressBook">
+	      			<div class="addressList d-flex justify-content-between mb-1" th:each="addr : ${addressList}">
+	      				<span class="address" th:text="${addr.receiverName}+'|'+${addr.receiverPhone}+'|'+${addr.addressDetail}"
+	      					 th:data-name="${addr.receiverName}"
+ 						     th:data-phone="${addr.receiverPhone}"
+      						th:data-address1="${addr.addressDetail}"
+	      				></span>
+	      				<input type="radio" name="selectAddress" class="selectAddress" onclick="rewriteModalInput(this)"/>
+	      			</div>
+	      		</div>					
+				<div class="mb-1">
+					<label for="changeName">받는 사람</label><br>
+					<input type="text" id="changeName" class="changeName" name="changeName" maxlength="30" />
+				</div>
+				<div class="mb-1">
+					<label for="changePhone">연락처</label><br>
+					<input type="text" id="changePhone" class="changePhone" name="changePhone" maxlength="11"/>
+				</div>
+				<div class="mb-1">
+					<label for="serachAddress">주소</label><br>
+					<div class="d-flex justify-content-between">
+				<!-- 	<button type="button" class="btn btn-xs searchAddress" id="searchAddress">우편번호 검색</button>  -->
+						<button type="button" class="btn btn-xs saveAddress">배송지 저장</button>
+					</div>
+					<input type="text" class="changeAddress1" id="changeAddress1" onclick="searchAddress()" placeholder="클릭하여 주소를 검색하세요." readonly/>
+					<input type="text" class="changeAddress2" id="changeAddress2"/>
+				</div>
+				<div class="mb-1">
+					<button type="button" class="btn btn-secondary reset-btn btn-xs">다시 작성</button>
+				</div>
+			</div>
+			<div class="mb-1 btn-group">
+				<button type="button" class="btn btn-secondary close-btn">취소</button>				
+				<button type="button" class="btn btn-warning submit-btn">입력</button>
+			</div>
+		</div>
+	</div>
+	
+<script type="text/javascript" th:inline="javascript">
+	// 모달 닫기 이벤트: (X) 닫기 클릭 or 어두운영역 클릭 or ESC 키
+	$(document).on('click', '.close-btn, .dimmed', closeModal);
+	$(document).on('keydown', function(e){ if(e.key === 'Escape'){ closeModal(); }});
+
+	//원래있던 값 비우기
+		function clearModalInput(){	  		
+			$('#changeName').val('');
+			$('#changePhone').val('');
+			$('#changeAddress1').val('');
+			$('#changeAddress2').val('');
+		}
+		
+		// 실제로 모달을 닫는 함수
+		function closeModal(){
+			// 입력된 값 초기화
+		clearModalInput();
+			$('.dimmed, #modal-changeAddress').hide();   // 배경/모달 숨김
+		}
+	
+	//입력창에 클릭된 주소지 입력하는 함수
+	function rewriteModalInput(radio){
+		clearModalInput();
+			
+			//선택한 값 찾기
+			let addr = $(radio).prev('.address');
+			//선택한 값 입력
+			$('#changeName').val(addr.data('name'));
+			$('#changePhone').val(addr.data('phone'));
+			$('#changeAddress1').val(addr.data('address1'));
+			$('#changeAddress2').val('');
+			
+	}
+	
+	//입력 버튼 클릭 시 홈페이지 배송 정보에 입력되도록
+	$('.submit-btn').on('click',function(){
+			const name = $('#changeName').val().trim();
+			const phone = $('#changePhone').val().trim();
+			const address = $('#changeAddress1').val().trim();
+			//모든 값이 빈칸이 없게
+			if(!(name && phone && address)){
+				showCostomWarningAlert("모든 항목을 입력해주세요.");
+				return;
+			}
+			$('#orderName').val(name);
+			$('#orderPhone').val(phone);
+			$('#orderAddress').val(address);
+			//주소2에 값이 있다면
+			if($('#changeAddress2').val().trim()!=null){
+				//변경된 주소1+2를 한 번에 입력
+				const newAddress = $('#changeAddress1').val()+''+$('#changeAddress2').val()
+				$('#orderAddress').val(newAddress);
+			}
+			showToast("배송정보가 변경되었습니다.","success");
+			//모달닫기
+		closeModal();	
+	});	
+	
+	//우편번호 서비스 api 실행하는 함수
+	function searchAddress(){
+		new daum.Postcode({
+			//사용자가 입력한 주소 정보 리턴
+			oncomplete: function(data){
+				//주소꺼내기
+				const addr = data.roadAddress || data.jibunAddress || data.autoRoadAddress || data.autoJibunAddress;
+				$('#changeAddress1').val(addr);
+			}
+		}).open();			
+	}
+	
+	//모든 값이 입력되면 저장버튼 보이기(주소록이 이미 5개면 안보이게)
+	$(function(){
+		const addressCount = /*[[${addressList.size()}]]*/ '0';
+		function toggleSaveBtn(){
+			//모든 항목의 입력값
+			const inputCheck = $('#changeName').val().trim() && $('#changePhone').val().trim() && $('#changeAddress1').val().trim();
+			//주소록에서 선택된 항목의 수
+			const checkedAddr = $('.selectAddress:checked').length;
+			
+			if(inputCheck && checkedAddr<1){
+				if(addressCount<5){
+					$('.saveAddress').show();					
+				}
+			} else {
+				$('.saveAddress').hide();
+			}
+		}
+		//input변할 때 
+		$('#changeName, #changePhone, #changeAddress1, #changeAddress2').on('input',toggleSaveBtn);
+		//모달 열릴 때
+		toggleSaveBtn();
+	});
+	
+	//저장버튼 클릭 시 내 주소록에 입력된 값 저장
+	$('.saveAddress').on('click',function(){
+		const name = $('#changeName').val().trim();
+		const phone = $('#changePhone').val().trim();
+		const address = $('#changeAddress1').val().trim();
+		
+		$.ajax({
+			url : '/member/save-from-order',
+			method : 'post',
+			data : {
+				changeName : name,
+				changePhone : phone,
+				changeAddress : address+' '+$('#changeAddress2').val()
+			},
+			success : function(res){
+				if(res.status==="success"){ //저장 성공
+					showToast("주소가 추가되었습니다.","success");
+				} else if(res.status==="error"){
+					showToast("저장된 주소지가 이미 5개입니다.","error");
+				} else if(res.status==="login"){
+					window.location=res.url;
+				}
+			},
+			error : function(error){
+				showToast("주소를 저장할 수 없습니다.","error");
+			}
+		});
+	});
+	
+	//다시 작성 버튼 눌렀을 때 입력칸 비우기
+	$('.reset-btn').on('click',function(){
+		clearModalInput();
+		$('.selectAddress:checked').prop('checked',false);
+	});
+</script>
+</div>

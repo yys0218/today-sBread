@@ -1,0 +1,164 @@
+<!-- templates/product/search.html -->
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="ko"
+	layout:decorate="~{common/layout}">
+<head>
+<!-- 공용 리스트 스타일 + 검색 전용 스타일 -->
+<link rel="stylesheet" th:href="@{/css/product/search.css}" />
+
+<!-- 시큐리티: AJAX CSRF -->
+<th:block layout:fragment="head-extra">
+	<meta name="_csrf" th:content="${_csrf.token}">
+	<meta name="_csrf_header" th:content="${_csrf.headerName}">
+</th:block>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+<!-- (필요 시) jQuery: 공용 레이아웃에서 이미 불러오면 생략 가능 -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body>
+	<th:block layout:fragment="content">
+		<div class="container my-3 d-flex col">
+			<!-- 제목 & 목록 -->
+			<div class="d-flex row p-2 w-100 col-9">
+				<!-- 상단부 -->
+				<section class="top">
+					<h1 class="jua-regular mt-5 mb-1 ms-2 search-title">
+						<span>검색어: </span><span th:text="${keyword}">키워드</span>
+					</h1>
+					<div class="result-meta ms-2 mb-3">
+						총 <strong th:text="${list != null ? list.size() : 0}">0</strong>건
+					</div>
+				</section>
+
+				<!-- 연관검색어 -->
+				<div class="related-keywords ms-2 me-2"
+					th:if="${relatedKeywords != null and !relatedKeywords.isEmpty()}">
+					<span class="chip" th:each="kw : ${relatedKeywords}"
+						th:text="${kw}"
+						th:onclick="|location.href='@{/product/search(keyword=${kw})}'|">
+					</span>
+				</div>
+
+				<!-- 결과 영역 -->
+				<div class="d-flex justify-content-between">
+					<div class="ms-3 position-relative w-100">
+						<!-- 검색 결과: 있을 때 -->
+						<div id="searchResult" th:fragment="searchResult"
+							th:if="${list != null and !list.isEmpty()}">
+							<div class="product-grid">
+								<!-- 공통 카드 프래그먼트 사용 -->
+								<div class="product-cell card p-0" th:each="product : ${list}"
+									th:attr="data-productno=${product.productNo}">
+									<div th:replace="~{/common/product-card :: card}"></div>
+								</div>
+							</div>
+						</div>
+
+						<!-- 검색 결과: 없을 때 -->
+						<div class="empty-state" th:if="${list == null or list.isEmpty()}">
+							<img th:src="@{/image/error/logo_error_noText_noBg.png}"
+								alt="검색 결과 없음">
+							<p class="msg">검색 결과가 없습니다.</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</th:block>
+
+	<!-- 스크립트: 검색 로직(장바구니/찜/CSRF)은 그대로 유지 -->
+	<script layout:fragment="script" type="text/javascript"
+		th:inline="javascript">
+  /* ============================
+     공통: jQuery AJAX CSRF 헤더
+     ============================ */
+  $(function(){
+    const token  = $('meta[name="_csrf"]').attr('content');
+    const header = $('meta[name="_csrf_header"]').attr('content');
+    $(document).ajaxSend(function (_e, xhr) {
+      if (token && header) xhr.setRequestHeader(header, token);
+    });
+  });
+
+  /* 로그인 회원번호(없으면 null). Thymeleaf inline의 안전한 fallback */
+  const MEMBER_NO = /*[[${memberNo}]]*/ null;
+
+  /* ============================
+     장바구니 담기 (카드 조각의 .insertBtn)
+     ============================ */
+  $(document).on('click', '.insertBtn', function(){
+    const $card = $(this).closest('.card');
+    const productNo    = Number($card.data('productno'));
+    const shopNo       = Number($card.find('[data-shopno]').data('shopno'));
+    const productName  = String($card.find('[data-productname]').data('productname') || '');
+    const price        = Number($card.find('[data-price]').data('price') || 0);
+    const thumbnail    = String($card.find('[data-thumbnailname]').data('thumbnailname') || '');
+    const qty          = 1;
+
+    if (MEMBER_NO === null) {
+      if (typeof showWarningAlert === 'function') {
+        showWarningAlert('로그인이 필요합니다.','/member/login');
+      } else {
+        location.href = '/member/login';
+      }
+      return;
+    }
+
+    $.ajax({
+      url: '/order/cartInsert',
+      method: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify({
+        productNo: productNo,
+        shopNo: shopNo,
+        productName: productName,
+        price: price,
+        quantity: qty,
+        thumbnailName: thumbnail,
+        memberNo: MEMBER_NO
+      })
+    }).done(function(){
+      if (typeof showToast === 'function') showToast('장바구니에 추가되었습니다.','success',2000);
+    }).fail(function(err){
+      console.error(err);
+      if (typeof showToast === 'function') showToast('다시 시도해주세요.','error',2000);
+    });
+  });
+
+  /* ============================
+     찜 토글 (카드 조각의 .wish-btn)
+     ============================ */
+  $(document).on('click', '.wish-btn', function(){
+    const $btn  = $(this);
+    const $card = $btn.closest('.card');
+    const productNo = Number($card.data('productno'));
+
+    if (MEMBER_NO === null) {
+      if (typeof showWarningAlert === 'function') {
+        showWarningAlert('로그인이 필요합니다.','/member/login');
+      } else {
+        location.href = '/member/login';
+      }
+      return;
+    }
+
+    $.ajax({
+      url: '/product/wish/toggle',
+      method: 'POST',
+      contentType:'application/json',
+      data: JSON.stringify({ productNo })
+    }).done(function(res){
+      const wished = !!res.wished;
+      $btn.removeClass('bi-heart bi-heart-fill')
+          .addClass(wished ? 'bi-heart-fill' : 'bi-heart');
+      if (typeof showToast === 'function') showToast(wished ? '찜했습니다.' : '찜을 취소했습니다.','success',1500);
+    }).fail(function(err){
+      console.error(err);
+      if (typeof showToast === 'function') showToast('다시 시도해주세요.','error',2000);
+    });
+  });
+</script>
+</body>
+</html>

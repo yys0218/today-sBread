@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{common/layout}">
+
+<head>
+  <title>입점신청 리스트</title>
+  <meta charset="UTF-8">
+  <meta th:name="_csrf" th:content="${_csrf.token}">
+  <meta th:name="_csrf_header" th:content="${_csrf.headerName}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" th:href="@{/css/center/registry.css}">
+  <link rel="stylesheet" th:href="@{/css/center/help-center.css}">
+  <link rel="stylesheet" th:href="@{/css/center/centerSidebar.css}">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script th:src="@{/js/comm/sweetalert.noah.js}"></script>
+</head>
+
+<div layout:fragment="content" class="container my-3">
+  <div class="container hc-layout">
+    <!-- 좌측 사이드바 -->
+    <div th:replace="~{center/centerSidebar :: centerMenu('registry')}"></div>
+    <!-- 본문 -->
+    <main class="hc-main">
+      <!-- 제목 -->
+      <h2 class="rl-title">입점 신청</h2>
+
+      <!-- 상단 신청 버튼 -->
+      <div th:if="${memberRole == 0}">
+        <button type="button" id="applyCheckBtn" class="rl-insert" th:disabled="${isApplying}"
+          th:classappend="${isApplying} ? 'pending' : ''" th:text="${isApplying} ? '입점신청중' : '입점신청하기'"></button>
+      </div>
+
+      <!-- 리스트 테이블 -->
+      <table class="rl-table">
+        <thead>
+          <tr>
+            <th>번호</th>
+            <th>결과</th>
+            <th>신청일</th>
+            <th>관리</th>
+          </tr>
+        </thead>
+        <tbody th:if="${memberRole == 0}">
+          <th:block th:each="s, loop : ${paging.content}">
+            <tr class="row">
+              <td th:text="${paging.getTotalElements - (paging.number * paging.size) - loop.index}"></td>
+              <td>
+                <span th:if="${s.shopRegResult == null}" class="rl-status--wait">입점신청중</span>
+                <span th:if="${s.shopRegResult == 'N'}" class="rl-status--deny">입점 거절
+                  <span th:if="${s.shopRegReason == 0}">(필수 서류 미비)</span>
+                  <span th:if="${s.shopRegReason == 1}">(자격 요건 불충족)</span>
+                  <span th:if="${s.shopRegReason == 2}">(품질 기준 미달)</span>
+                  <span th:if="${s.shopRegReason == 3}">(중복,허위 기재)</span>
+                  <span th:if="${s.shopRegResult == 'Y'}" class="rl-status--ok">입점 승인</span>
+              </td>
+              <td th:text="${#temporals.format(s.shopRegAt,'yyyy-MM-dd HH:mm')}"></td>
+              <td>
+                <form th:if="${s.shopRegResult == null}" th:action="@{|/center/registry/cancel/${s.shopNo}|}"
+                  method="post">
+                  <button type="submit">신청 철회</button>
+                </form>
+              </td>
+            </tr>
+            <!-- 상세정보 토글 -->
+            <tr>
+              <td colspan="4">
+                <div class="rl-detail" style="display:none">
+                  <div><b>사업자등록번호</b> <span th:text="${s.tinNo}"></span></div>
+                  <div><b>사업자명</b> <span th:text="${s.businessName}"></span></div>
+                  <div><b>개업일</b> <span th:text="${#temporals.format(s.businessOpenAt,'yyyy-MM-dd')}"></span></div>
+                  <div><b>사업자 연락처</b> <span th:text="${s.businessContact}"></span></div>
+                  <div><b>메일</b> <span th:text="${s.businessMail}"></span></div>
+                  <div><b>은행/예금주/계좌</b>
+                    <span th:text="${s.businessBank}"></span> /
+                    <span th:text="${s.businessAccName}"></span> /
+                    <span th:text="${s.businessAccNum}"></span>
+                  </div>
+                  <div th:if="${s.shopRegResult == 'N'}"><b>거절 사유 코드</b>
+                    <span th:if="${s.shopRegReason==0}">필수 서류 미비</span>
+                    <span th:if="${s.shopRegReason==1}">자격 요건 불충족</span>
+                    <span th:if="${s.shopRegReason==2}">품질 기준 미달</span>
+                    <span th:if="${s.shopRegReason==3}">중복,허위 기재</span>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </th:block>
+        </tbody>
+      </table>
+
+      <!-- 페이징 -->
+      <!-- 페이징처리 -->
+      <div th:if="${!paging.isEmpty()}">
+        <ul class="pagination justify-content-center">
+          <span class="page-item" th:if="${paging.hasPrevious()}">
+            <a class="page-link page-link-ajax" href="#" th:attr="data-page=${paging.number-1}">
+              <span>이전</span>
+            </a>
+          </span>
+
+          <span th:each="page : ${#numbers.sequence(0, paging.totalPages-1)}"
+            th:if="${page >= paging.number-5 and page <= paging.number+5}"
+            th:classappend="${page==paging.number} ? 'active'" class='page-item'>
+            <a th:text="${page+1}" class="page-link page-link-ajax" href="#" th:attr="data-page=${page}"></a>
+          </span>
+
+          <span class="page-item" th:if="${paging.hasNext()}">
+            <a class="page-link page-link-ajax" href="#" th:attr="data-page=${paging.number+1}">
+              <span>다음</span>
+            </a>
+          </span>
+        </ul>
+      </div>
+    </main>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script th:src="@{/js/comm/sweetalert.noah.js}"></script>
+    <script>
+      // 행 클릭 시 상세 토글 (짝행이 상세)
+      document.querySelectorAll('table tbody tr.row').forEach(row => {
+        row.style.cursor = 'pointer';
+        row.addEventListener('click', () => {
+          const detailRow = row.nextElementSibling;
+          const detail = detailRow.querySelector('.rl-detail');
+          detail.style.display = (detail.style.display === 'none' || !detail.style.display) ? 'block' : 'none';
+        });
+      });
+      // 입점신청 버튼 클릭 시 AJAX 체크
+      const applyCheckBtn = document.getElementById('applyCheckBtn');
+      if (applyCheckBtn) {
+        applyCheckBtn.addEventListener('click', () => {
+          const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+          const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+          fetch('/center/registry/ajaxApplyCheck', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              [header]: token
+            }
+          })
+            .then(response => {
+              // 서버로부터 받은 응답 객체 전체를 콘솔에 출력
+              console.log('서버 응답:', response);
+              if (!response.ok) {
+                // 응답이 실패했을 경우, 상태 코드와 상태 메시지를 콘솔에 출력
+                console.error('서버 응답 오류:', response.status, response.statusText);
+                // 서버가 보낸 상세 오류 메시지가 있다면 확인하기 위해 응답 텍스트를 출력
+                response.text().then(text => console.error('서버 응답 내용:', text));
+                throw new Error('서버 응답이 올바르지 않습니다. 상태 코드: ' + response.status);
+              }
+              return response.json();
+            })
+            .then(data => {
+              // JSON 파싱 성공 시 데이터 출력
+              console.log('응답 데이터:', data);
+              // 서버 응답에 result 속성이 있는지 확인
+              if (data.result) {
+                alert('이미 진행 중인 입점 신청이 있습니다.');
+              } else {
+                location.href = '/center/registry/apply';
+              }
+            })
+            .catch(error => {
+              // fetch 과정에서 발생한 모든 에러를 콘솔에 출력
+              console.error('Fetch 에러:', error);
+              alert('오류가 발생했습니다. 브라우저의 개발자 콘솔을 확인해주세요.');
+            });
+        });
+      }
+
+    </script>
+  </div>
+</div>
+
+</html>

@@ -1,0 +1,211 @@
+/* =========================
+   공통 헤더
+   ========================= */
+.site-header{
+  border-bottom: 1px solid #ddd;
+  background-color: #fff;
+  font-family: 'Noto Sans KR', sans-serif;
+  line-height: inherit;
+  box-sizing: border-box;
+}
+
+/* 1행 : 상단 메뉴 */
+.header-top{
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 20px;
+  font-size: 14px;
+  padding: 8px 20px;
+}
+.header-top a{
+  text-decoration: none;
+  color: #333;
+}
+.header-top a:hover{
+  color: #d35400;
+}
+
+/* 2행: 로고 + 검색창 + 메뉴 */
+.header-middle{
+  display: flex;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  position: relative;
+}
+.header-middle-left{ flex: 0 0 auto; }
+.header-logo{ height: 60px; }
+
+/* 검색창 */
+.search-box{
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  max-width: 600px;
+  width: 100%;
+}
+.search-box input{
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-right: none;
+}
+.search-box button{
+  padding: 8px 16px;
+  border: 1px solid #ccc;
+  background-color: #f8f8f8;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.search-box button:hover{
+  background-color: #d35400;
+  color: #fff;
+  border-color: #d35400;
+}
+
+/* 오른쪽 메뉴 */
+.header-middle-right{
+  flex: 0 0 auto;
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  margin-left: auto;
+  color: #333;
+}
+
+/* 모바일 대응 */
+@media (max-width: 768px){
+  .header-top, .header-middle{
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .search-box{ max-width: 100%; margin: 0; }
+}
+
+/* =========================
+   2단 카테고리 (대/소분류)
+   ========================= */
+
+/* 대분류 바: 기본은 문서 흐름, 상단에 닿으면 JS가 .is-fixed를 붙여 고정 */
+.sticky-category{
+  position: relative;             /* sticky 제거 */
+  left: 0; right: 0; width: 100%;
+  z-index: 1000;
+  background: #fff;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  padding: 6px 10px;
+  box-sizing: border-box;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* 상단 고정 상태 */
+.sticky-category.is-fixed{
+  position: fixed;
+  top: 0;
+  left: 0; right: 0;
+}
+
+/* 레이아웃 점프 방지용 스페이서 (스크립트가 높이 토글) */
+.category-spacer{
+  height: 0;
+  transition: height .15s ease;
+}
+
+/* 대분류 링크 */
+.category-link{
+  display: inline-block;
+  padding: 10px 14px;
+  text-decoration: none;
+  color: #333;
+  font-weight: 700;
+  border-radius: 10px;
+  transition: background-color .15s ease, transform .15s ease;
+  white-space: nowrap;
+}
+.category-link:hover{
+  background: #fff4e6;
+  transform: translateY(-1px);
+}
+.category-link.active{ background: #fde1c2; }
+
+/* 소분류 바: 본문을 밀지 않도록 항상 오버레이(FIXED), 필요할 때만 보임 */
+.sticky-subcategory[hidden]{ display: none !important; }
+.sticky-subcategory{
+  position: fixed;
+  top: 56px;                      /* 기본값(대분류 높이). JS가 열릴 때 정확히 갱신 */
+  left: 0; right: 0;
+  z-index: 999;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  box-sizing: border-box;
+  box-shadow: 0 4px 10px rgba(0,0,0,.05);
+}
+
+/* 소분류 행 */
+.subcategory-row[hidden]{ display: none !important; }
+.subcategory-row{
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  max-width: 1200px;
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* 소분류 링크 */
+.subcategory-link{
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #444;
+  font-weight: 600;
+  transition: background-color .15s ease;
+  white-space: nowrap;
+}
+.subcategory-link:hover{ background: #f4f7ff; }
+
+/* 반응형 */
+@media (max-width: 768px){
+  .sticky-category{
+    gap: 12px;
+    justify-content: flex-start;
+    overflow-x: auto; /* 대분류도 가로 스크롤 */
+  }
+  .category-link{ padding: 8px 10px; }
+  .subcategory-row{ gap: 10px; padding: 0 6px; }
+}
+
+/* 접근성 포커스 */
+.category-link:focus,
+.subcategory-link:focus{
+  outline: 2px solid #ffcc80;
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+/* 마이페이지/장바구니 아이콘 색상 주황으로 변경 */
+.header-middle-right i {
+  color: #ff7542;   /* 원하는 주황색 */
+  transition: color 0.2s ease;
+}
+
+.header-middle-right i:hover {
+  color: #ffa580;   /* hover 시 더 연한 주황 */
+}

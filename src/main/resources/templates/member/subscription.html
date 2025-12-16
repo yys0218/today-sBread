@@ -1,0 +1,211 @@
+<!-- /member/subscription.html -->
+<!-- 정기 결제(구독) 목록을 보여주고, 사용자가 "구독 해지"를 누르면 서버에 해지 요청을 보냅니다. -->
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="ko"
+	layout:decorate="~{common/layout}">
+<head>
+<meta name="_csrf" th:content="${_csrf?.token}" />
+<meta name="_csrf_header" th:content="${_csrf?.headerName}" />
+<link rel="stylesheet" th:href="@{/css/member/mypage.css}">
+<link rel="stylesheet" th:href="@{/css/member/subscription.css}">
+<script th:src="@{/js/comm/sweetalert.noah.js}"></script>
+</head>
+
+<body>
+	<div layout:fragment="content" class="container my-3 mypage">
+		<div class="main-wrapper">
+
+			<!-- 사이드바 -->
+			<div class="sidebar">
+				<ul>
+					<li><a class="mypage-title" th:href="@{/member/mypage}">마이페이지</a></li>
+					<li><a th:href="@{/member/order-list}">주문 내역</a></li>
+					<li><a th:href="@{/member/wish-list}">찜 목록</a></li>
+					<li><a th:href="@{/member/subscription}" class="is-active"
+						aria-current="page">정기 결제 조회/해지</a></li>
+					<li><a th:href="@{/member/review-list}">상품 후기</a></li>
+					<li><a th:href="@{/member/address}">배송지 관리</a></li>
+					<li><a th:href="@{/member/account-info}">회원 정보 관리</a></li>
+					<li><a th:href="@{/center}">고객 센터</a></li>
+					<li><a th:href="@{/center/report/list}">신고 내역</a></li>
+					<li><a th:href="@{/center/inquiry/list}">문의 내역</a></li>
+				</ul>
+			</div>
+
+			<!-- 본문 -->
+			<div class="content-right">
+				<h2 style="margin: 0 0 12px;">정기결제 관리</h2>
+				<p class="note">정기결제의 다음 결제일 확인 및 알림/해지를 관리할 수 있습니다.</p>
+				<div id="content-area" class="content-area">
+
+					<!-- 비어 있으면 안내문만 -->
+					<div th:if="${#lists.isEmpty(subs)}">
+						<p>등록된 정기결제가 없습니다.</p>
+					</div>
+
+					<!-- 비어 있지 않으면 반복 렌더링 -->
+					<div th:if="${!#lists.isEmpty(subs)}" class="subs-list">
+						<!--
+	          			th:each="s : ${subs}"
+	          			- subs 컬렉션을 반복하면서 s라는 변수명으로 각 구독(OrderHistoryDTO 등)을 접근
+	          			- 서버에서 컨트롤러가 subs에 List<OrderHistoryDTO>를 넣어줌
+	        		-->
+						<div th:each="s : ${subs}" class="subs-item">
+							<div class="row">
+								<!-- 왼쪽 정보 묶음 -->
+								<div class="info">
+									<!-- 상품명 -->
+									<a th:if="${s.product != null}"
+										th:href="@{/product/detail/{id}(id=${s.product.productNo})}"
+										th:text="${s.product.productName}" class="subs-title"></a> <span
+										th:if="${s.product == null}"
+										th:text="${s.name != null ? s.name : '정기결제'}"></span>
+
+									<!-- 상점명 -->
+									<div class="subs-shop">
+										<a th:text="${'상점: ' + s.shop.shopName}"></a>
+									</div>
+
+									<!-- 다음 결제일 -->
+									<div class="subs-date"
+										th:text="'다음 결제일: ' + ${s.nextPaymentAt != null ? #temporals.format(s.nextPaymentAt, 'yyyy-MM-dd HH:mm') : '—'}">
+									</div>
+								</div>
+
+								<!-- 오른쪽 버튼 -->
+								<div class="actions">
+									<button type="button" class="btn btn-danger btn-cancel"
+										th:data-order-no="${s.orderNo}">구독 해지</button>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- 페이지네이션 -->
+					<div th:if="${totalPages > 5}"
+						class="pagination-wrapper text-center mt-4">
+						<ul class="pagination justify-content-center">
+
+							<!-- 이전 버튼 -->
+							<li class="page-item" th:classappend="${!hasPrev} ? 'disabled'">
+								<a class="page-link"
+								th:href="@{/member/subscription(page=${prevPage}, size=${size})}">이전</a>
+							</li>
+
+							<!-- 페이지 번호 (현재 페이지 기준 앞뒤 2개씩만 노출) -->
+							<li
+								th:each="i : ${#numbers.sequence(
+                       T(java.lang.Math).max(1, page-2),
+                       T(java.lang.Math).min(totalPages, page+2))}"
+								class="page-item" th:classappend="${i == page} ? 'active'">
+								<a class="page-link" th:text="${i}"
+								th:href="@{/member/subscription(page=${i}, size=${size})}"></a>
+							</li>
+
+							<!-- 다음 버튼 -->
+							<li class="page-item" th:classappend="${!hasNext} ? 'disabled'">
+								<a class="page-link"
+								th:href="@{/member/subscription(page=${nextPage}, size=${size})}">다음</a>
+							</li>
+						</ul>
+					</div>
+
+					<script>
+/*
+  	- 클릭 이벤트 하나(document에 위임)로 .btn-cancel을 잡아 해지 절차 진행.
+  	- CSRF 토큰/헤더명을 메타에서 읽어서 fetch 헤더로 붙임.
+    - 예외/에러는 최대한 사용자에게 친절한 메시지로 보여줌.
+*/
+
+  	//  메타에서 CSRF 읽기 (없을 수도 있으니 기본값 '')
+  	const CSRF_TOKEN  = document.querySelector('meta[name="_csrf"]')?.getAttribute('content') || '';
+  	const CSRF_HEADER = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content') || '';
+
+  	// '구독 해지' 클릭 핸들러 (이벤트 위임)
+  	document.addEventListener('click', async function (e) {
+    	// .btn-cancel 또는 그 내부를 눌러도 .btn-cancel 기준으로 찾음
+    	const btn = e.target.closest('.btn-cancel');
+    	if (!btn) return; // 다른 클릭은 무시
+
+    	// data-order-no에서 주문 번호 읽기 (문자열 → 숫자)
+    	const orderNo = Number(btn.getAttribute('data-order-no'));
+
+    	// 숫자형으로 정상 파싱됐는지 확인 (0/NaN 방지)
+    	if (!orderNo) {
+      		// 개발자가 보기 쉬운 메시지 + 사용자 친화 메시지
+      		showErrorAlert('주문 번호가 올바르지 않습니다. (페이지를 새로고침하고 다시 시도해 주세요)');
+      		return;
+    	}
+
+    	// 해지 확인 다이얼로그 (sweetalert 유틸)
+    	//    - onConfirm에서 실제 해지 요청을 보냅니다.
+    	//    - onCancel은 선택 사항: 사용자에게 "취소됨"을 토스트로 알려줌.
+    	showConfirmAlert(
+      		'정말 해지하시겠습니까?',
+      		async () => {
+        		// [확인]을 눌렀을 때만 실행되는 부분
+
+        		// 로딩 모달로 사용자에게 "작업 진행 중"임을 보여줌
+        		// (10초 후 자동 닫힘; 서버가 금방 응답하면 응답 이후 알럿으로 대체)
+        		showLoadingModal('해지 중...', '잠시만 기다려주세요.', 10000);
+
+        		try {
+          			// 요청 헤더 준비: JSON 전송 + CSRF (있으면)
+          			const headers = { 'Content-Type': 'application/json' };
+          			if (CSRF_TOKEN && CSRF_HEADER) {
+            			headers[CSRF_HEADER] = CSRF_TOKEN;
+          			}
+
+          			// fetch로 서버에 POST 요청
+          			// url 연결
+          			const res = await fetch('/member/subscription/cancel', {
+            			method: 'POST',
+            			headers,
+            			body: JSON.stringify({ orderNo }), // 서버 컨트롤러 @RequestBody Map에서 꺼냅니다.
+            			credentials: 'same-origin'
+          			});
+
+          			// 서버 응답이 JSON이 아닐 수도 있으니 텍스트로 받아보고, JSON 파싱은 try-catch로
+          			let data = null;
+          			try {
+            			data = await res.clone().json(); // clone한 뒤 JSON 시도 (실패하면 아래 catch에서 무시)
+          			} catch (_) {
+            			// JSON이 아니면 data는 null로 둠 (아래에서 방어적으로 처리)
+          			}
+
+          			// 401: 인증 만료/미로그인 → 로그인 페이지 안내
+          			if (res.status === 401) {
+            			showInfoAlert('로그인이 필요합니다.', '/member/login');
+            			return; // 이후 처리 중단
+          			}
+
+          			// 성공 케이스: { status: 'ok' } 를 기대
+          			if (res.ok && data && data.status === 'ok') {
+            			// 성공 알럿 → 현재 페이지 새로고침(목록 갱신)
+            			showSuccessAlert('해지되었습니다.', window.location.href);
+          			} else {
+            			// 실패 케이스: 서버가 msg를 내려줬으면 그걸 우선 사용
+            			const msg = (data && data.msg) || `해지에 실패했습니다. (HTTP ${res.status})`;
+            			showErrorAlert(msg);
+          			}
+        		} catch (err) {
+          			// 네트워크 끊김/서버 다운 등 fetch 예외
+          			showErrorAlert('해지 요청 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+        		}
+      		},
+      		() => {
+        		// [취소]를 눌렀을 때
+        		showToast('취소됐습니다.', 'info', 1500);
+      		}
+    	);
+	});
+</script>
+				</div>
+				<!-- /content-area -->
+			</div>
+		</div>
+		<!-- /main-wrapper -->
+	</div>
+	<!-- /container(fragment) -->
+
+</body>
+</html>

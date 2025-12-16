@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{admin/adminLayout}">
+
+<head>
+  <link rel="stylesheet" th:href="@{/css/admin/faq.css}">
+</head>
+<div layout:fragment="content">
+  <h1 class="faq-title">FAQ 상세</h1>
+
+  <section class="hc-section">
+    <article class="fd-article box">
+      <header class="fd-header">
+        <!-- 제목 -->
+        <div class="fd-title" th:text="${faq.faqTitle}"></div>
+
+        <!-- 메타 정보 -->
+        <div class="fd-meta">
+          <div>
+            <span>카테고리:</span>
+            <span th:text="${faq.faqCategory}"></span>
+          </div>
+          <div>
+            <span>상태:</span>
+            <span th:classappend="${faq.faqStatus == 0} ? 'fd-status show' : 'fd-status hide'"
+                  th:text="${faq.faqStatus == 0 ? '게시중' : '숨김'}"></span>
+          </div>
+        </div>
+      </header>
+
+      <hr class="fd-divide" />
+
+      <!-- 답변 영역 -->
+      <section class="fd-content">
+        <span>답변:</span>
+        <p th:text="${faq.faqContent}"></p>
+      </section>
+    </article>
+  </section>
+
+  <!-- 버튼 그룹 -->
+  <div class="fd-actions">
+    <a th:href="@{/admin/board/faq/update/{faqNo}(faqNo=${faq.faqNo})}" class="update">수정</a>
+    <a th:href="@{/admin/board/faq/cancel/{faqNo}(faqNo=${faq.faqNo})}"
+       th:text="${faq.faqStatus == 0 ? '숨김' : '숨김해제'}"
+       class="hide"></a>
+    <a th:href="@{/admin/board/faq/delete/{faqNo}(faqNo=${faq.faqNo})}" class="delete">삭제</a>
+    <a th:href="@{/admin/board/faq/list}" class="back">목록으로</a>
+  </div>
+</div>
+
+</html>

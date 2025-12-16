@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html layout:decorate="~{/common/layout}">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/css/shop/shopmain.css">
+</head>
+<body>
+<!-- 판매자가 알림사항을 삭제하기전 한번더 확인하는 곳 -->
+
+<div layout:fragment="content" class="container my-3">
+
+    <h2>알림사항 삭제</h2>
+    <p>정말 이 알림사항을 삭제하시겠습니까?</p>
+    <p>돌이킬수 없습니다!!</p>
+
+    <h4 th:text="${notice.shopNoticeTitle}">알림사항 제목</h4>
+    <p th:text="${notice.shopNoticeContent}">알림사항 내용</p>
+    <small th:text="${#temporals.format(notice.createdAt, 'yyyy-MM-dd HH:mm')}"></small>
+
+    <form th:action="@{/shop/notice/delete}" method="post">
+        <input type="hidden" name="shopNoticeNo" th:value="${notice.shopNoticeNo}" />
+        <button type="submit" class="btn btn-danger">삭제 확인</button>
+        <a th:href="@{/shop/noticeDetail/{id}(id=${notice.shopNoticeNo})}" class="btn btn-secondary">취소</a>
+    </form>
+
+</div>
+</body>
+</html>

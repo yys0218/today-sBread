@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8" />
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+                background-color: #f3f4f6;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            }
+            .mail-wrapper {
+                width: 100%;
+                padding: 40px 0;
+                background-color: #f3f4f6;
+            }
+            .mail-container {
+                max-width: 600px;
+                margin: 0 auto;
+                background-color: #ffffff;
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+                border: 1px solid #e5e7eb;
+            }
+            .mail-header {
+                background-color: #f46f40; /* 브랜드 주황 */
+                padding: 20px;
+                text-align: center;
+                color: #ffffff;
+                font-size: 24px;
+                font-weight: bold;
+            }
+            .mail-body {
+                padding: 30px;
+                font-size: 16px;
+                color: #333333;
+                line-height: 1.6;
+            }
+            .highlight {
+                font-weight: bold;
+                color: #f46f40; /* 브랜드 주황 */
+            }
+            .code-box {
+                display: block;
+                margin: 20px auto;
+                font-size: 22px;
+                font-weight: bold;
+                background-color: #f46f40; /* 브랜드 주황 */
+                color: #ffffff;
+                padding: 12px 24px;
+                border-radius: 6px;
+                letter-spacing: 3px;
+                text-align: center;
+                width: fit-content;
+            }
+            .mail-footer {
+                margin-top: 30px;
+                padding: 15px 30px;
+                font-size: 12px;
+                color: #6b7280;
+                background-color: #f9fafb;
+                border-top: 1px solid #e5e7eb;
+                text-align: center;
+            }
+            a {
+                color: #f46f40; /* 브랜드 주황 */
+                text-decoration: none;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="mail-wrapper">
+            <div class="mail-container">
+                <div class="mail-header">오늘의빵 보안 알림</div>
+                <div class="mail-body">
+                    안녕하세요,
+                    <span class="highlight">오늘의빵</span>
+                    을 이용해 주셔서 감사합니다.
+                    <br />
+                    요청하신
+                    <strong>일회용 비밀번호(OTP)</strong>
+                    가 아래에 발급되었습니다.
+                    <br />
+                    로그인 또는 인증 화면에 아래 비밀번호를 입력해 주세요.
+                    <br />
+
+                    <div class="code-box">%s</div>
+
+                    <p style="margin: 0">
+                        ⚠️ 이 비밀번호는
+                        <strong>한 번만 사용</strong>
+                        할 수 있으며
+                        <br />
+                        보안을 위해
+                        <strong>일정 시간이 지나면 자동으로 만료</strong>
+                        됩니다.
+                        <br />
+                        <br />
+                        문의사항이 있으시면 언제든지
+                        <a href="https://192.168.0.27:8080/center">오늘의빵 고객센터</a>
+                        로 문의해 주세요.
+                    </p>
+                </div>
+                <div class="mail-footer">
+                    본 메일은 발신 전용입니다. 답장을 하셔도 회신되지 않습니다.
+                    <br />
+                    &copy; 2025 millisec. All rights reserved.
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

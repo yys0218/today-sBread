@@ -1,0 +1,114 @@
+<!--
+******************************************
+*  Created On : 2025. 8. 11.
+*  File : rider-register.html
+*******************************************
+ -->
+ <div layout:decorate="~{rider/rider-layout}">
+    <head>
+        <meta name="_csrf" th:content="${_csrf.token}">
+        <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    </head>
+    <div layout:fragment="content" class="container">
+        <h5 class="my-4 border-bottom">회원가입</h5>
+        <form th:object="${riderInsertForm}" id="form" th:action="@{/rider/insert}" method="post">
+            <th:block th:if="${#fields.hasAnyErrors()}"></th:block>
+            <div class="alert alert-danger" role="alert" th:if="${#fields.hasAnyErrors()}">
+                <div style="height: 80px; width: 100%" th:each="error , loop : ${#fields.allErrors()}" th:text="${error}+${loop.count}"></div>
+            </div>
+            <div class="mb-3">
+                <label for="riderId" class="form-label">아이디</label>
+                <input type="text" maxlength="15" th:field="*{riderId}" class="form-control" />
+            </div>
+            <div class="mb-3">
+                <label for="riderPw" class="form-label">비밀번호</label>
+                <input type="password" maxlength="15" th:field="*{riderPw}" class="form-control" />
+            </div>
+            <div class="mb-3">
+                <label for="riderPwRe" class="form-label">비밀번호 확인</label>
+                <input type="password" th:field="*{riderPwRe}" class="form-control" />
+            </div>
+            <div class="mb-3">
+                <label for="riderName" class="form-label">이름</label>
+                <input type="text" th:field="*{riderName}" class="form-control" />
+            </div>
+            <div class="mb-3">
+                <label for="riderBirth" class="form-label">생년월일</label>
+                <input type="date" th:field="*{riderBirth}" class="form-control" />
+            </div>
+            <div class="mb-3">
+                <label for="riderEmail" class="form-label">이메일</label>
+                <input type="email" th:field="*{riderEmail}" class="form-control" />
+            </div>
+            <div class="mb-3">
+                <label for="riderAddress" class="form-label">주소</label>
+                <input type="text" th:field="*{riderAddress}" class="form-control" />
+            </div>
+            <div class="mb-3">
+                <label for="riderPhone" class="form-label">전화번호</label>
+                <input type="text" th:field="*{riderPhone}" class="form-control" />
+            </div>
+
+            <button type="submit" id="ckInput" class="btn btn-primary">회원가입</button>
+        </form>
+    
+</div>
+    <script layout:fragment="script" th:inline="javaScript">
+        const inputElements = $('.form-control');
+        $('#ckInput').on('click', function (e) {
+            e.preventDefault();
+            let isValid = true;
+            inputElements.each(function () {
+                let element = $(this);
+                // ?.trim() 삼항연산자로 val이 비었을 경우 undefined이 뜨기 때문에
+                // 값이 있을 경우만 trim()으로 값을 꺼냄
+                let value = $(this).val()?.trim();
+                console.log(element + ': ' + value);
+                if (!value) {
+                    formCheckAlert(element);
+                    isValid = false;
+                    return false;
+                }
+            });
+            // 조건을 통과할 경우에 form을 전송
+            if (isValid) {
+                $('#form').submit();
+            }
+        });
+
+        // 아이디 중복 체크 해야하는 곳
+        $('#riderId').on('change', function () {
+            console.log('id input 변경');
+        });
+
+        // // form의 값이 비어있을 경우 띄울 alert 함수
+        function formCheckAlert(element) {
+            let formErrorMsg = {
+                riderId: '아이디는',
+                riderPw: '비밀번호는',
+                riderPwRe: '비밀번호 확인은',
+                riderName: '이름은',
+                riderEmail: '이메일은',
+                riderAddress: '주소는',
+                riderPhone: '전화번호는',
+            };
+            // 요소의 name값을 변수에 지정
+            let eName = element.attr('name');
+            // alert창에서 msg내용변환을 위해 값 저장용
+            let msg = formErrorMsg[eName] || '해당 항목은';
+            // 해당하는 name값에 맞는 text내용 지정
+
+            // alert 내용 작성
+            Swal.fire({
+                icon: 'error', // 오류 아이콘
+                title: '입력 오류', // 알림 제목
+                text: msg + ' 필수 입력 항목입니다.', // 알림 메시지
+                confirmButtonText: '확인', // 버튼 내용
+                didClose: () => {
+                    // 모달이 닫히고 나서 실행할 행동
+                    element.focus(); // 모달이 완전히 닫힌 후 포커스
+                },
+            });
+        }
+    </script>
+</html>

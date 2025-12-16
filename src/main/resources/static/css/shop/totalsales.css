@@ -1,0 +1,65 @@
+/* 전체 컨테이너 */
+        .sales-container {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        /* 엑셀 스타일 테이블 */
+        .sales-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .sales-table thead {
+            background: #f3f4f6;
+            font-weight: bold;
+        }
+
+        .sales-table th,
+        .sales-table td {
+            border: 1px solid #d1d5db;
+            padding: 12px 8px;
+        }
+
+        .sales-table tbody tr:nth-child(even) {
+            background: #f9fafb;
+        }
+
+        .sales-table tbody tr:hover {
+            background: #eef2ff;
+        }
+
+        /* 상태별 강조 색상 */
+        .status-cancel { color: #b91c1c; font-weight: bold; } /* 취소 */
+        .status-wait   { color: #1e40af; font-weight: bold; } /* 수락대기 */
+        .status-reject { color: #d97706; font-weight: bold; } /* 거절 */
+        .status-ship   { color: #15803d; font-weight: bold; } /* 배송요청 */
+        .status-pick   { color: #0d9488; font-weight: bold; } /* 픽업대기 */
+        .status-done   { color: #065f46; font-weight: bold; } /* 배송완료 */
+        
+        .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* 제목 왼쪽, 버튼 오른쪽 */
+    margin-bottom: 16px;
+}
+.header h3 {
+    margin: 0; /* 불필요한 margin 제거 */
+}
+.header button {
+    padding: 8px 16px;
+    background: #ff6600; /* 당근마켓 주황색 */
+    color: #fff;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.header button:hover {
+    background: #e65c00; /* hover 시 진한 오렌지 */
+}      

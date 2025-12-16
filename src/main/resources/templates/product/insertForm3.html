@@ -1,0 +1,338 @@
+<html layout:decorate="~{/common/layout}">	<!--layout.html을 include한 셈-->
+<head>
+	<!-- insertForm.css -->
+	<link rel="stylesheet" th:href="@{/css/product/insertForm.css}" />
+	<!-- summernote.css-->
+	<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+<!-- ajax 접근권한(CSRF헤더) 부여용 -->
+	<th:block>
+        <meta name="_csrf" th:content="${_csrf.token}">
+        <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    </th:block>	
+</head>
+<div layout:fragment="content" class="container my-3"><!-- 아래가 레이아웃 content 부분에 담김 -->
+	  <!-- 본문 제목 -->
+	  <section class="top text-center">
+	      <h1>상품등록</h1>  
+	  </section>
+	  
+	  <!-- 페이지 본문 박스 -->
+      <a class="btn btn-secondary m-2" type="button" th:href="@{/shop/shopmain}">상점으로</a>
+	  <div class="box insertForm">
+      <form th:object="${productInsertForm}" th:action="@{/product/insert}" method="post" enctype="multipart/form-data">
+     
+      <!-- 유효성 검사 후 에러 있을 경우 경고문 -->
+      <div th:replace="~{/error/formErrors :: formErrorsFragment}"></div>
+      <div th:if="${#fields.hasGlobalErrors()}">
+      	<div th:each="err : ${#fields.globalErrors()}" th:text="${err}"></div>
+      </div>
+      		<input type="hidden" th:field="*{shopNo}" /><!-- productInsertForm에 저장된 값 전달용 -->
+      		<input type="hidden" th:field="*{memberNo}" /><!-- productInsertForm에 저장된 값 전달용 -->
+        	<input type="hidden" th:field="*{productNo}" id="productNo"/><!-- productInsertForm에 저장된 값 전달용 -->
+        <table>
+          <tr>
+          	<td>
+	          	<label for="btn-uploadedFile">상품 사진</label>
+                  <span>(<span id="countFiles">0</span>/ 5)</span>
+                  <input type="hidden" th:field="*{countFiles}" />
+                  <span>*상품 사진은 수정이 불가합니다.</span>
+                  <span id="alertFiles">*1장 이상 필수 / 5장까지 업로드 가능</span><br>
+                  <input type="file" id="btn-uploadFile" name="btn-uploadFile" multiple /><br>
+                  <div class="file-thumbnail"></div>
+                  <button id="resetFile" type="button"></button>
+          	</td>
+          </tr>
+          <tr>
+            <td>
+              <label for="productName">상품명</label>
+              <input type="text" th:field="*{productName}" />
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="productSummary">상품 한 줄 소개</label>
+              <input type="text" th:field="*{productSummary}" />
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="productPrice">상품가격</label>
+              <input type="number" th:field="*{price}" maxlength="9" min="0" max="100000000" oninput="checkLength(this);" />
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="allergyInfo">알레르기 정보</label><br>
+              <textarea th:field="*{allergyInfo}"></textarea>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="nutritionInfo">영양성분</label><br>
+              <textarea th:field="*{nutritionInfo}"></textarea>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="categoryMain">카테고리</label>
+              <select th:field="*{categoryMain}" id="categoryMain" onchange="changeCate(this.value);"><!-- 카테고리 대분류 -->
+              	<option value="" selected hidden>대분류</option>
+              	<span th:each="cate : ${category}" th:if="${cate.depth==0}"><!-- 대분류일 때만 반복 출력 -->
+                	<option th:value="${cate.categoryCode}" th:text="${cate.categoryName}"></option>
+              	</span>
+              </select>
+     	  	  <select th:field="*{categorySub}" id="categorySub"><!-- 카테고리 소분류 -->
+     	  	  	<option value="" selected hidden>소분류</option>
+              </select>
+              <br>
+              <input type="reset" class="btn btn-secondary" value="다시 입력" />
+            </td>
+          </tr>
+          <tr>
+          	<td>
+          		<label for="summernote">상세 정보</label>
+				<div class="summernote-info d-flex justify-content-between ">
+	          		<span>※상품의 상세 정보에 출력됩니다.</span>
+	          		<button type="button" class="btn btn-secondary mb-1" id="resetBtn">다시 작성</button>
+				</div>
+          		<textarea th:field="*{productInfo}" id="summernote">이미지 업로드 안됨</textarea>
+          	</td>
+          </tr>
+          <tr >
+            <td>
+              <label for="optionName">옵션 추가</label>
+              <button type="button" onclick="addOption()">+</button>    
+              <!-- 옵션이 추가되는 div -->
+              <div id="productOptionsWrapper"></div>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <label for="isSubscription">
+                정기 결제 상품이라면 체크해주세요<br>       
+              </label>
+                <input type="checkbox" id="isSubscription" th:field="*{isSubscription}" value="1" />
+                <input type="hidden" th:field="*{isSubscription}" value="0" /><!-- isSubscription이 체크되지 않았을 때 기본값 -->
+            </td>
+          </tr>
+        </table>
+
+        <div style="margin-top: 25px;">
+          	<input type="submit" class="btn btn-warning" value="등록" />
+        </div>
+      </form>
+    </main>
+  </div>
+ </div><!-- 페이지 본문 박스 -->
+  
+  
+</div><!-- fragment:content 종료 -->
+
+<th:block layout:fragment="script">
+<!-- summernote js, 한글화 js -->
+<script  src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/lang/summernote-ko-KR.min.js"></script>
+<script type="text/javascript" th:inline="javascript">
+
+// 모든 jQuery AJAX 요청에 CSRF 헤더 자동 첨부
+$(function () {
+  const token  = $('meta[name="_csrf"]').attr('content');
+  const header = $('meta[name="_csrf_header"]').attr('content');
+  $(document).ajaxSend(function (e, xhr) {
+    if (token && header) xhr.setRequestHeader(header, token);
+  });
+});
+
+	//summernote 호출
+	$(function(){ //문서가 준비되면
+		$('#summernote').summernote({ //summernote선택자에 summernote 호출
+			width: 1000, //너비
+			height: 450,	 //높이
+			minHeight: 450, //최소높이
+			maxHeight: 800,  //최대높이
+			focus: true, //초기화 시 자동으로 입력창 안으로 포커스가 가도록
+			lang: "ko-KR", //한글화
+
+			//styleWithCSS: true, //html태그가 아닌 css스타일을 사용하여 텍스트 서식을 지정
+		callbacks: { //callback함수
+			onInit: function(){ //onInit함수
+				$('#resetBtn').on('click',function(){ //선택자 클릭 시 
+					$('#summernote').summernote('reset'); //#summernote에 입력된 내용 reset					
+				});
+				$('.note-editable').css('background-color','white'); //입력창.배경색 흰색으로
+			},//onInit 종료
+		
+			onImageUpload: function(files){ //summertnote가 이미지 업로드 시 호출 files=선택된 파일(들)
+				const formData = new FormData(); //ajax로 전송될 데이터를 담는 formData
+				for(let i =0; i < files.length; i++){
+					formData.append("files", files[i]); //formData에 업로드할 사진 담기				
+				}
+				//썸머노트 이미지 업로드 요청
+				$.ajax({
+					url: '/product/summernoteImg',
+					type: 'POST',
+					data: formData,
+					contentType: false, //formData전송에 필요
+					processData: false, //formData전송에 필요
+					success: function(url){ //summernote내용으로 반환되는 이미지의 주소
+						$('#summernote').summernote('insertImage', url); //이미지 삽입 시 리턴된 주소 사용
+					},
+					error: function(xhr,status,error){ //xhr,status,error
+						console.error("오류 상태 코드: "+xhr.status + "메시지: "+xhr.responseText);
+						showErrorAlert("이미지 업로드에 실패했습니다.");
+					}
+				});//썸머노트 이미지 업로드 요청 종료
+			}//onImageUpload 종료
+		},//callback함수 종료
+		disableDragAndDrop: true // 업로드된 이미지의 주소가 base64형식으로 리턴되는 것 방지(글자 수가 길어지는 것 방지)		
+		}); //summernote설정
+	}); //summernote호출 종료
+	
+
+	//등록할 사진 미리보기로 출력
+	$('#btn-uploadFile').on('change', function(){ //업로드할 파일이 선택된 직후 실행
+		let uploadedFiles = []; //업로드한 파일 누적할 리스트
+		const files = this.files; //파일업로드input의 files속성 값=fileList객체(배열) *제이쿼리 사용
+		
+		//선택한 파일이 모두 formData에 담길 수 있도록 반복문
+		for(let i = 0; i < files.length; i++){
+			
+
+			//5개까지만 업로드할 수 있도록 제한
+			if(uploadedFiles.length >= 5){
+				uploadedFiles.push(files[i]); 
+				//누적 리스트에 파일 넣기
+				showToast('사진은 5개까지 등록 가능합니다.','error');
+				break; //반복 중단
+			}
+						
+			//파일 썸네일 출력 - 업로드된 파일 꺼내는 반복문
+			const reader = new FileReader(); //업로드한 파일을 비동기적으로 읽어오는 브라우저 내장 객체
+			reader.onload = function(f){ //파일 내용.을 다 읽었을 때 실행될 핸들러(기능) 등록
+				const img =$('<img>') //<img> 추가
+							.attr('src', f.target.result) //src="f에 담긴 읽기 완료된 데이터"(아래에서 읽을 dataURL)
+							.attr('width', '150px').attr('style', 'margin:5px'); //width="150px" style="margin:5px"
+				$('.file-thumbnail').append(img); //선택자 위치에 img를 추가
+			};//reader 사용 종료
+			reader.readAsDataURL(files[i]); //선택(업로드)된 파일[i] 읽기 작업을 비동기적으로 시작>> Base64형식으로 인코딩된 문자열(URL)로 변환
+		}//썸네일 반복 출력 종료
+	});	
+	
+	//업로드한 파일 모두 비우기
+	$('#resetFile').on('click',function(){
+	    // input 초기화
+	    $('#btn-uploadFile').value = "";
+	});
+	
+	//상품등록 클릭 시
+	$('#submitBtn').on('click',function(){
+		
+		const files = this.files; //파일업로드input의 files속성 값=fileList객체(배열) *제이쿼리 사용
+		const formData = new FormData(); //파일을 담아 서버에 전송될 formData객체 생성
+		const productNo = $('#productNo').val(); //hidden으로 form에 담겨있는 업로드될 상품의 번호
+		formData.append('productNo', productNo); //formData에 (업로드 되는 파일과 함께) productNo 추가
+		
+		//선택한 파일이 모두 formData에 담길 수 있도록 반복문
+		for(let i =0; i < files.length; i++){
+			formData.append('files',files[i]); //formData에.추가(선택된 파일들[i]을 'files'라는 이름으로)
+		}
+		
+		//업로드 될 파일의 총 개수 제한
+		const currentCount = parseInt($('#countFiles').text()); //현재 업로드된 파일 수로 입력되어 있는 값
+		if(currentCount + files.length > 5){ //현재 파일 + 올리려는 파일 수가 5개 초과인 경우
+			showErrorAlert('최대 5개까지 업로드할 수 있습니다.');
+			$('#btn-uploadFile').val(''); //현재 업로드할 파일들 비움(업로드 취소)
+			return; //파일 업로드하는 ajax 실행 막기
+		}
+		
+		//파일 업로드
+		$.ajax({
+			url: '/product/uploadFile', //새 매핑필요
+			type: 'post',
+			enctype: 'multipart/form-data', //multipartFile타입으로
+			data: formData, //선택된 파일들이 담긴 formData 전송
+			processData: false, //fomData 전송 시 설정: 자동으로 쿼리 스트링 형식으로 전송되지 않도록 함
+			contentType: false, //multipart/form-data의 처리방식을 따르도록 함(??)
+			//업로드 성공 시
+			success: function(countF){
+				console.log(countF); //업로드한 파일 갯수
+				$('#countFiles').text(countF); //DB에 업로드된 파일의 총 갯수 리턴
+				$('input[name="countFiles"]').val(countF); //폼객체의 countFiles에 value추가, 바인딩시킴
+			},
+			//업로드 실패 시
+			error: function(xhr, status, error){ 
+				console.log("오류 상태 코드: "+xhr.status + " 메세지: "+xhr.responseText);
+				showErrorAlert('이미지 업로드에 실패했습니다.');
+				$('.uploadedFiles').empty(); //파일 미리보기 초기화
+			},
+		}); //ajax종료
+	});
+	
+	
+    //number타입 input의 입력값 제한
+    function checkLength(num){ //num=input에 입력된 값
+    	if(num.value.length > num.maxLength){ //입력된 값의 길이가 지정된 최대길이보다 크다면
+    		num.value = num.value.slice(0, num.maxLength); //최대길이만큼 값 자르기
+    	}
+    }
+    
+    //카테고리 구분 - 대분류에 따라 소분류 출력   
+	function changeCate(cateCode){ //대분류 값이 바뀔 때, 매개변수: cateCode = 대분류의 categoryCode
+	
+    	let categoryList = /*[[${category}]]*/[]; //카테고리List를 자바스크립트에서 쓸 수있도록 JSON형식으로 변환
+		
+		//소분류<select>의 기존 <option>초기화 (옵션을 다시 선택할 경우)
+		$('#categorySub').empty();
+		
+		//대분류의 code와 parentCode가 일치하는 소분류만 추가
+		$.each(categoryList, function(i,cate){ //제이쿼리의 반복문(cate = categoryList[i])
+			if(cate.parentCode == cateCode){ //cate의 parentCode가 cateCode와 일치한다면(대분류의 categoryCode와 일치하는 parentCode를 가진 소분류)
+				$('#categorySub').append( //소분류<select>에 태그 추가
+						$("<option>").val(cate.categoryCode).text(cate.categoryName) //value=categoryCode이고, text=categoryName인 <option>
+				);		
+			}
+		});//소분류 반복문 종료
+    }
+    
+    let index =0; //옵션 입력 시 사용할 인덱스 번호
+    //옵션 추가
+    function addOption(){
+    	console.log(index);
+    	
+    	//옵션이 추가될 자리에 옵션 div추가
+    	$('#productOptionsWrapper').append('<div class="option">'
+    			+'<input type="text" class="mt-1 me-1" name="options['+index+'].name" placeholder="옵션 이름" />'
+    			+'<input type="text" class="mt-1 me-1" name="options['+index+'].price" placeholder="옵션 가격" />'
+    			+'<button type="button" onclick="removeOption(this)">-</button>'
+    			+'</div>');
+    	index++; //한 번 추가 시 index+1
+    }
+
+    function removeOption(btn){
+    	btn.closest('.option').remove();
+    }
+    
+    //작성 버튼 클릭 시 확인 alert
+    
+    /*
+    // 작성 버튼 클릭 시 실행
+    document.querySelector('input[type="submit"]').addEventListener('click', function(event) {
+      event.preventDefault(); // 폼 제출 막기 (확인 후 직접 제출하려고)
+
+      showConfirmAlert(
+        '상품을 등록하시겠습니까?', // 표시할 메시지
+        () => { // 사용자가 '예'를 눌렀을 때 실행
+          //showToast('등록 완료!', 'success'); // 토스트 표시 (선택사항)
+          event.target.closest('form').submit(); // 실제 폼 제출
+        },
+        () => { // 사용자가 '아니오'를 눌렀을 때 실행
+          //showToast('등록 취소됨', 'error');
+        }
+      );
+    });
+    */
+    
+  </script>
+</th:block>  
+</html>

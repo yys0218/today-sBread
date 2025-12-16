@@ -1,0 +1,94 @@
+<!-- member/find-id.html -->
+<!-- 아이디 찾기 페이지 -->
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<link rel="stylesheet" th:href="@{/css/member/find-id.css}">
+	<meta name="_csrf" th:content="${_csrf.token}" />
+	<meta name="_csrf_header" th:content="${_csrf.headerName}" />
+    <meta charset="UTF-8">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body>
+	<div class="container">
+		<div class="find-id-box">
+			<h2>아이디 찾기</h2>
+			<form id="findIdForm">
+			
+				<div class="form-group">
+					<label for="memberName">이름</label>
+					<input type="text" id="memberName" name="memberName" required />
+				</div>
+				
+				<div class="form-group">
+					<label for="memberEmail">이메일</label>
+					<input type="email" id="memberEmail" name="memberEmail" required />
+				</div>
+				
+				<div class="btn-group">
+					<!-- 취소 버튼 : 로그인 페이지로 이동 -->
+					<button type="button" class="btn-cancel" onclick="window.location.href='/member/login'">취소</button>
+					<!-- 아이디 찾기 버튼 : 이름, 이메일 작성 후 클릭 시 해당 회원 아이디 노출 -->
+					<button type="submit" class="btn-submit">아이디 찾기</button>
+					<!-- 비밀번호 찾기 버튼 -->
+					<button type="button" class="btn-submit" style="background-color:#f46f40" onclick="window.location.href='/member/find-pw'">비밀번호 찾기</button>
+				</div>
+			</form>
+			
+			<!-- Ajax 요청 결과가 여기에 표시됨 -->
+			<div id="result"></div>
+		</div>
+	</div>
+	
+<script>
+// CSRF 토큰 가져오기
+const token = $("meta[name='_csrf']").attr("content");
+const header = $("meta[name='_csrf_header']").attr("content");
+
+// 아이디 찾기 폼 이벤트 처리
+$("#findIdForm").submit(function(e){
+	e.preventDefault();	// 기본 폼 제출 방지
+	
+	// 폼 데이터 가져오기
+	const data = {
+			memberName: $("input[name='memberName']").val().trim(),
+			memberEmail: $("input[name='memberEmail']").val().trim()
+	};
+	
+	// 클라이언트 입력값 검증
+	if(!data.memberName || !data.memberEmail){
+		$("#result").css("color", "red").html("이름과 이메일 모두 입력해주세요.");
+		return;	// 여기서 함수 종료 -> AJAX로 안보냄
+	}
+	
+	// Ajax 요청
+	// - type : POST 방식
+	// - url : /member/find-id
+	// - contentType : JSON 형식으로 전송
+	// beforeSend : CSRF 토큰 헤더 추가
+	$.ajax({
+		type: "POST",
+		url: "/member/find-id",
+		contentType: "application/json",
+		data: JSON.stringify(data),
+		beforeSend: function(xhr){
+			xhr.setRequestHeader(header, token);	// CSRF 토큰 추가
+		},
+		success: function(res){
+			// 서버 응답 처리
+			// res.success === true -> 아이디 표시
+			// res.success === false -> 오류 메시지 표시
+			if(res.success){
+				$("#result").css("color","green").html("회원님의 아이디는: <b>" + res.memberId + "</b>");
+			}else{
+				$("#result").html(res.message);
+			}
+		},
+		error: function(){
+			$("#result").html("서버 요청 중 오류가 발생했습니다.");
+		}
+	});
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+:root {
+  --brand: #c67c4e;   /* 오늘의 빵집 감성 브라운 */
+  --bg: #fdfaf6;
+  --ink: #333;
+  --line: #ddd;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--ink); }
+
+/* 헤더 */
+.admin-header {
+  display: flex; justify-content: space-between; align-items: center;
+  background: var(--brand); color: #fff;
+  padding: 10px 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+.admin-header .btn-logo {
+  background: none; border: none; color: #fff; font-size: 18px; font-weight: bold; cursor: pointer;
+}
+.header-actions .btn-action {
+  background: #fff; color: var(--brand); border: none; margin-left: 10px;
+  padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: all .2s;
+}
+.header-actions .btn-action:hover { background: #f2e2d2; }
+
+/* 레이아웃 */
+.admin-layout {
+  display: flex; height: calc(100vh - 60px);
+}
+
+/* 사이드바 */
+.admin-sidebar {
+  width: 220px; background: #fff; border-right: 1px solid var(--line);
+  padding: 20px 0; box-shadow: 2px 0 6px rgba(0,0,0,0.05); flex-shrink: 0;
+}
+.menu { list-style: none; }
+.menu li { position: relative; }
+.menu-btn {
+  width: 100%; text-align: left; padding: 12px 20px;
+  background: none; border: none; cursor: pointer;
+  font-size: 17px; font-weight: 600; color: var(--ink);
+  transition: background .2s;
+}
+.menu-btn:hover { background: #f2e2d2; }
+
+/* 서브메뉴 */
+.submenu {
+  /* display: none;  */
+  flex-direction: column; 
+  background: #fafafa;
+  border-left: 3px solid var(--brand); 
+  margin-left: 10px;
+}
+.submenu li a {
+  padding: 1px 2px; 
+  font-size: 16px; 
+  color: var(--ink);
+  background: none; 
+  border: none; 
+  text-align: left; 
+  cursor: pointer;
+}
+.submenu li a:hover { background: #f8ece3; }
+
+/* 펼쳐진 상태 */
+/* 항상 열려있는 상태 */
+.has-sub .submenu {
+  display: flex !important;
+  flex-direction: column;
+}
+
+/* 활성화된 메뉴 */
+.submenu li a.active {
+  background: var(--brand);
+  color: #fff;
+  font-weight: 700;
+}
+/* 컨텐츠 */
+.admin-content {
+  flex: 1; padding: 30px;
+}

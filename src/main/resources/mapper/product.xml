@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ex.product.model.repository.ProductMapper">
+<!-- 
+  namespace  : 연결할 자바의 Mapper Interface의 전체 경로 (패키지명 + 인터페이스명)
+  예          : com.ex.repository.MemberMapper.java 인터페이스와 연결됨.
+	
+	각각의 태그
+	- id				: 모든 태그의 고유 이름
+			   		    : Mapper Interface의 메서드명과 일치해야 함
+					      
+	- resultType		: "결과 타입"
+									: SQL 실행 결과를 매핑할 Java 타입 객체
+		  			    : 컬럼명과 DTO 변수명이 같을경우 자동 매핑됨.
+			  		    : insert/update/delete에서는 resultType 생략 가능
+					
+	- parameterType		: "파라미터의 클래스 경로"
+	                	: SQL문에 전달할 파라미터의 타입 (기본형 , DTO , Map 등)
+
+	<sql id="A"> </sql> SQL문을 재사용하기 위한 태그
+	공통으로 사용될 조건을 빼둔 것.
+	예: <sql id="whereNo"> where member_no = #{memberNo} </sql>
+
+	사용 시 <include refid="A"/>
+-->
+	
+	<!-- 사용 테이블: PRODUCT / PRODUCT_OPTION / PRODUCT_FILE / CATEGORY -->
+	
+	<!-- 상품 작성 -->
+	<insert id="insertProduct">
+		insert into PRODUCT (PRODUCT_NO, PRODUCT_NAME, PRICE, IS_SUBSCRIPTION, MEMBER_NO, SHOP_NO, THUMBNAIL_NAME, THUMBNAIL_PATH, CATEGORY_MAIN, CATEGORY_SUB, PRODUCT_INFO, PRODUCT_SUMMARY, ALLERGY_INFO, NUTRITION_INFO, CREATE_AT) values (#{productNo}, #{productName}, #{price}, #{isSubscription}, #{memberNo}, #{shopNo}, #{thumbnailName}, #{thumbnailPath}, #{categoryMain}, #{categorySub}, #{productInfo}, #{productSummary}, #{allergyInfo}, #{nutritionInfo}, sysdate)
+	</insert>
+	
+	<!-- 작성중인 상품의 상품 번호 미리 조회 -->
+	<select id="newProductNo" resultType="int">
+		select product_seq.nextVal from dual
+	</select>
+	
+	<!-- 파일 업로드 -->
+	<insert id="insertFile">
+		insert into PRODUCT_FILE values(PRODUCT_FILE_SEQ.NEXTVAL, #{productNo}, #{fileName}, #{filePath}, sysdate)
+	</insert>
+	
+	<!-- 상품번호당 업로드된 파일명 조회 -->
+	<select id="getFileNames" resultType="String">
+		select file_name from PRODUCT_FILE where product_No=#{productNo} order by file_no	
+	</select>
+	
+	<!-- 방금 넣은 상품 번호 꺼내기 
+	<select id="getProductNo" resultType="int">
+		select product_No from (select product_No, rownum r from product order by product_No desc) where r=1
+	</select>-->
+	
+	<!-- 상품 옵션 작성 -->
+	<insert id="insertOption">
+		insert into Product_option values (product_option_seq.nextVal, #{productNo}, #{optionName}, #{optionPrice})
+	</insert>
+	
+	<!-- 인기 상품 top10-->
+	<select id="getPopularList" resultType="com.ex.product.model.data.ProductDTO">
+		<![CDATA[
+			select p.* from product p, shop s where p.shop_no = s.shop_no and s.shop_status = 0 and p.status <2 and p.product_no in 
+				(select product_no from 
+					(select od.product_no, count(*) from order_detail od, order_history oh where od.order_order_no = oh.order_no and oh.status != -1 group by product_no order by count(*) desc) 
+				where rownum <= 20) 
+			ORDER bY CREATE_AT DESC
+		]]>	
+	</select>
+	
+	<!-- 시/군/구별 인기 상품 top10 -->
+	<select id="getSigunguPopularList" resultType="com.ex.product.model.data.ProductDTO">
+		<![CDATA[
+			select p.* from product p, shop s where p.shop_no = s.shop_no and s.shop_status = 0 and s.shop_sigungu = #{sigungu} and p.status <2 and p.product_no in 
+			    (select product_no from 
+			        (select od.product_no, count(*) from order_detail od, order_history oh where od.order_order_no = oh.order_no and oh.status != -1 group by product_no order by count(*) desc) 
+			    where rownum <= 20) 
+			ORDER bY CREATE_AT DESC
+		]]>	
+	</select>
+		
+	<!-- 최신 등록 상품 top10 -->
+	<select id="getNewList" resultType="com.ex.product.model.data.ProductDTO">
+		<![CDATA[
+			select * from (select b.*, rownum r from (select p.* from product p, shop s where p.shop_no = s.shop_no and s.shop_status = 0 and p.status <2 order by create_at desc) b) where r<11
+		]]>
+	</select>
+	
+	<!-- 시군구별 최신 등록 상품 top10 -->
+	<select id="getSigunguNewList" resultType="com.ex.product.model.data.ProductDTO">
+		<![CDATA[
+			select * from (select b.*, rownum r from (select p.* from product p, shop s where p.shop_no = s.shop_no and s.shop_status = 0 and s.shop_sigungu=#{sigungu} and p.status <2 order by create_at desc) b) where r<11
+		]]>
+	</select>	
+	
+	<!-- 카테고리 이름 가져오기 -->
+	<select id="getCategoryName" resultType="String">
+		select category_name from category where category_code=#{cate}
+	</select>
+	
+	<!-- 카테고리 코드 가져오기 -->
+	<select id="getCategoryCode" resultType="String">
+		select category_code from category where category_name=#{cate}
+	</select>
+	
+	<!-- 전체 상품 목록 -->
+	<select id="getList" resultType="com.ex.product.model.data.ProductDTO">
+		<![CDATA[
+			select b.*, rownum r from (select p.* from product p, shop s where p.shop_no = s.shop_no and s.shop_status = 0 and p.status <2 order by p.create_at desc )b
+		]]>
+	</select>
+
+	<!-- (최신순 정렬) - 시군구 전체 상품 목록 -->
+	<select id="getSigunguList" resultType="com.ex.product.model.data.ProductDTO">
+		<![CDATA[
+			select b.*, rownum r from (select p.* from product p, shop s where p.shop_no = s.shop_no and s.shop_status = 0 and s.shop_sigungu=#{sigungu} and p.status <2 order by p.create_at desc )b
+		]]>
+	</select>
+	
+	<!-- 구매순 정렬 - 시군구 전체 상품 목록 -->
+	<select id="bySalesSigunguList" resultType="com.ex.product.model.data.ProductDTO">
+		<![CDATA[
+  			select b.*, rownum r from(
+  				select p.*, s.shop_name, sales.order_count from product p join shop s on p.shop_no = s.shop_no 
+  				left join (select d.product_no, count(*) as order_count from order_detail d , order_history h where d.order_order_no = h.order_no and h.status != -1 group by d.product_no)sales 
+  				on p.product_no = sales.product_no where s.shop_status = 0 and s.shop_sigungu = #{sigungu} and p.status < 2 order by sales.order_count desc nulls last
+  			)b		
+		]]>		
+	</select>	
+	
+	<!-- 별점순 정렬 - 시군구 전체 상품 목록 -->
+	<select id="byRatingSigunguList" resultType="com.ex.product.model.data.ProductDTO">
+		<![CDATA[
+			select b.*, rownum r from (select p.*, s.shop_name, review.avg_rating from product p join shop s on p.shop_no = s.shop_no
+    		left join ( select r.product_no, avg(r.rating) as avg_rating from product_review r group by r.product_no) review
+         	on p.product_no = review.product_no where s.shop_status = 0 and s.shop_sigungu = #{sigungu} and p.status < 2 order by review.avg_rating desc nulls last) b
+    	]]>		
+	</select>
+	
+	<!-- 낮은가격순 정렬 - 시군구 전체 상품 목록 -->
+	<select id="byPriceSigunguList" resultType="com.ex.product.model.data.ProductDTO">
+		<![CDATA[
+			select b.*, rownum r from (select p.*, s.shop_name from product p, shop s where p.shop_no = s.shop_no and s.shop_status = 0 and s.shop_sigungu=#{sigungu} and p.status <2 order by p.price asc )b		
+		]]>		
+	</select>
+	
+	<!-- 높은가격순 정렬 - 시군구 전체 상품 목록 -->
+	<select id="byPriceDescSigunguList" resultType="com.ex.product.model.data.ProductDTO">
+		<![CDATA[
+			select b.*, rownum r from (select p.*, s.shop_name from product p, shop s where p.shop_no = s.shop_no and s.shop_status = 0 and s.shop_sigungu=#{sigungu} and p.status <2 order by p.price desc )b		
+		]]>		
+	</select>
+		
+	<!-- 동도로 전체 상품 목록 -->
+	<select id="getBnameList" resultType="com.ex.product.model.data.ProductDTO">
+		<![CDATA[
+			select b.*, rownum r from (select p.* from product p, shop s where p.shop_no = s.shop_no and s.shop_status = 0 and s.shop_sigungu=#{sigungu} and s.shop_bname=#{bname} and p.status <2 order by p.create_at desc )b
+		]]>
+	</select>	
+	
+	<!-- 카테고리별 상품 목록 -->
+	<select id="getCateList" resultType="com.ex.product.model.data.ProductDTO">
+		<![CDATA[
+			select b.*, rownum r from (select p.* from product p, shop s where p.shop_no = s.shop_no and s.shop_status = 0 and p.status <2 and p.category_sub like #{category} || '%' order by p.create_at desc )b
+		]]>
+	</select>
+
+	<!-- (최신순 정렬) - 시군구 카테고리별 상품 목록 -->
+	<select id="getSigunguCateList" resultType="com.ex.product.model.data.ProductDTO">
+		<![CDATA[
+			select b.*, rownum r from (select p.* from product p, shop s where p.shop_no = s.shop_no and s.shop_status = 0 and s.shop_sigungu=#{sigungu} and p.status <2 and p.category_sub like #{category} || '%' order by p.create_at desc )b
+		]]>
+	</select>
+	
+	<!-- 구매순 정렬 - 시군구 카테고리별 상품 목록 -->
+	<select id="bySalesSigunguCateList" resultType="com.ex.product.model.data.ProductDTO">
+		<![CDATA[
+			select b.*, rownum r from(  
+  				select p.*, s.shop_name, sales.order_count from product p join shop s on p.shop_no = s.shop_no 
+  				left join (select d.product_no, count(*) as order_count from order_detail d , order_history h where d.order_order_no = h.order_no and h.status != -1 group by d.product_no)sales 
+  				on p.product_no = sales.product_no where s.shop_status = 0 and s.shop_sigungu = #{sigungu} and p.status < 2 and p.category_sub like #{category} || '%'
+  				order by sales.order_count desc nulls last
+			)b
+		]]>
+	</select>
+	
+	<!-- 별점순 정렬 - 시군구 카테고리별 상품 목록 -->
+	<select id="byRatingSigunguCateList" resultType="com.ex.product.model.data.ProductDTO">
+		<![CDATA[
+			select b.*, rownum r from (select p.*, s.shop_name, review.avg_rating from product p join shop s on p.shop_no = s.shop_no
+    		left join ( select r.product_no, avg(r.rating) as avg_rating from product_review r group by r.product_no) review
+         	on p.product_no = review.product_no where s.shop_status = 0 and s.shop_sigungu = #{sigungu} and p.status < 2 and p.category_sub like #{category} || '%' order by review.avg_rating desc nulls last) b
+    	]]>		
+	</select>
+	
+	<!-- 낮은가격순 정렬 - 시군구 카테고리별 상품 목록 -->
+	<select id="byPriceSigunguCateList" resultType="com.ex.product.model.data.ProductDTO">
+		<![CDATA[
+			select b.*, rownum r from (select p.*, s.shop_name from product p, shop s where p.shop_no = s.shop_no and s.shop_status = 0 and s.shop_sigungu=#{sigungu} and p.status <2 and p.category_sub like #{category} || '%' order by p.price asc )b		
+		]]>		
+	</select>
+	
+	<!-- 높은가격순 정렬 - 시군구 카테고리별 상품 목록 -->
+	<select id="byPriceDescSigunguCateList" resultType="com.ex.product.model.data.ProductDTO">
+		<![CDATA[
+			select b.*, rownum r from (select p.*, s.shop_name from product p, shop s where p.shop_no = s.shop_no and s.shop_status = 0 and s.shop_sigungu=#{sigungu} and p.status <2 and p.category_sub like #{category} || '%' order by p.price desc )b		
+		]]>		
+	</select>	
+	
+	<!-- 동도로명 카테고리별 상품 목록 -->		
+	<select id="getBnameCateList" resultType="com.ex.product.model.data.ProductDTO">
+		<![CDATA[
+			select b.*, rownum r from (select p.* from product p, shop s where p.shop_no = s.shop_no and s.shop_status = 0 and s.shop_sigungu=#{sigungu} and s.shop_bname=#{bname} and p.status <2 and p.category_sub like '%' || #{category} || '%' order by create_at desc )b
+		]]>
+	</select>
+	
+	<!-- 상품 상세 조회 -->
+	<select id="getProduct" resultType="com.ex.product.model.data.ProductDTO">
+		select * from product where product_No=#{productNo}
+	</select>
+	
+	<!-- 상품 옵션 조회 -->
+	<select id="getProductOptions" resultType="com.ex.product.model.data.ProductOptionDTO">
+		select * from product_option where product_no=#{productNo}
+	</select>
+	
+	<!-- 특정 판매자의 상품 목록 -->
+<select id="getProductListByMemberNo" 
+        resultType="com.ex.product.model.data.ProductDTO">
+    <![CDATA[
+        select p.*
+        from product p
+        join shop s on p.shop_no = s.shop_no
+        where p.member_no = #{memberNo}
+          and p.status < 2
+        order by p.create_at desc
+    ]]>
+</select>
+
+<!-- 제제받을시 상점 조회 여부 -->
+<select id="getProductsByShop" 
+        parameterType="int" 
+        resultType="com.ex.product.model.data.ProductDTO">
+    <![CDATA[
+        select p.*, s.shop_status as shopStatus
+        from product p
+        join shop s on p.shop_no = s.shop_no
+        where p.shop_no = #{shopNo}
+          and p.status < 2
+        order by p.create_at desc
+    ]]>
+</select>
+
+
+<!-- 작업자 : 안성진 -->
+<!-- 상품의 상점(shop) 정보 조회 -->
+<select id="getShop" resultType="com.ex.shop.model.data.ShopDTO">
+	<!-- shop_no로 shop테이블에서 상점 정보 조회 -->
+	select * from shop where shop_no = #{shopNo}
+</select>
+
+<!-- 작업자 : 안성진 -->
+<!-- 상품 검색 : 상품명, 상점명으로 검색 -->
+<!-- ProductController -->
+<select id="searchProducts" resultType="com.ex.product.model.data.ProductDTO">
+	<![CDATA[
+		select p.* from product p join shop s on p.shop_no = s.shop_no
+		where 
+			p.product_name like '%' || #{keyword} || '%'
+			or s.shop_name like '%' || #{keyword} || '%'
+		order by p.create_at desc
+	]]>
+</select>
+
+<!-- 작업자 : 안성진 -->
+<!-- 연관검색어 조회 -->
+<select id="getRelatedKeywords" resultType="String">
+	<![CDATA[
+		select distinct p.product_name as keyword from product p join shop s on p.shop_no = s.shop_no
+		where ( 
+			p.product_name like '%' || #{keyword} || '%'
+			or s.shop_name like '%' || #{keyword} || '%'
+		)
+		and rownum <=5
+	]]>
+</select>
+
+<!-- 작업자 : 안성진 -->
+<!-- 상품 번호로 상점 번호 조회 -->
+<select id="getShopNoByProductNo" parameterType="int" resultType="int">
+	select shop_no from product where product_no = #{productNo}
+</select>
+
+<!-- 작업자 : 안병주 -->
+<select id="findByShopNo" resultType="com.ex.product.model.data.ProductDTO" parameterType="int">
+    SELECT *
+    FROM PRODUCT
+    WHERE SHOP_NO = #{shopNo}
+</select>
+
+<!-- 작업자 : 안병주 -->
+<select id="getProductByProductNo" resultType="com.ex.product.model.data.ProductDTO" parameterType="int">
+	SELECT * FROM PRODUCT WHERE PRODUCT_NO = #{productNo}
+</select>
+
+<!-- 작업자 : 맹재희 >> 윤예솔-->
+<update id="updateProduct" parameterType="com.ex.product.model.data.ProductDTO">
+    UPDATE product
+    SET
+        product_name = #{productName},
+        price = #{price},
+        product_info = #{productInfo},
+        is_Subscription = #{isSubscription},
+        category_main = #{categoryMain},
+        category_sub = #{categorySub},
+        product_summary = #{productSummary},
+        allergy_info = #{allergyInfo},
+        nutrition_info = #{nutritionInfo},
+        update_at = SYSDATE
+    WHERE product_no = #{productNo}
+</update>
+<!-- 작업자 : 맹재희 -->
+<!-- 상품 삭제: 상품 번호로 특정 상품 삭제 -->
+<delete id="deleteProduct" parameterType="int">
+    DELETE FROM product
+    WHERE product_no = #{productNo}
+</delete>	
+
+<!-- 작업자 : 맹재희  -->
+<!-- 상품 상태 변경: 상품 번호로 특정 상품 상태(status) 변경 및 수정 시간(update_at) 업데이트 -->
+<update id="updateStatus">
+    UPDATE product
+    SET status = #{status}, update_at = SYSDATE
+    WHERE product_no = #{productNo}
+</update>
+
+<!-- 상품 조회: 상품 번호로 특정 상품 정보를 조회하고 ProductDTO로 매핑 -->
+<select id="findById" resultType="com.ex.product.model.data.ProductDTO">
+    SELECT * FROM product WHERE product_no = #{productNo}
+</select>
+
+<!-- 제재 상점 포함 전체 상품 목록 -->
+<select id="getListAll" resultType="com.ex.product.model.data.ProductDTO">
+    <![CDATA[
+        select b.*, rownum r from (
+            select p.* 
+            from product p
+            join shop s on p.shop_no = s.shop_no
+            where p.status < 2
+            order by p.create_at desc
+        ) b
+    ]]>
+</select>
+
+
+
+</mapper>
+

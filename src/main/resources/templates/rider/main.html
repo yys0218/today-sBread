@@ -1,0 +1,40 @@
+<!--
+******************************************
+*  Created On : 2025. 8. 8.
+*  File : main.html
+*******************************************
+ -->
+<html layout:decorate="~{rider/rider-layout}">
+    <div th:block layout:fragment="head-extra">
+        <meta name="_csrf" th:content="${_csrf.token}" />
+        <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+    </div>
+
+    <div class="container d-flex flex-column justify-content-center align-items-center" layout:fragment="content" style="height: 100vh">
+        <div class="view_content card">
+            <div class="side_bar" style="background-color: antiquewhite"></div>
+            <div class="main_content" style="background-color: aquamarine">
+                <div class="content_top" style="background-color: aliceblue">
+                    <div class="top_info">
+                        <div>정산금액 : 120,000원</div>
+                        <div class="btn">
+                            <a th:href="@{/rider/logout}">로그아웃</a>
+                            <!--sec:authorize="isAuthenticated()" -->
+                        </div>
+                    </div>
+                    <div class="top_main">
+                        <nav class="navber" role="tablist" aria-label="작업 상태">
+                            <a href="#" class="nav_item active" role="tab" aria-selected="true">전체</a>
+                            <a href="#" class="nav_item" role="tab" aria-selected="false">대기</a>
+                            <a href="#" class="nav_item" role="tab" aria-selected="false">배달</a>
+                            <a href="#" class="nav_item" role="tab" aria-selected="false">완료</a>
+                            <a href="#" class="nav_item" role="tab" aria-selected="false">커뮤니티</a>
+                            <a href="#" class="nav_item" role="tab" aria-selected="false">제작중</a>
+                        </nav>
+                    </div>
+                </div>
+                <div class="content_main" style="background-color: yellow"></div>
+            </div>
+        </div>
+    </div>
+</html>

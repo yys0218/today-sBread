@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{admin/adminLayout}">
+
+<head>
+  <link rel="stylesheet" th:href="@{/css/admin/notice.css}">
+</head>
+<div layout:fragment="content">
+  <h1 class="nl-title">공지사항 상세</h1>
+
+  <section class="hc-section">
+    <article class="nd-article box">
+      <header class="nd-header">
+        <div class="nd-title" th:text="${notice.noticeTitle}"></div>
+
+        <div class="nd-meta">
+          <div><span>카테고리:</span> <span th:text="${notice.noticeCategory}"></span></div>
+          <div><span>등록일:</span> <span th:text="${#temporals.format(notice.noticeAt, 'yyyy-MM-dd HH:mm')}"></span></div>
+          <div th:if="${notice.noticeUpdateAt != null}">
+            <span>수정일:</span> <span th:text="${#temporals.format(notice.noticeUpdateAt, 'yyyy-MM-dd HH:mm')}"></span>
+          </div>
+          <div>
+            <span>상태:</span>
+            <span th:classappend="${notice.noticeStatus == 0} ? 'nd-status show' : 'nd-status hide'"
+              th:text="${notice.noticeStatus == 0 ? '게시중' : '숨김'}"></span>
+          </div>
+        </div>
+      </header>
+
+      <hr class="nd-divide" />
+
+      <section class="nd-content">
+        <span>내용:</span>
+        <p th:text="${notice.noticeContent}"></p>
+      </section>
+    </article>
+  </section>
+
+  <div class="nd-actions">
+    <a th:href="@{/admin/board/notice/update/{noticeNo}(noticeNo=${notice.noticeNo})}" class="update">수정</a>
+    <a th:href="@{/admin/board/notice/cancel/{noticeNo}(noticeNo=${notice.noticeNo})}"
+      th:text="${notice.noticeStatus == 0 ? '숨김' : '숨김해제'}" class="hide"></a>
+
+    <a th:href="@{/admin/board/notice/delete/{noticeNo}(noticeNo=${notice.noticeNo})}" class="delete">삭제</a>
+    <a th:href="@{/admin/board/notice/list}" class="back">목록으로</a>
+  </div>
+</div>
+
+
+</html>

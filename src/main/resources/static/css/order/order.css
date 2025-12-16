@@ -1,0 +1,76 @@
+/*주문/결제*/
+
+.productList{
+	min-width: 600px;
+	max-width: 850px;
+}
+
+/*결제 정보*/
+.sticky-wrapper { /*화면따라다니기*/
+	position: relative;
+}
+
+.checkout-info {
+	position: sticky;
+	top: 60px; /* 화면 상단에서 20px 떨어진 위치에 고정 */
+	max-height: calc(100vh - 40px); /* 화면 높이에서 여백 제외 */
+	overflow-y: auto; /* 내용이 길면 스크롤 */
+	z-index: 100;
+	min-width: 230px;
+	background: white;
+	border: 1px solid #ddd;
+	border-radius: 17px;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+	padding: 20px;
+}
+
+textarea {
+	resize: none;
+}
+
+/*배송지 변경 모달*/
+    .dimmed { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 1000; display:none; }
+    .modal_layer { position: fixed; top:50vh; left:50vw; transform: translate(-50%,-50%); z-index: 1010; display:none; width:90%; max-width:520px; }
+    .modal_box { background:#fff; color:#000; border-radius:12px; padding:20px; box-shadow:0 8px 24px rgba(0,0,0,.5); display:flex; flex-direction:column; box-sizing: border-box; max-height:90vh; overflow:hidden; }
+    .modal_title { display:flex; flex-direction:column; justify-content:center; margin:10px auto; text-align:center; gap:10px; }
+    .modal_title h5 { color:#fff !important; }
+    .title_bottom::after { content:''; position:absolute; left:50%; transform:translateX(-50%); bottom:0; width:100%; height:6px; background:#f46f40; border-radius:999px; box-shadow:0 4px 12px rgba(244,111,64,.4); }
+    .modal_title p { color:#eee !important; }
+    .modal_content, .hidden_content { display:flex; flex-direction:column; justify-content:center; gap:10px; }
+    .modal_btns { margin-top:auto; display:flex; justify-content:flex-end; gap:10px; padding-top:12px; border-top:1px solid #333; }
+    .modal_btns .btn { display:inline-flex; align-items:center; justify-content:center; min-width:88px; height:40px; padding:0 14px; font-size:14px; font-weight:600; border-radius:8px; text-decoration:none; cursor:pointer; color:#fff; background:#555; }
+    .modal_btns .btn-primary, .modal_btns .btn-none { background:#f46f40; }
+    .modal_btns .btn-primary:hover, .modal_btns .btn-none:hover { background:#d85f38; }
+    .modal_box .form-control { background:#2a2a2a; border:1px solid #444; color:#fff; }
+    .modal_box .form-control:focus { background:#2f2f2f; border-color:#f46f40; box-shadow:0 0 0 .2rem rgba(244,111,64,.25); }
+    [id*='result_input'] { text-align:center; font-size:20px; background:#2a2a2a; border:1px solid #444; color:#fff; }
+    input.form-control:-webkit-autofill,
+    input.form-control:-webkit-autofill:hover,
+    input.form-control:-webkit-autofill:focus {
+      -webkit-text-fill-color:#fff !important; caret-color:#fff; border:1px solid #444 !important;
+      box-shadow:0 0 0px 1000px #2a2a2a inset !important; transition: background-color 9999s ease-out, color 9999s ease-out;
+    }
+    .addressBook {
+	  background: #fff;       /* 바탕 흰색 */
+	  color: #000;            /* 글자 검정 */
+	  padding: 10px;
+	  max-height: 150px;      /* 스크롤 영역 높이 제한 */
+	  overflow-y: auto;       /* 세로 스크롤 */
+	  border: 1px solid #ccc;
+	  border-radius: 6px;
+	  margin-bottom: 12px;    /* 입력칸과 간격 */
+	}
+	.addressBook ul {
+	  list-style: none;
+	  margin: 0;
+	  padding: 0;
+	}
+	.addressBook li {
+	  padding: 6px 4px;
+	  border-bottom: 1px solid #eee;
+	  font-size: 14px;
+	}
+	.addressBook li:last-child {
+	  border-bottom: none;
+	}
+    

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{admin/adminLayout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>정산 조회 페이지</title>
+    <link rel="stylesheet" th:href="@{/css/admin/settle.css}">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script th:src="@{/js/comm/sweetalert.noah.js}"></script>
+</head>
+
+<div layout:fragment="content">
+
+
+    <h2 class="admin-title">정산 내역 관리</h2>
+
+    <!-- 현재 정산 설정 -->
+    <div class="settle-config-box">
+        <p>현재 빵집 수수료: <span th:text="${config.shopRatio}">0</span>%</p>
+        <p>현재 라이더 수수료: <span th:text="${config.riderRatio}">0</span>%</p>
+        <button type="button" onclick="openConfigHistoryModal()">설정 내역 보기</button>
+        <button type="button" onclick="openConfigModal()">설정 변경</button>
+    </div>
+
+    <!-- 정산 설정 -->
+    <div id="configModal" class="modal">
+        <form method="post" th:action="@{/admin/site/settle/config}">
+            <label>빵집 수수료</label>
+            <input type="number" name="shopRatio" min="0" max="100">
+            <label>라이더 수수료</label>
+            <input type="number" name="riderRatio" min="0" max="100">
+            <button type="submit">저장</button>
+            <button type="button" onclick="closeConfigModal()">닫기</button>
+        </form>
+    </div>
+
+    <!-- 정렬 선택 -->
+    <form id="settleSortForm" th:action="@{/admin/site/settle/list}" method="get">
+        <input type="hidden" name="sortField" id="settleSortField" th:value="${sortField}" />
+        <input type="hidden" name="sortDir" id="settleSortDir" th:value="${sortDir}" />
+
+        <div name="sortField" style="margin-bottom: 12px; display:flex; gap:8px;">
+            <button type="button" class="btn"
+                    th:classappend="${sortField == 'settleNo'} ? 'active ' + (${sortDir == 'ASC'} ? 'asc' : 'desc') : ''"
+                    onclick="setSettleSort('settleNo')">번호</button>
+            <button type="button" class="btn"
+                    th:classappend="${sortField == 'settleAmt'} ? 'active ' + (${sortDir == 'ASC'} ? 'asc' : 'desc') : ''"
+                    onclick="setSettleSort('settleAmt')">금액</button>
+            <button type="button" class="btn"
+                    th:classappend="${sortField == 'settleAt'} ? 'active ' + (${sortDir == 'ASC'} ? 'asc' : 'desc') : ''"
+                    onclick="setSettleSort('settleAt')">일자</button>
+        </div>
+    </form>
+
+    <!-- 정산 내역 테이블 -->
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>번호</th>
+                <th>구분</th>
+                <th>이름</th>
+                <th>금액</th>
+                <th>수수료</th>
+                <th>일자</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="s : ${settleList}">
+                <td th:text="${s.settleNo}"></td>
+                <td th:text="${s.settleType==1?'빵집':'라이더'}"></td>
+                <td th:text="${s.settleName}"></td>
+                <td th:text="${s.settleAmt} + '원'"></td>
+                <td th:text="${s.settleCharge} + '원'"></td>
+                <td th:text="${#temporals.format(s.settleAt, 'yyyy-MM-dd HH:mm')}"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 페이징 처리 (그대로 두되 .pagination CSS가 입혀짐) -->
+
+    <!-- 정산 설정 내역 모달 -->
+    <div id="configHistoryModal" class="modal">
+        <h3>정산 설정 내역</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>변경일자</th>
+                    <th>빵집 수수료</th>
+                    <th>라이더 수수료</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="h : ${configHistory}">
+                    <td th:text="${#temporals.format(h.updatedAt, 'yyyy-MM-dd HH:mm')}"></td>
+                    <td th:text="${h.shopRatio + '%'}"></td>
+                    <td th:text="${h.riderRatio + '%'}"></td>
+                </tr>
+            </tbody>
+        </table>
+        <button type="button" onclick="closeConfigHistoryModal()">닫기</button>
+    </div>
+
+</div>
+
+
+
+<th:block layout:fragment="script">
+    <script>
+        // 🔹 모든 모달 닫기
+        function closeAllModals() {
+            document.querySelectorAll(".modal").forEach(modal => {
+                modal.style.display = "none";
+            });
+        }
+
+        function openConfigModal() {
+            closeAllModals(); // 다른 모달 닫기
+            const modal = document.getElementById("configModal");
+            if (modal) {
+                modal.style.display = "block";
+            } else {
+                showWarningAlert("설정 모달을 찾을 수 없습니다.", null);
+            }
+        }
+
+        function closeConfigModal() {
+            const modal = document.getElementById("configModal");
+            if (modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        function openConfigHistoryModal() {
+            closeAllModals(); // 다른 모달 닫기
+            document.getElementById("configHistoryModal").style.display = "block";
+        }
+
+        function closeConfigHistoryModal() {
+            document.getElementById("configHistoryModal").style.display = "none";
+        }
+    </script>
+
+    <script>
+        function setSettleSort(field) {
+            const form = document.getElementById("settleSortForm");
+            const fieldInput = document.getElementById("settleSortField");
+            const dirInput = document.getElementById("settleSortDir");
+
+            // 정렬 필드 지정
+            fieldInput.value = field;
+
+            // 현재 방향 값 읽기 (없으면 DESC 기본)
+            const currentDir = dirInput.value || "DESC";
+            // 토글 asc/desc
+            const newDir = (currentDir === "DESC") ? "ASC" : "DESC";
+            dirInput.value = newDir;
+
+            form.submit();
+        }
+    </script>
+    <script th:src="@{/js/admin/admin.js}"></script>
+</th:block>
+
+</html>

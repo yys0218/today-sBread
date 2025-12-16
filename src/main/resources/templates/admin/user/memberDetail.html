@@ -1,0 +1,33 @@
+<!-- fragment 선언 -->
+<div th:fragment="detailFragment" xmlns:th="http://www.thymeleaf.org">
+  <p><b>회원번호:</b> <span th:text="${member.memberNo}"></span></p>
+  <p><b>아이디:</b> <span th:text="${member.memberId}"></span></p>
+  <p><b>닉네임:</b> <span th:text="${member.memberNick}"></span></p>
+  <p><b>이름:</b> <span th:text="${member.memberName}"></span></p>
+  <p><b>이메일:</b> <span th:text="${member.memberEmail}"></span></p>
+  <p><b>전화번호:</b> <span th:text="${member.memberPhone}"></span></p>
+  <p><b>성별:</b> <span th:text="${member.memberGender}"></span></p>
+  <p><b>생년월일:</b> <span th:text="${#temporals.format(member.memberBirth, 'yyyy-MM-dd')}"></span></p>
+  <p><b>주소:</b> <span th:text="${member.memberAddress}"></span></p>
+  <!-- 숫자 출력, JS로 변환 -->
+  <p><b>역할:</b> <span id="detail-role" th:text="${member.memberRole}"></span></p>
+  <p><b>가입일:</b> <span th:text="${#temporals.format(member.memberReg, 'yyyy-MM-dd HH:mm')}"></span></p>
+  <p th:if="${member.memberDeleteReason!=null}"><b>탈퇴사유:</b> <span th:text="${member.memberDeleteReason}"></span></p>
+
+  <!-- 제재 정보 -->
+  <div th:if="${restrict != null}">
+    <p><b>제재 사유:</b> <span id="detail-reason" th:text="${restrict.restrictReason}"></span></p>
+    <p><b>제재 기간:</b>
+      <span th:text="${#temporals.format(restrict.restrictAt, 'yyyy-MM-dd')}"></span>
+      ~
+      <span th:text="${#temporals.format(restrict.restrictPeriod, 'yyyy-MM-dd')}"></span>
+    </p>
+  </div>
+
+  <!-- 관리자 제재/탈퇴 버튼 -->
+   <!-- 제재가 있으면 정지 안보이게, 없으면 취소 안보이게 -->
+  <div th:if="${member.memberRole != 3}">
+    <button type="button" th:if="${member.memberRole != -1}" th:onclick="|openRestrictModal(${member.memberNo})|">정지</button>
+    <button type="button" th:if="${member.memberRole == -1}" th:onclick="|release(${member.memberNo})|">제재 취소</button>
+  </div>
+</div>

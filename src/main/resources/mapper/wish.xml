@@ -1,0 +1,90 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 
+	WishMapper.xml
+	- 테이블 : wish
+	- 컬럼 : wishlist_no(PK), member_no, product_no, create_date
+	- DTO : com.ex.product.model.data.WishDTO (wishNo, memberNo, productNo, createDate)
+ -->
+<mapper namespace="com.ex.product.model.repository.WishMapper">
+
+<!-- 
+	공통 ResultMap (컬럼명 <-> DTO 필드명 매핑)
+ -->
+<resultMap id="WishMap" type="com.ex.product.model.data.WishDTO">
+    <id     property="wishNo"     column="WISHLIST_NO"/>
+    <result property="memberNo"   column="MEMBER_NO"/>
+    <result property="productNo"  column="PRODUCT_NO"/>
+	<result property="createDate" column="CREATE_DATE" jdbcType="TIMESTAMP"/>
+</resultMap>
+
+<!-- 
+	마이페이지 : 내 찜 목록 페이징 조회 / 카운트 / 삭제
+ -->
+ <!-- 
+ 	내 찜 목록 (페이지네이션)
+	- 파라미터 : memberNo, offset, limit
+-->
+<select id="selectMemberWishList" resultMap="WishMap">
+	select wishlist_no, member_no, product_no, create_date from wish where member_no = #{memberNo} order by wishlist_no desc
+	offset #{offset} rows fetch next #{limit} rows only
+</select>
+
+<!-- 내 찜 총 개수 -->
+<select id="countMemberWishList" resultType="int">
+	select count(1) from wish where member_no = #{memberNo}
+</select>
+
+<!--
+	선택 삭제 (체크박스 일괄 삭제)
+	- 파라미터 : memberNo, wishNos(List<Integer>)
+ -->
+ <delete id="deleteByWishNos">
+ 	delete from wish where member_no = #{memberNo} and wishlist_no in 
+ 	<foreach collection="wishNos" item="wno" open="(" separator="," close=")">#{wno}</foreach>
+ </delete>
+ 
+ <!-- 단건 삭제 (개별 삭제 버튼) -->
+ <delete id="deleteByWishNo">
+ 	delete from wish where member_no = #{memberNo} and wishlist_no = #{wishNo}
+ </delete>
+
+
+<!-- 상품 상세 페이지 : 토글 / 상태 확인 -->
+<!-- 찜 추가 -->
+<insert id="insertWish" parameterType="com.ex.product.model.data.WishDTO">
+	<selectKey keyProperty="wishNo" resultType="int" order="BEFORE">
+		select wish_seq.nextval from dual
+	</selectKey>
+	insert into wish (wishlist_no, member_no, product_no, create_date) values (#{wishNo}, #{memberNo}, #{productNo}, sysdate)
+</insert>
+
+<!-- 찜 삭제 -->
+<delete id="deleteWish">
+	delete from wish where member_no = #{memberNo} and product_no = #{productNo}
+</delete>
+
+<!-- 내가 이 상품을 찜했는지 여부 (0/1) -->
+<select id="exists" resultType="int">
+	select case when count(1) > 0 then 1 else 0 end from wish where member_no = #{memberNo} and product_no = #{productNo}
+</select>
+
+<!-- 상품별 찜 수 -->
+<select id="countByProduct" resultType="int">
+	select count(1) from wish where product_no = #{productNo}
+</select>
+
+<!-- 내 찜 PK 조회 -->
+<select id="findWishNo" resultType="java.lang.Integer">
+	select wishlist_no from wish where member_no = #{memberNo} and product_no = #{productNo} fetch first 1 rows only
+</select>
+
+<!-- 장바구니 upsert -->
+<update id="upsertCart">
+	merge into shopping_cart sc using dual on (sc.member_no = #{memberNo} and sc.product_no = #{productNo})
+	when matched then update set sc.qty = sc.qty + #{qty}, sc.updated_at = SYSDATE
+	when not matched then insert (cart_no, member_no, product_no, qty, created_at, updated_at )
+	values (seq_shopping_cart.mextval, #{memberNo}, #{productNo}, #{qty}, SYSDATE, SYSDATE)
+</update>
+
+</mapper>

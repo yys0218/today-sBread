@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/common/layout}">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/css/shop/shopview.css">
+
+    <!-- CSRF 토큰 -->
+    <th:block layout:fragment="head-extra">
+        <meta name="_csrf" th:content="${_csrf.token}">
+        <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    </th:block>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body>
+<div layout:fragment="content" class="container my-3">
+    <div th:if="${shop != null}">
+        <!-- 상점 헤더 -->
+        <div class="shop-header">
+            <div class="shop-name" th:text="${shop.shopName}"></div>
+        </div>
+
+        <!-- 고정 알림사항 -->
+        <div class="shopNotice"
+             th:if="${pinnedNotice != null}"
+             th:text="'알림 : [안내사항] ' + ${pinnedNotice.shopNoticeTitle}">
+        </div>
+
+        <!-- 탭 -->
+        <div class="tabs">
+            <input type="radio" id="tab1" name="tab-group" checked>
+            <label for="tab1">전체 상품</label>
+            <input type="radio" id="tab2" name="tab-group">
+            <label for="tab2">알림사항</label>
+            <input type="radio" id="tab3" name="tab-group">
+            <label for="tab3">리뷰</label>
+            <input type="radio" id="tab4" name="tab-group">
+            <label for="tab4">문의</label>
+            <input type="radio" id="tab5" name="tab-group">
+            <label for="tab5">상점정보</label>
+
+            <!-- 전체 상품 -->
+            <div class="tab-content box" id="content1">
+                <div id="product-grid">
+                    <div th:if="${productList == null or #lists.isEmpty(productList)}"
+                         class="text-center my-3">
+                        아직 등록된 상품이 없습니다.
+                    </div>
+
+                    <th:block th:each="product : ${productList}">
+                        <div class="card m-2 product-card"
+                             th:data-productno="${product.productNo}"
+                             th:data-shopno="${product.shopNo}"
+                             th:data-productname="${product.productName}"
+                             th:data-price="${product.price}"
+                             th:data-status="${product.status == 0 ? 'selling' : 'soldout'}"
+                             th:data-seller-status="${product.shopStatus}">
+
+                            <div class="image-wrapper">
+                                <span th:if="${product.thumbnailName == null}">
+                                    <img th:src="@{/upload/product/default.png}" />
+                                </span>
+                                <span th:unless="${product.thumbnailName == null}">
+                                    <a class="linkDefault" th:href="@{|/product/detail/${product.productNo}|}">
+                                        <img th:src="@{|/upload/product/${product.thumbnailName}|}" />
+                                    </a>
+                                </span>
+                            </div>
+
+                            <div class="card-body">
+                                <button class="btn btn-light w-100 insertBtn" type="button">
+                                    <img class="shoppingCartIcon" th:src="@{/image/main/add_shopping_cart.png}">&nbsp;담기
+                                </button>
+
+                                <a class="linkDefault" th:href=@{|/product/detail/${product.productNo}|}>
+                                    <h6 class="card-subtitle mt-1" th:text="${product.shopName}"></h6>
+                                    <h4 class="card-title" th:text="${product.productName}"></h4>
+                                    <h6 th:text="${product.price}+'원'"></h6>
+                                    <i class="bi bi-chat-left-dots"></i>
+                                    <span th:text="${product.reviewCount}"></span>
+
+                                    <th:block th:if="${product.isSubscription==1}">
+                                        <span class="badge text-bg-warning w-25 text-center ms-1 p-1">정기배송</span>
+                                    </th:block>
+                                </a>
+
+                                <!-- 찜 버튼 -->
+                                <i class="wish-btn position-absolute bottom-0 end-0 p-3"
+                                   th:classappend="${product.isWished==1} ? 'bi-heart-fill' : 'bi-heart'"></i>
+                            </div>
+                        </div>
+                    </th:block>
+                </div>
+            </div>
+
+            <!-- 알림사항 -->
+            <div class="tab-content box" id="content2">
+                <h1>알림사항</h1>
+
+                <div th:if="${noticeList == null or #lists.isEmpty(noticeList)}"
+                     class="text-center my-3" style="color:#888; font-size:14px;">
+                    알림사항이 없습니다.
+                </div>
+
+                <ul th:if="${noticeList != null and !#lists.isEmpty(noticeList)}"
+                    style="list-style:none; padding:0;">
+                    <li th:each="notice : ${noticeList}" class="relative p-2 border rounded flex items-center gap-2 mb-2">
+                        <a th:href="@{|/shop/noticeDetail/${notice.shopNoticeNo}|}"
+                           class="flex-1 block p-2 hover:underline">
+                            <p class="font-medium text-gray-800" th:text="${notice.shopNoticeTitle}"></p>
+                            <p class="text-sm text-gray-500 mt-1"
+                               th:text="${#dates.format(notice.createdAt, 'yyyy-MM-dd')}"></p>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 리뷰 -->
+            <div class="tab-content box" id="content3">
+                <h1>리뷰</h1>
+
+                <div th:if="${reviewList == null or #lists.isEmpty(reviewList)}"
+                     class="text-center my-3"
+                     style="color:#888; font-size:16px;">
+                    리뷰가 없습니다.
+                </div>
+
+                <div th:if="${reviewList != null and !#lists.isEmpty(reviewList)}">
+                    <div th:each="review : ${reviewList}"
+                         style="padding:12px 16px; border:1px solid #eee; border-radius:8px; margin-bottom:12px; background-color:#fff; box-shadow:0 1px 3px rgba(0,0,0,0.08); transition:all 0.2s ease-in-out;">
+                        <a th:href="@{/product/detail/{productNo}(productNo=${review.productNo})}"
+                           style="text-decoration:none; color:inherit; display:block;">
+                            <p th:text="${review?.reviewContent}"
+                               style="margin:0; font-size:14px; line-height:1.6; color:#333;">
+                                리뷰 내용 없음
+                            </p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 문의 -->
+            <div class="tab-content box" id="content4">
+                <h1>문의</h1>
+
+                <div th:if="${questionList == null or #lists.isEmpty(questionList)}"
+                     class="text-center my-3"
+                     style="color:#888; font-size:16px;">
+                    문의가 없습니다.
+                </div>
+
+                <div th:if="${questionList != null and !#lists.isEmpty(questionList)}">
+                    <div th:each="question : ${questionList}"
+                         style="padding:12px 16px; border:1px solid #eee; border-radius:8px; margin-bottom:12px; background-color:#fff; box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+                        <p th:text="${question.content}" style="margin:0; font-size:14px; line-height:1.6; color:#333;">
+                            문의 내용 없음
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 상점정보 -->
+            <div class="tab-content shop-info-card box" id="content5">
+                <h1 style="text-align: left; border-bottom: 2px solid #ddd; padding-bottom: 20px; margin-bottom: 25px;">
+                    상점 정보
+                </h1>
+
+                <!-- 가게 이름 / 사업자번호 -->
+                <div style="display: flex; gap: 20px; margin-bottom: 20px; align-items: flex-start;">
+                    <div class="shop-info-row" style="flex:1;">
+                        <span>🏪</span>
+                        <div>
+                            <div style="font-weight:600; color:#555; margin-bottom:6px;">가게 이름</div>
+                            <div style="font-size:16px; color:#222;" th:text="${shop.shopName}">가게 이름</div>
+                        </div>
+                    </div>
+
+                    <div class="shop-info-row" style="flex:1;">
+                        <span>🆔</span>
+                        <div>
+                            <div style="font-weight:600; color:#555; margin-bottom:6px;">사업자번호</div>
+                            <div style="font-size:16px; color:#222;" th:text="${shop.tinNo}">123-45-67890</div>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+
+                <!-- 주소 -->
+                <div class="shop-info-row">
+                    <span>📍</span>
+                    <div>
+                        <div style="font-weight:600; color:#555; margin-bottom:6px;">주소</div>
+                        <div style="font-size:16px; color:#222;" th:text="${shop.shopAddress}">서울시 강남구 예시로 123</div>
+                    </div>
+                </div>
+                <hr>
+
+                <!-- 가게 연락처 -->
+                <div class="shop-info-row">
+                    <span>📞</span>
+                    <div>
+                        <div style="font-weight:600; color:#555; margin-bottom:6px;">가게 연락처</div>
+                        <div style="font-size:16px; color:#222;" th:text="${shop.shopContact}">010-1234-5678</div>
+                    </div>
+                </div>
+                <hr>
+
+                <!-- 영업시간 -->
+                <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+                    <div class="shop-info-row" style="flex:1;">
+                        <span>⏰</span>
+                        <div>
+                            <div style="font-weight:600; color:#555; margin-bottom:6px;">영업 오픈시간</div>
+                            <div style="font-size:16px; color:#222;" th:text="${shop.openTime}">09:00</div>
+                        </div>
+                    </div>
+                    <div class="shop-info-row" style="flex:1;">
+                        <span>⏰</span>
+                        <div>
+                            <div style="font-weight:600; color:#555; margin-bottom:6px;">영업 마감시간</div>
+                            <div style="font-size:16px; color:#222;" th:text="${shop.closeTime}">21:00</div>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+
+                <!-- 상점 소개 -->
+                <div class="shop-info-row">
+                    <span>💬</span>
+                    <div>
+                        <div style="font-weight:600; color:#555; margin-bottom:6px;">상점 소개</div>
+                        <div style="font-size:16px; color:#222; white-space: pre-wrap;" th:text="${shop.shopInfo}">상점 소개 내용</div>
+                    </div>
+                </div>
+                <hr>
+
+                <!-- 배달비 -->
+                <div class="shop-info-row" style="margin-bottom:0;">
+                    <span>🚚</span>
+                    <div>
+                        <div style="font-weight:600; color:#555; margin-bottom:6px;">가게 배달비</div>
+                        <div style="font-size:16px; color:#222;" th:text="${shop.deliveryFee}">3,000원</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script layout:fragment="script" th:inline="javascript">
+
+$(function () {
+    const memberNo = /*[[${memberNo}]]*/ 'null';
+    const isLogin = memberNo !== 'null';
+
+    const token = $('meta[name="_csrf"]').attr('content');
+    const header = $('meta[name="_csrf_header"]').attr('content');
+    $(document).ajaxSend(function(e, xhr) {
+        if(token && header) xhr.setRequestHeader(header, token);
+    });
+
+    // 제재 판매자 구매 막기
+    $('.product-card').each(function() {
+        console.log($(this).data('seller-status'), typeof $(this).data('seller-status'));
+        const sellerStatus = parseInt($(this).data('seller-status'), 10);
+        if (sellerStatus === 1) {
+            $(this).find('.insertBtn').prop('disabled', true).css({
+                'background-color': '#ccc',
+                'cursor': 'not-allowed'
+            });
+            if ($(this).find('.notice').length === 0) {
+                $(this).append('<div class="notice" style="color:red; margin-top:5px;">제재 판매자의 상품은 구매할 수 없습니다.</div>');
+            }
+        }
+    });
+
+    // 찜 버튼
+    $(document).on('click', '.wish-btn', function(){
+        if(!isLogin){
+            Swal.fire({
+                icon: 'warning',
+                title: '로그인이 필요합니다.',
+                confirmButtonText: '확인'
+            }).then(()=> { window.location.href='/member/login'; });
+            return;
+        }
+
+        const $card = $(this).closest('.product-card');
+        const sellerStatus = $card.data('seller-status');
+        if(sellerStatus === 1){
+            Swal.fire({
+                icon: 'error',
+                title: '이 상품은 판매 중지되었습니다.',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 1500
+            });
+            return;
+        }
+
+        const productNo = $card.data('productno');
+        const $btn = $(this);
+
+        $.ajax({
+            url:'/product/wish/toggle',
+            method:'POST',
+            contentType:'application/json',
+            data: JSON.stringify({productNo}),
+            success: function(res){
+                const wished = !!res.wished;
+                $btn.removeClass('bi-heart bi-heart-fill').addClass(wished?'bi-heart-fill':'bi-heart');
+
+                Swal.fire({
+                    icon: 'success',
+                    title: wished ? '찜했습니다.' : '찜을 취소했습니다.',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            },
+            error: function(xhr){
+                Swal.fire({
+                    icon:'error',
+                    title:'다시 시도해주세요.',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton:false,
+                    timer:1500
+                });
+            }
+        });
+    });
+
+    // 담기 버튼
+    $(document).on('click', '.insertBtn', function(){
+        if(!isLogin){
+            Swal.fire({
+                icon:'warning',
+                title:'로그인이 필요합니다.',
+                confirmButtonText:'확인'
+            }).then(()=> { window.location.href='/member/login'; });
+            return;
+        }
+
+        const $card = $(this).closest('.product-card');
+        const sellerStatus = $card.data('seller-status');
+        if(sellerStatus === 1){
+            Swal.fire({
+                icon: 'error',
+                title: '이 상품은 판매 중지되었습니다.',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 1500
+            });
+            return;
+        }
+
+        const productNo   = $card.data('productno');
+        const shopNo      = $card.find('[data-shopno]').data('shopno');
+        const productName = $card.find('[data-productname]').data('productname');
+        const price       = $card.find('[data-price]').data('price');
+        const quantity    = 1;
+
+        $.ajax({
+            url:'/order/cartInsert',
+            method:'POST',
+            contentType:'application/json',
+            data: JSON.stringify({productNo, shopNo, productName, price, quantity, memberNo}),
+            success:function(){
+                Swal.fire({
+                    icon:'success',
+                    title:'장바구니에 추가되었습니다.',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton:false,
+                    timer:1500
+                });
+            },
+            error:function(xhr){
+                Swal.fire({
+                    icon:'error',
+                    title:'다시 시도해주세요.',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton:false,
+                    timer:1500
+                });
+            }
+        });
+    });
+});
+</script>
+</body>
+</html>

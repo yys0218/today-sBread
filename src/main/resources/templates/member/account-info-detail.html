@@ -1,0 +1,81 @@
+<!-- account-info-detail.html -->
+<!-- 마이페이지 - 회원 정보 조회 페이지 -->
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="ko"
+	layout:decorate="~{common/layout}">
+<head>
+<link rel="stylesheet" th:href="@{/css/member/mypage.css}">
+<link rel="stylesheet" th:href="@{/css/member/account-info-detail.css}">
+<script th:src="@{/js/comm/sweetalert.noah.js}"></script>
+</head>
+
+<body>
+	<div layout:fragment="content" class="container my-3 mypage">
+		<div class="main-wrapper">
+			<!-- 사이드바 -->
+			<div class="sidebar">
+				<ul>
+					<li><a class="mypage-title" th:href="@{/member/mypage}">마이페이지</a></li>
+					<li><a th:href="@{/member/order-list}">주문 내역</a></li>
+					<li><a th:href="@{/member/wish-list}">찜 목록</a></li>
+					<li><a th:href="@{/member/subscription}">정기 결제 조회/해지</a></li>
+					<li><a th:href="@{/member/review-list}">상품 후기</a></li>
+					<li><a th:href="@{/member/address}">배송지 관리</a></li>
+					<li><a th:href="@{/member/account-info}" class="is-active"
+						aria-current="page">회원 정보 관리</a></li>
+					<li><a th:href="@{/center}">고객 센터</a></li>
+					<li><a th:href="@{/center/report/list}">신고 내역</a></li>
+					<li><a th:href="@{/center/inquiry/list}">문의 내역</a></li>
+				</ul>
+
+				<!-- 모달 제거 → 단순 링크로 이동 -->
+				<div class="withdraw-box">
+					<button type="button" class="btn-withdraw"
+						th:onclick="|location.href='@{/member/withdraw}'|">회원탈퇴</button>
+				</div>
+			</div>
+
+			<!-- 콘텐츠 -->
+			<div class="content-area" id="content-area">
+					<h3>회원 정보</h3>
+				<div class="account-info-box">
+				
+					<p><strong>아이디 :</strong> <span th:text="${dto.memberId}"></span></p>
+					<p><strong>이름 :</strong> <span th:text="${dto.memberName}"></span></p>
+					<p><strong>닉네임 :</strong> <span th:text="${dto.memberNick}"></span></p>
+					<p><strong>이메일 :</strong> <span th:text="${dto.memberEmail}"></span></p>
+					<p><strong>전화번호 :</strong> <span th:text="${dto.memberPhone}"></span></p>
+					<p><strong>생년월일 :</strong> <span th:text="${dto.memberBirth}"></span></p>
+					
+					<div><a th:href="@{/member/account-info-update}" class="btn-update">수정</a></div>
+				</div>
+			</div>
+
+			<!-- 알럿 처리 스크립트 -->
+			<script th:inline="javascript">
+				/*<![CDATA[*/
+				const msg = /*[[${alertMessage}]]*/null;
+				const type = /*[[${alertType}]]*/null;
+
+				if (msg) {
+					// alertType 에 따라 아이콘 결정
+					switch (type) {
+					case 'success':
+						showSuccessAlert(msg);
+						break;
+					case 'error':
+						showErrorAlert(msg);
+						break;
+					case 'warning':
+						showWarningAlert(msg);
+						break;
+					default:
+						showInfoAlert(msg);
+					}
+				}
+				/*]]>*/
+			</script>
+		</div>
+	</div>
+</body>
+</html>

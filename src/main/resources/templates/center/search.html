@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{common/layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" th:href="@{/css/center/search.css}">
+    <link rel="stylesheet" th:href="@{/css/center/help-center.css}">
+    <link rel="stylesheet" th:href="@{/css/center/centerSidebar.css}">
+    <title>검색 결과</title>
+</head>
+
+<body>
+    <div layout:fragment="content" class="container my-3">
+        <div class="container hc-layout">
+            <!-- 좌측 사이드바 -->
+            <div th:replace="~{center/centerSidebar :: centerMenu('')}"></div>
+            <!-- 본문 -->
+            <main class="hc-main">
+
+                <h1 class="hc-title" th:text="|${kw} : 검색결과|"></h1>
+
+                <!-- 공지사항 검색 결과 -->
+                <section class="cs-section box">
+                    <h2 class="cs-title">공지사항 검색 결과</h2>
+                    <div th:if="${noticeResults == null or #lists.isEmpty(noticeResults)}" class="cs-empty">
+                        검색결과가 없습니다.
+                    </div>
+                    <ul th:if="${noticeResults != null and !#lists.isEmpty(noticeResults)}" class="cs-list">
+                        <li th:each="n : ${noticeResults}" class="cs-card">
+                            <button type="button" class="cs-q" th:text="${n.noticeTitle}"></button>
+                            <div class="cs-a" th:text="${n.noticeContent}" hidden></div>
+                        </li>
+                    </ul>
+                    <div class="cs-more">
+                        <a th:href="@{/center/notice/list(kw=${kw})}">→ 공지사항 바로가기</a>
+                    </div>
+                </section>
+
+                <!-- FAQ 검색 결과 -->
+                <section class="cs-section box">
+                    <h2 class="cs-title">자주 묻는 질문 검색 결과</h2>
+                    <div th:if="${faqResults == null or #lists.isEmpty(faqResults)}" class="cs-empty">
+                        검색결과가 없습니다.
+                    </div>
+                    <ul th:if="${faqResults != null and !#lists.isEmpty(faqResults)}" class="cs-list">
+                        <li th:each="f : ${faqResults}" class="cs-card">
+                            <button type="button" class="cs-q" th:text="${f.faqTitle}"></button>
+                            <div class="cs-a" th:text="${f.faqContent}" hidden></div>
+                        </li>
+                    </ul>
+                    <div class="cs-more">
+                        <a th:href="@{/center/faq/list(kw=${kw})}">→ 자주 묻는 질문 바로가기</a>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- 스크립트: 제목 클릭 시 내용 토글 -->
+    <th:block layout:fragment="script">
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                document.querySelectorAll(".cs-q").forEach(btn => {
+                    btn.addEventListener("click", () => {
+                        const content = btn.nextElementSibling;
+                        content.hidden = !content.hidden;
+                    });
+                });
+            });
+        </script>
+    </th:block>
+
+</body>
+
+</html>

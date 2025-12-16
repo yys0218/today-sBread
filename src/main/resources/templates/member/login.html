@@ -1,0 +1,146 @@
+<!-- 로그인 페이지 -->
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="ko"
+	layout:decorate="~{common/layout}">
+<head>
+<meta name="_csrf" th:content="${_csrf.token}" />
+<meta name="_csrf_header" th:content="${_csrf.headerName}" />
+<link rel="stylesheet" th:href="@{/css/member/login.css}">
+<script th:src="@{/js/comm/sweetalert.noah.js}"></script>
+</head>
+
+<body>
+	<div layout:fragment="content" class="container my-3"
+		style="max-width: 700px;">
+		<div class="login-container">
+
+			<div class="login-title">
+				<h1>로그인</h1>
+			</div>
+
+			<div class="login-card">
+				<form th:action="@{/member/login}" method="post" class="login-form"
+					id="loginForm">
+					<!-- 아이디 -->
+					<div class="form-floating mb-3">
+						<input type="text" name="memberId" id="memberId"
+							class="form-control custom-input" placeholder="아이디"
+							autocomplete="username" /> <label for="memberId"
+							class="custom-label">아이디</label>
+					</div>
+
+					<!-- 비밀번호 -->
+					<div class="form-floating mb-3">
+						<input type="password" name="memberPw" id="memberPw"
+							class="form-control custom-input" placeholder="비밀번호"
+							autocomplete="current-password" /> <label for="memberPw"
+							class="custom-label">비밀번호</label>
+					</div>
+
+					<!-- 자동 로그인 체크박스 -->
+					<div class="form-check my-3">
+						<input type="checkbox" class="form-check-input" id="autoLogin"
+							name="autoLogin" /> <label class="form-check-label"
+							for="autoLogin">자동 로그인</label>
+					</div>
+					<!-- 로그인 버튼 -->
+					<div class="mt-4">
+						<button type="submit" class="btn custom-btn" id="btnSubmit">로그인</button>
+					</div>
+				</form>
+
+
+				<!-- 소셜 로그인 -->
+				<!--      		<div class="social-login mt-4 d-flex gap-2 justify-content-center">
+        		<button type="button" class="btn custom-btn" id="btnKakao" style="background-color:#FEE500; color:#3C1E1E">카카오</button>
+        		<button type="button" class="btn custom-btn" id="btnNaver" style="background-color:#03C75A; color:#3C1E1E">네이버</button>
+      		</div>
+-->
+			</div>
+
+			<!-- 하단 링크 -->
+			<div class="width-500 d-flex justify-content-center gap-2 my-3">
+				<ul class="link-list">
+					<li><a class="btn-a" href="/member/find-id">아이디 찾기</a></li>
+					<li><a class="btn-a" href="/member/find-pw">비밀번호 찾기</a></li>
+					<li><a class="btn-a" href="/member/signup">회원가입</a></li>
+				</ul>
+			</div>
+		</div>
+
+		<!-- 파라미터별 스윗알럿 + 폼 유효성 검사 + 토스트 -->
+		<script th:inline="javascript">
+			// 1) 서버 파라미터 → 스윗알럿
+			const hasError = /*[[${param.error  != null}]]*/false;
+			const isLogout = /*[[${param.logout != null}]]*/false;
+			const isDenied = /*[[${param.denied != null}]]*/false;
+			const isExpired = /*[[${param.expired!= null}]]*/false;
+
+			if (hasError)
+				showErrorTitleAlert('로그인 실패', '아이디 또는 비밀번호를 확인해주세요.');
+			if (isLogout)
+				showSuccessAlert('로그아웃되었습니다.');
+			if (isDenied)
+				showWarningTitleAlert('접근 제한', '로그인 후 다시 시도해주세요.');
+			if (isExpired)
+				showInfoTitleAlert('세션 만료', '다시 로그인해주세요.');
+		</script>
+
+		<th:block th:if="${alertMessage != null}">
+			<script th:inline="javascript">
+				/*<![CDATA[*/
+				const __alertMessage = /*[[${alertMessage}]]*/null;
+				const __alertType = /*[[${alertType}]]*/null;
+
+				if (__alertMessage) {
+					if (__alertType === 'success') {
+						showSuccessAlert(__alertMessage);
+					} else if (__alertType === 'warning') {
+						showWarningAlert(__alertMessage); // 여기서 경고 알럿 실행
+					}
+				}
+				/*]]>*/
+			</script>
+		</th:block>
+
+		<!-- 3) 폼 유효성 검사(빈값) + 로딩 모달 / 소셜 버튼 토스트 -->
+		<script>
+			document.addEventListener('DOMContentLoaded', function() {
+				const form = document.getElementById('loginForm');
+				const idEl = document.getElementById('memberId');
+				const pwEl = document.getElementById('memberPw');
+
+				if (form) {
+					form.addEventListener('submit', function(e) {
+						const id = idEl.value.trim();
+						const pw = pwEl.value.trim();
+
+						if (!id) {
+							e.preventDefault();
+							showWarningAlert('아이디를 입력해주세요.');
+							idEl.focus();
+							return;
+						}
+						if (!pw) {
+							e.preventDefault();
+							showWarningAlert('비밀번호를 입력해주세요.');
+							pwEl.focus();
+							return;
+						}
+					});
+				}
+
+				//      		const btnKakao = document.getElementById('btnKakao');
+				//      		const btnNaver = document.getElementById('btnNaver');
+				//      		if (btnKakao) btnKakao.addEventListener('click', () => showTitleToast('카카오 로그인', '준비 중입니다.', 'info', 1800));
+				//      		if (btnNaver) btnNaver.addEventListener('click', () => showTitleToast('네이버 로그인', '준비 중입니다.', 'info', 1800));
+			});
+		</script>
+		<!-- 예솔 추가: 페이지 전환 시 토스트 알림 있으면 띄울 수 있게 -->
+		<script th:if="${showToast != null}">
+			//showToast가 전달되었다면
+			showToast("[[${showToast}]]", "warning", 2500); //toast 띄우기
+		</script>
+	</div>
+</body>
+</html>

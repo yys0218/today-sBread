@@ -1,0 +1,412 @@
+/* ========== FAQ 관리 공통 스타일 ========== */
+.fl-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  max-width: 1100px;
+  color: var(--brand);
+  border-left: 5px solid var(--brand);
+  padding-left: 10px;
+}
+
+/* ===== 카테고리 버튼 ===== */
+.fl-cats {
+  width: 100%;
+  max-width: 1100px;
+  border-collapse: collapse;
+  text-align: center;
+  margin-bottom: 15px;
+}
+.fl-cats td {
+  padding: 5px;
+}
+.cat-btn {
+  display: inline-block;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  background: #f8f5f1;
+  border: 1px solid var(--line);
+  cursor: pointer;
+  transition: all .2s;
+}
+.cat-btn:hover {
+  background: #f2e2d2;
+}
+.cat-btn.selected {
+  background: var(--brand);
+  color: #fff !important;
+  border-color: var(--brand);
+}
+
+/* ===== 검색 폼 ===== */
+#searchForm {
+  margin: 15px 0;
+  max-width: 1100px;
+  padding: 12px 15px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+#searchForm input[type="text"] {
+  flex: 1;
+  padding: 6px 10px;
+  font-size: 14px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+#searchForm input[type="text"]:focus {
+  border-color: var(--brand);
+  outline: none;
+}
+#searchForm button {
+  padding: 6px 14px;
+  font-size: 14px;
+  border-radius: 4px;
+  border: 1px solid var(--brand);
+  background: var(--brand);
+  color: #fff;
+  cursor: pointer;
+  transition: all .2s ease;
+}
+#searchForm button:hover {
+  background: #b36d3d;
+  border-color: #b36d3d;
+}
+
+/* ===== FAQ 목록 테이블 ===== */
+.fl-table {
+  width: 100%;
+  max-width: 1100px;
+  margin-top: 20px;
+  border-collapse: collapse;
+  background: #fff;
+  border: 1px solid var(--line);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+
+  table-layout: fixed;   /* ✅ 열 너비 고정 */
+}
+.fl-table th, .fl-table td {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  text-align: center;
+  font-size: 14px;
+
+  overflow: hidden;         /* ✅ 넘치는 텍스트 처리 */
+  text-overflow: ellipsis;  /* ✅ ... 표시 */
+  white-space: nowrap;      /* ✅ 줄바꿈 방지 */
+}
+
+.fl-table th {
+  background: #f8f5f1;
+  color: var(--ink);
+  font-weight: bold;
+}
+.fl-table tr:hover {
+  background: #fdf1e6;
+}
+.fl-table td a {
+  color: var(--brand);
+  text-decoration: none;
+  font-weight: 600;
+}
+.fl-table td a:hover {
+  text-decoration: underline;
+}
+
+/* 관리 버튼 */
+.fl-table td:last-child a {
+  margin: 0 4px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  border: 1px solid var(--line);
+  background: #f8f5f1;
+  color: var(--ink);
+  transition: all .15s ease;
+}
+.fl-table td:last-child a:hover {
+  background: #f2e2d2;
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+/* ===== 글쓰기 버튼 ===== */
+.fl-actions {
+  margin-top: 15px;
+  max-width: 1100px;
+  text-align: right;
+}
+.fl-actions a {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: 6px;
+  background: var(--brand);
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  transition: background .2s;
+}
+.fl-actions a:hover {
+  background: #b36d3d;
+}
+
+/* ===== 상태 뱃지 (공지와 톤 통일) ===== */
+.faq-status {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: 12px;
+  font-weight: bold;
+}
+.faq-status--show {
+  background: #f2e2d2;
+  color: #5a3a22;
+}
+.faq-status--hide {
+  background: #e4e4e4;
+  color: #666;
+}
+
+/* --- 페이징 (공지와 동일 톤) --- */
+.pagination {
+  display:flex;
+  gap:6px;
+  list-style:none;
+  padding:0;
+  margin:16px 0 0;
+  max-width: 1100px;
+  justify-content:center;
+  align-items:center;
+}
+.page-item .page-link {
+  display:inline-block;
+  min-width:40px;
+  text-align:center;
+  padding:8px 12px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:#fff;
+  text-decoration:none;
+  color:var(--ink);
+  font-weight:600;
+  transition: all .12s ease;
+}
+.page-item:hover .page-link {
+  border-color: color-mix(in srgb, var(--brand) 40%, var(--line) 60%);
+  color: var(--brand);
+}
+.page-item.active .page-link {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+.page-item.disabled .page-link {
+  opacity:.45;
+  pointer-events:none;
+}
+
+/* ===== FAQ 상세 카드 ===== */
+.faq-detail {
+  max-width: 1100px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* 제목 */
+.faq-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  max-width: 1100px;
+  color: var(--brand);
+  border-left: 5px solid var(--brand);
+  padding-left: 10px;
+}
+
+/* 메타 정보 */
+.faq-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px 16px;
+  font-size: 14px;
+  color: var(--ink);
+  margin-top: 10px;
+}
+.faq-meta span:first-child {
+  font-weight: bold;
+  margin-right: 6px;
+}
+
+/* 답변 영역 */
+.faq-answer {
+  margin: 20px 0;
+  padding: 15px;
+  background: #fafafa;
+  border-left: 0px solid var(--brand);
+  border-radius: 8px;
+  line-height: 1.6;
+  color: #444;
+  font-size: 15px;
+  white-space: pre-line;
+  min-height: 100px;
+}
+
+/* 버튼 그룹 */
+.faq-actions {
+  max-width: 1100px;
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+}
+.faq-actions a {
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all .2s ease;
+  border: 1px solid var(--line);
+  background: #f8f5f1;
+  color: var(--ink);
+}
+.faq-actions a:hover {
+  background: #f2e2d2;
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+/* 목록으로 돌아가기 */
+.faq-back {
+  display: inline-block;
+  margin-top: 20px;
+  font-size: 0.9rem;
+  color: #444;
+  text-decoration: underline;
+}
+.faq-back:hover {
+  color: #000;
+}
+
+
+/*===============*/
+/* 제목 */
+.fd-title {
+  font-size: 22px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+/* 본문 카드 */
+.fd-article {
+  max-width: 1100px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* 메타 정보 */
+.fd-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px 16px;
+  font-size: 14px;
+  color: var(--ink);
+  margin-top: 10px;
+}
+
+.fd-meta div span:first-child {
+  font-weight: bold;
+  margin-right: 6px;
+}
+
+/* 구분선 */
+.fd-divide {
+  margin: 20px 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+
+/* 본문 내용 */
+.fd-content span {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 6px;
+  color: var(--ink);
+}
+.fd-content p {
+  background: #fafafa;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  padding: 15px;
+  font-size: 15px;
+  line-height: 1.6;
+  white-space: pre-line;
+  min-height: 120px;
+}
+
+/* 상태 뱃지 (브랜드 톤만) */
+.fd-status {
+  display: inline-block;
+  padding: 4px 12px;
+  font-size: 13px;
+  font-weight: bold;
+  border-radius: 12px;
+}
+.fd-status.show {
+  background: #fdf1e6;   /* 밝은 베이지 */
+  color: var(--brand);
+}
+.fd-status.hide {
+  background: #e4e4e4;   /* 연한 톤 */
+  color: #666;        /* 어두운 브라운 */
+}
+
+/* 하단 액션 버튼 */
+.fd-actions {
+  max-width: 1100px;
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.fd-actions a {
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all .2s ease;
+  border: 1px solid var(--line);
+  background: #f8f5f1;
+  color: var(--ink);
+}
+
+.fd-actions a:hover {
+  background: #f2e2d2;
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+/* ✅ 컬럼별 너비 지정 (필요에 맞게 조정 가능) */
+.fl-table th:nth-child(1), .fl-table td:nth-child(1) { width: 8%; }   /* 번호 */
+.fl-table th:nth-child(2), .fl-table td:nth-child(2) { width: 12%; }  /* 카테고리 */
+.fl-table th:nth-child(3), .fl-table td:nth-child(3) { width: 45%; }  /* 제목 */
+.fl-table th:nth-child(4), .fl-table td:nth-child(4) { width: 15%; }  /* 상태 */
+.fl-table th:nth-child(5), .fl-table td:nth-child(5) { width: 22%; }  /* 관리 */

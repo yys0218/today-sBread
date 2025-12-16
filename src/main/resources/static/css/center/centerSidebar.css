@@ -1,0 +1,106 @@
+/* ===== 좌측 사이드바 레이아웃 ===== */
+.hc-layout {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+/* 사이드바(스크롤 시 상단에 고정) */
+.hc-aside {
+  position: sticky;
+  top: 72px;
+  /* 헤더 높이에 맞춰 조정하세요 (예: 64~88px) */
+  align-self: start;
+  padding: 18px;
+  margin-top: 0px;
+  /* 초기 로딩시 헤더와 사이 간격 */
+}
+
+/* 사이드바 목록 */
+.hc-side {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hc-side a {
+  display: block;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  text-decoration: none;
+  transition: all .15s ease;
+}
+
+.hc-side a:hover {
+  border-color: color-mix(in srgb, var(--brand) 50%, var(--line) 50%);
+  color: var(--brand);
+  transform: translateX(2px);
+}
+
+.hc-side a.active {
+  border-color: var(--brand);
+  background: color-mix(in srgb, var(--brand) 10%, #fff 90%);
+  color: var(--brand);
+  font-weight: 700;
+}
+
+/* 본문 래퍼(필요 시 여백) */
+.hc-main {
+  min-width: 0;
+}
+
+/* 반응형: 폭이 좁을 때 사이드바를 상단으로 */
+@media (max-width: 960px) {
+  .hc-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .hc-aside {
+    position: static;
+    top: auto;
+    margin-bottom: 12px;
+  }
+}
+
+.hc-layout {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+
+  max-width: 1335px;
+  /* 메인과 동일한 중앙 정렬 */
+  margin-inline: auto;
+  padding: 0 24px;
+  /* body 대신 여기서 여백 관리 */
+}
+
+/* 고객센터 메인 버튼 (사이드바 상단) */
+/* .hc-side-main a {
+  display: block;
+  padding: 14px 16px;
+  font-weight: 800;
+  color: var(--brand);
+  background: color-mix(in srgb, var(--brand) 6%, #fff 94%);
+  border-color: color-mix(in srgb, var(--brand) 50%, var(--line) 50%);
+  border-radius: 12px;
+  text-align: left;
+  margin-bottom: 10px;
+  transition: all .2s ease;
+} */
+
+.mypage-title a {
+  font-size: 1.8rem;
+  font-weight: 500;
+  text-align: center;
+  color: var(--ink);
+  margin-bottom: 0px;
+  margin-left: 0px;
+}

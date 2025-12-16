@@ -1,0 +1,12 @@
+/*본문 상부*/
+.top{ padding: 48px 0 28px; }
+.top h1{ font-family: 'Jua', system-ui; font-size: clamp(28px, 4.4vw, 48px); line-height:1.15; margin:.1em 0 .4em; }
+
+.insertForm {
+	min-width: 1080px;
+ 	max-width: 1120px;
+}
+
+textarea {
+	resize:none;
+}

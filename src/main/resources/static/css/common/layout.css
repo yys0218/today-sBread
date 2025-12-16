@@ -1,0 +1,32 @@
+		.bg-OneulBread { /* body 기본 바탕색, 폰트 지정 */
+			background-color: rgb(255, 251, 240);
+			color:#3D2B1F;     /* 진한 브라운 텍스트 */
+    	  	font-family: 'Noto Sans KR', system-ui, -apple-system, Segoe UI, Roboto, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+		}
+		.jua-regular { /* 배달의 민족 주아체*/
+		  font-family: "Jua", sans-serif;
+		  font-weight: 400;
+		  font-style: normal;
+		}
+
+		.box{ /*박스 양식 통일 */
+   	   		background: conic-gradient(from 0deg at 50% 50%, #fff 0deg, #fff 140deg, 220deg, #fff 360deg);
+  	  		border: 1px solid #E8D8C6; border-radius: 24px; padding: 24px;
+ 	        box-shadow: 0 12px 28px rgba(0,0,0,.06);
+ 	   	}
+    
+		/*둥근 모양 흰 버튼*/
+		.badges{ gap:10px; flex-wrap:wrap; margin-top:14px; }
+    	.badge{ font-size:13px; padding:8px 12px; border-radius:999px; background:#fff; border:#E8D8C6 1px solid;  }
+		
+		.linkDefault { /*링크 파란밑줄없애기*/
+			color:#3D2B1F;
+			text-decoration:none;		
+		}
+		.linkDefault:hover{
+			background-color: #f8f8f8;
+			color: #d35400;
+		}
+		
+		.container{ width:min(1120px, 92%); margin-inline:auto; } /*중앙 정렬용 컨테이너*/
+   		

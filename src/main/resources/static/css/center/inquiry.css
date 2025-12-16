@@ -1,0 +1,682 @@
+/* ===== Inquiry List (il-*) ===== */
+:root {
+  --bg: #FFF6E9;
+  --ink: #3D2B1F;
+  --ink-weak: #6C5243;
+  --brand: #D95C43;
+  --brand-2: #E7B674;
+  --line: #E8D8C6;
+  --card: #FFFFFF;
+  --ok: #31B76A;
+}
+
+/* 제목 */
+.il-title {
+  font-weight: 800;
+  letter-spacing: -.3px;
+  font-size: clamp(20px, 3vw, 28px);
+  margin: 6px 0 14px;
+}
+
+/* 상단 필터 바 */
+.il-filter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #fff;
+  padding: 12px 14px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, .04);
+  margin-bottom: 16px;
+}
+
+.il-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.il-tabs a {
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  font-weight: 700;
+  text-decoration: none;
+  transition: all .15s ease;
+}
+
+.il-tabs a:hover {
+  border-color: color-mix(in srgb, var(--brand) 40%, var(--line) 60%);
+  color: var(--brand);
+}
+
+.il-tabs a.active {
+  border-color: var(--brand);
+  background: color-mix(in srgb, var(--brand) 10%, #fff 90%);
+  color: var(--brand);
+}
+
+/* 문의하기 버튼 */
+.il-ask {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--brand);
+  color: #fff;
+  font-weight: 800;
+  text-decoration: none;
+  transition: transform .08s ease, box-shadow .12s ease;
+}
+
+.il-ask:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, .06);
+}
+
+/* 테이블 */
+.il-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, .04);
+}
+
+.il-table thead th {
+  text-align: left;
+  font-weight: 800;
+  color: var(--ink);
+  background: #FFFDF8;
+  border-bottom: 1px solid var(--line);
+  padding: 12px 14px;
+}
+
+.il-table tbody td {
+  border-bottom: 1px solid var(--line);
+  padding: 12px 14px;
+  color: var(--ink);
+}
+
+.il-table tbody tr:hover {
+  background: #FFF9F1;
+}
+
+.il-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+/* 상태 칩 */
+.il-status {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+}
+
+.il-status--wait {
+  border-color: #FFD3C9;
+  background: #FFF3F1;
+}
+
+/* 미답변 */
+.il-status--progress {
+  border-color: #FFE2A6;
+  background: #FFFBEA;
+}
+
+/* 답변중 */
+.il-status--done {
+  border-color: #C7F1D9;
+  background: #F0FFF6;
+}
+
+/* 답변완료 */
+
+/* 관리 영역: 수정/철회 */
+.il-table tbody td:last-child a {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: #fff;
+  text-decoration: none;
+  color: var(--ink);
+  font-weight: 700;
+  margin-right: 6px;
+  transition: all .12s ease;
+}
+
+.il-table tbody td:last-child a:hover {
+  border-color: color-mix(in srgb, var(--brand) 40%, var(--line) 60%);
+  color: var(--brand);
+}
+
+.il-table tbody td:last-child form button {
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .12s ease;
+}
+
+.il-table tbody td:last-child form button:hover {
+  border-color: color-mix(in srgb, var(--brand) 40%, var(--line) 60%);
+  color: var(--brand);
+}
+
+/* 페이징 (notice/faq와 동일 톤) */
+.pagination{
+  display:flex;
+  gap:6px;
+  list-style:none;
+  padding:0;
+  margin:16px 0 0;
+  max-width: 1100px;
+  justify-content:center;
+  align-items:center;
+}
+.page-item .page-link{
+  display:inline-block;
+  min-width:40px;
+  text-align:center;
+  padding:8px 12px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:#fff;
+  text-decoration:none;
+  color:var(--ink);
+  font-weight:600;
+  transition: all .12s ease;
+}
+.page-item:hover .page-link{
+  border-color: color-mix(in srgb, var(--brand) 40%, var(--line) 60%);
+  color: var(--brand);
+}
+.page-item.active .page-link{ border-color: var(--brand); color: var(--brand); }
+.page-item.disabled .page-link{ opacity:.45; pointer-events:none; }
+
+/* 반응형 */
+@media (max-width: 640px) {
+  .il-filter {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .il-ask {
+    width: 100%;
+    text-align: center;
+  }
+
+  .il-table thead {
+    display: none;
+  }
+
+  .il-table,
+  .il-table tbody,
+  .il-table tr,
+  .il-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .il-table tbody tr {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .il-table tbody td {
+    border: 0;
+    padding: 10px 12px;
+  }
+
+  .il-table tbody td::before {
+    content: attr(data-th);
+    display: block;
+    font-size: 16px;
+    color: var(--ink-weak);
+    margin-bottom: 4px;
+  }
+}
+
+/* inquiryForm.html 전용 스타일 */
+
+/* 전체 폼 */
+#inquiryForm {
+  max-width: 720px;
+  margin: 40px auto;
+  padding: 32px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+/* 제목 */
+#inquiryForm h1 {
+  font-family: 'Jua', system-ui;
+  font-size: clamp(24px, 4vw, 36px);
+  color: #3D2B1F;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+/* 라벨 */
+#inquiryForm label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #3D2B1F;
+}
+
+/* 입력창, 선택창, 텍스트영역 */
+#inquiryForm input[type="text"],
+#inquiryForm input[type="email"],
+#inquiryForm select,
+#inquiryForm textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 15px;
+  margin-bottom: 18px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#inquiryForm input:focus,
+#inquiryForm select:focus,
+#inquiryForm textarea:focus {
+  border-color: #D95C43;
+  /* main 테마 포인트 */
+  box-shadow: 0 0 0 3px rgba(217, 92, 67, 0.15);
+  outline: none;
+}
+
+/* 이미지 업로드 */
+#image-container {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+#add-btn {
+  width: 100px;
+  height: 100px;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  font-size: 28px;
+  color: #999;
+  background: #fafafa;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+#add-btn:hover {
+  border-color: #D95C43;
+  color: #D95C43;
+}
+
+/* 미리보기 이미지 */
+#image-container img {
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  transition: transform 0.2s ease;
+}
+
+#image-container img:hover {
+  transform: scale(1.05);
+}
+
+/* 등록 버튼 */
+#inquiryForm button[type="submit"] {
+  background: #D95C43;
+  color: #fff;
+  font-weight: bold;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+#inquiryForm button[type="submit"]:hover {
+  background: #b44733;
+}
+
+/* 목록으로 버튼 */
+#inquiryForm a {
+  display: inline-block;
+  margin-left: 12px;
+  padding: 11px 18px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #3D2B1F;
+  font-weight: 500;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+#inquiryForm a:hover {
+  background: #f8f8f8;
+  color: #D95C43;
+}
+
+/* ===== Inquiry Detail (id-*) ===== */
+.id-wrap {
+  padding: 24px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, .04);
+}
+
+.id-title {
+  font-weight: 800;
+  letter-spacing: -.3px;
+  font-size: clamp(20px, 3vw, 28px);
+  margin: 6px 0 14px;
+}
+
+.id-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 18px;
+  font-size: 14px;
+  color: var(--ink-weak);
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.id-meta b {
+  color: var(--ink);
+  margin-right: 4px;
+}
+
+.id-content {
+  margin: 22px 0;
+  font-size: 15px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  color: var(--ink);
+}
+
+.id-reply {
+  margin-top: 24px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #F9F9F9;
+}
+
+.id-reply h3 {
+  margin-bottom: 10px;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--ink);
+}
+
+.id-reply pre {
+  white-space: pre-wrap;
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.id-reply small {
+  display: block;
+  margin-top: 6px;
+  color: var(--ink-weak);
+}
+
+.id-actions {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.id-actions a,
+.id-actions button {
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: #fff;
+  text-decoration: none;
+  color: var(--ink);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .12s ease;
+}
+
+.id-actions a:hover,
+.id-actions button:hover {
+  border-color: color-mix(in srgb, var(--brand) 40%, var(--line) 60%);
+  color: var(--brand);
+}
+
+/* ===== Inquiry Form (if-*) ===== */
+
+/* 폼 전체 */
+#inquiryForm {
+  max-width: 720px;
+  margin: 40px auto;
+  padding: 32px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+/* 제목 */
+#inquiryForm h1 {
+  font-family: 'Jua', system-ui;
+  font-size: clamp(24px, 4vw, 36px);
+  color: var(--ink);
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+/* 라벨 */
+#inquiryForm label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--ink);
+}
+
+/* 입력창, 선택창, 텍스트영역 */
+#inquiryForm input[type="text"],
+#inquiryForm input[type="email"],
+#inquiryForm select,
+#inquiryForm textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 15px;
+  margin-bottom: 18px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-sizing: border-box;
+}
+
+#inquiryForm input:focus,
+#inquiryForm select:focus,
+#inquiryForm textarea:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(217, 92, 67, 0.15);
+  outline: none;
+}
+
+/* ===== 이미지 업로드 ===== */
+#image-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+#image-container .preview {
+  position: relative;
+  width: 125px;
+  height: 125px;
+}
+
+#image-container .preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  transition: transform 0.2s ease;
+}
+
+#image-container .preview img:hover {
+  transform: scale(1.05);
+}
+
+/* 삭제(X) 버튼 */
+#image-container .preview .remove-btn {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 12px;
+  line-height: 20px;
+  text-align: center;
+  border: none;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  cursor: pointer;
+}
+
+/* + 버튼 */
+#add-btn {
+  width: 125px;
+  height: 125px;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  font-size: 35px;
+  color: #999;
+  background: #fafafa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+#add-btn:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+/* ===== 버튼 영역 ===== */
+#inquiryForm button[type="submit"] {
+  background: var(--brand);
+  color: #fff;
+  font-weight: bold;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+#inquiryForm button[type="submit"]:hover {
+  background: #b44733;
+}
+
+#inquiryForm a {
+  display: inline-block;
+  margin-left: 12px;
+  padding: 11px 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--ink);
+  font-weight: 500;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+#inquiryForm a:hover {
+  background: #f8f8f8;
+  color: var(--brand);
+}
+
+.il-table tbody td a {
+  text-decoration: none;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.il-table tbody td a:hover {
+  color: var(--brand);
+}
+
+/* Image List in Inquiry Detail */
+.image-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px; /* Space between images */
+  margin-top: 20px;
+  justify-content: flex-start; /* Align images to the left */
+}
+
+.image-list img {
+  width: 240px;
+  height: 240px;
+  object-fit: cover; /* Crop image to fit the dimensions */
+  cursor: pointer;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  /* transition: all 0.1s ease; Smooth transition for size change */
+}
+
+.image-list img.enlarged {
+  width: auto; /* Revert to original width */
+  height: auto; /* Revert to original height */
+  max-width: 90vw; /* Limit enlarged image to viewport width */
+  max-height: 90vh; /* Limit enlarged image to viewport height */
+  object-fit: contain; /* Show entire image, even if it means letterboxing */
+  position: fixed; /* Position relative to viewport */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* Center the image */
+  z-index: 2500; /* Bring to front */
+  background-color: rgba(0, 0, 0, 0.8); /* Dark overlay */
+  padding: 6px; /* Padding around the image */
+  border-radius: 12px;
+}
+
+/* Optional: Overlay for enlarged image */
+.image-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 2000;
+  display: none; /* Hidden by default, shown when image is enlarged */
+}
+
+.image-overlay.active {
+  display: block;
+}

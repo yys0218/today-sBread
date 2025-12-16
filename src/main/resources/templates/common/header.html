@@ -1,0 +1,291 @@
+<!-- templates/common/header.html -->
+<!--
+     공통 헤더 조각 (Thymeleaf)
+     사용법 예) <div th:replace="~{/common/header :: header}"></div>
+
+     특징
+     - 헤더(상단 메뉴 + 로고/검색/아이콘)
+     - 카테고리 바는 페이지 로드부터 끝까지 "항상" 상단에 고정 (position: fixed)
+     - 고정바에 가려지지 않도록 같은 높이의 스페이서로 아래 컨텐츠를 밀어줌
+-->
+<th:block th:fragment="header">
+<!-- ===================== 실제 헤더 영역 ===================== -->
+<header class="site-header">
+<!-- 1행: 상단 메뉴(로그인/회원가입/고객센터/판매자/라이더/관리자) -->
+<div class="header-top">
+    <div class="header-top-right">
+        <!-- 로그인/회원가입 -->
+        <th:block th:if="${session.user == null}">
+            <a href="/member/login">로그인</a>
+            <a href="/member/signup">회원가입</a>
+        </th:block>
+
+        <!-- 로그아웃 -->
+        <th:block th:if="${session.user != null}">
+            <a href="/member/logout">로그아웃</a>
+        </th:block>
+
+        <!-- 고객센터: 항상 보임 -->
+        <a href="/center">고객센터</a>
+
+        <!-- 판매자 페이지 (memberRole == 1) -->
+        <th:block th:if="${session.user != null and session.user.memberRole == 1}">
+            <a href="/shop/shopmain">판매자 페이지</a>
+        </th:block>
+
+        <!-- 라이더 페이지 (memberRole == 4) -->
+        <th:block th:if="${session.user != null and session.user.memberRole == 4}">
+            <a href="/rider">라이더 페이지</a>
+        </th:block>
+
+        <!-- 관리자 페이지 (memberRole == 2) -->
+        <th:block th:if="${session.user != null and session.user.memberRole == 2}">
+            <a href="/admin/main">관리자 페이지</a>
+        </th:block>
+    </div>
+</div>
+<!-- 2행: 로고(좌) + 검색창(중) + 마이페이지/장바구니(우) -->
+<div class="header-middle container">
+	<div class="header-middle-left">
+		<a href="/">
+			<img th:src="@{/image/header/logo_text.png}" alt="오늘의빵 로고" class="header-logo" />
+		</a>
+	</div>
+
+	<!-- 검색 폼 (GET /product/search?keyword=) -->
+	<form action="/product/search" method="get" class="search-box">
+		<input type="text" name="keyword" placeholder="제품명 또는 빵집 이름을 검색하세요." />
+		<button type="submit">검색</button>
+	</form>
+
+	<!-- 로그인 상태에서만 보이는 아이콘 -->
+	<div class="header-middle-right">
+		<th:block th:if="${session.user != null}">
+			<a href="/member/mypage" title="마이페이지" aria-label="마이페이지">
+				<i class="bi bi-person" style="font-size: 2.5rem"></i>
+			</a>
+			<a href="/order/cart/normal" title="장바구니" aria-label="장바구니">
+				<i class="bi bi-cart" style="font-size: 2.5rem"></i>
+			</a>
+		</th:block>
+	</div>
+</div>
+</header>
+<!-- ===================== /실제 헤더 영역 ===================== -->
+
+<!-- 3행: 카테고리 메뉴 (항상 화면 상단에 고정) -->
+<nav id="category-nav" class="sticky-category" role="navigation" aria-label="상품 카테고리">
+	<a href="/product/list/br" class="category-link">빵</a>
+	<a href="/product/list/cake" class="category-link">케이크</a>
+	<a href="/product/list/ss" class="category-link">샌드위치/샐러드</a>
+	<a href="/product/list/dessert" class="category-link">디저트/스낵</a>
+</nav>
+    
+<!-- 소분류 바(기본 숨김). 필요한 셋만 가로로 보여줌 -->
+<nav id="subcategory-nav" class="sticky-subcategory" role="navigation" aria-label="소분류" hidden>
+	<!-- 빵 -->
+	<div class="subcategory-row" data-cat="br" hidden>
+		<a class="subcategory-link" href="/product/list/br?sub=br1">식빵</a>
+		<a class="subcategory-link" href="/product/list/br?sub=br2">건강빵</a>
+		<a class="subcategory-link" href="/product/list/br?sub=br3">간식빵</a>
+		<a class="subcategory-link" href="/product/list/br?sub=br4">도넛</a>
+		<a class="subcategory-link" href="/product/list/br?sub=br5">페스츄리/파이</a>
+	</div>
+
+	<!-- 케이크 -->
+	<div class="subcategory-row" data-cat="cake" hidden>
+		<a class="subcategory-link" href="/product/list/cake?sub=cake1">미니/롤</a>
+		<a class="subcategory-link" href="/product/list/cake?sub=cake2">1호</a>
+		<a class="subcategory-link" href="/product/list/cake?sub=cake3">2호</a>
+	</div>
+
+	<!-- 샌드위치/샐러드 -->
+	<div class="subcategory-row" data-cat="ss" hidden>
+		<a class="subcategory-link" href="/product/list/ss?sub=ss1">샌드위치</a>
+		<a class="subcategory-link" href="/product/list/ss?sub=ss2">샐러드</a>
+	</div>
+
+	<!-- 디저트 -->
+	<div class="subcategory-row" data-cat="dessert" hidden>
+		<a class="subcategory-link" href="/product/list/dessert?sub=dessert1">마카롱</a>
+		<a class="subcategory-link" href="/product/list/dessert?sub=dessert2">쿠키/타르트</a>
+		<a class="subcategory-link" href="/product/list/dessert?sub=dessert3">잼/크림</a>
+	</div>
+</nav>
+
+<!-- 고정바 높이만큼 아래 컨텐츠를 밀어주는 스페이서 -->
+<div class="category-spacer" aria-hidden="true"></div>
+    
+<audio id="alertSound" preload="auto">
+    <source th:src="@{/sound/bell.wav}" type="audio/wav">
+</audio>
+
+<script th:inline="javascript">
+    const memberNo = /*[[${session.user != null ? session.user.memberNo : 0}]]*/ 0;
+</script>
+
+<script th:src="@{/js/comm/webSocket.js}"></script>
+
+<!-- 헤더 카테고리 스크립트 -->
+<script>
+//헤더 2단 카테고리: 스크롤 시 대분류 고정, 소분류 오버레이
+(function () {
+	const catNav = document.getElementById('category-nav');      // 상단에 보이는 "빵/케이크/..." 바
+	const subNav = document.getElementById('subcategory-nav');   // 대분류를 펼치면 보이는 소분류 바
+	const spacer = document.querySelector('.category-spacer');   // 대분류가 fixed가 될 때 본문이 튀지 않게 높이를 넣는 빈 박스
+	
+	if (!catNav || !subNav) return; // 필수 요소가 없으면 아무 것도 하지 않고 종료합니다.
+
+	// 소분류 바 안의 "카테고리별 행"들을 모두 수집합니다. (data-cat="br", "cake" 같은 것)
+	const rows = subNav.querySelectorAll('.subcategory-row');
+
+	// 스크롤 고정 기준점 계산
+	// catStartY: 문서의 최상단에서부터 대분류 바가 처음 놓여있는 위치(Y 좌표)
+	let catStartY = 0;
+	function measureStartY() {
+		 // getBoundingClientRect().top은 화면 기준 Y값, 거기에 window.scrollY(스크롤 위치)를 더하면 문서 기준 Y값이 됩니다.
+		 catStartY = catNav.getBoundingClientRect().top + window.scrollY;
+	}
+
+	// 스크롤에 따라 대분류 고정/해제
+	function syncFixed() {
+		// 현재 스크롤 위치가 대분류의 시작 위치를 지나쳤는지 여부
+ 		const shouldFix = window.scrollY >= catStartY;
+
+ 		// shouldFix가 true면 .is-fixed 클래스를 붙여 position:fixed 상태로 전환합니다.
+ 		catNav.classList.toggle('is-fixed', shouldFix);
+
+ 		// 대분류가 fixed로 떨어질 때 그 높이만큼 spacer에 높이를 넣어 레이아웃 점프(본문이 위로 튀는 현상)를 막습니다.
+ 		if (spacer) spacer.style.height = shouldFix ? `${catNav.offsetHeight}px` : '0px';
+
+ 		// 소분류가 열려 있다면, 대분류의 현재 화면 위치에 맞춰 소분류의 top 위치를 다시 계산합니다.
+ 		if (!subNav.hidden) updateSubTop();
+	}
+
+	// 소분류 위치 갱신
+	function updateSubTop() {
+ 		const rect = catNav.getBoundingClientRect(); // 화면(뷰포트) 기준 대분류의 위치/크기 정보
+ 		subNav.style.top = `${Math.max(rect.bottom, 0)}px`; // 대분류 하단 y값을 소분류의 top으로 설정
+	}
+
+	// 소분류 열기(show)/닫기(hide)
+	function show(catKey, activeLink) {
+		// 전달받은 catKey와 일치하는 소분류 행만 보이고, 나머지는 숨깁니다.
+ 		rows.forEach(r => r.hidden = r.getAttribute('data-cat') !== catKey);
+
+ 		// 소분류 바 자체는 보이도록 hidden을 해제합니다.
+ 		subNav.hidden = false;
+
+ 		// 대분류 링크들 중 현재 활성화된 링크에만 .active를 붙이고, 나머지는 제거합니다.
+ 		catNav.querySelectorAll('.category-link').forEach(a => {
+   			const on = a === activeLink;
+   			a.classList.toggle('active', on);
+   			a.setAttribute('aria-expanded', on ? 'true' : 'false'); // 접근성(스크린리더) 정보
+ 		});
+
+ 		// 소분류 바의 위치를 최신 대분류 하단으로 갱신합니다.
+ 		updateSubTop();
+	}
+
+	function hide() {
+ 		// 소분류 전체를 숨김 처리합니다.
+ 		subNav.hidden = true;
+
+		// 모든 대분류 링크의 활성화 표시를 제거합니다.
+ 		catNav.querySelectorAll('.category-link').forEach(a => {
+   			a.classList.remove('active');
+   			a.setAttribute('aria-expanded', 'false');
+ 		});
+	}
+
+	// 유틸: 링크의 href에서 카테고리 키(예: br, cake)를 뽑아냅니다.
+	// 기대 포맷: /product/list/{키}
+	function getCatKeyFromHref(href) {
+ 		try {
+   			const url = new URL(href, location.origin);             // 절대 URL로 변환(상대경로도 처리)
+   			const seg = url.pathname.split('/').filter(Boolean);    // 경로를 "/"로 나눠 빈 값 제거
+   			const i = seg.findIndex(s => s === 'list');             // "list"가 있는 위치를 찾고
+   			return i >= 0 ? seg[i + 1] : '';                        // 바로 뒤 요소가 카테고리 키
+ 		} catch { return ''; }                                    // URL 파싱 실패 시 빈 문자열
+	}
+
+	// 이벤트: 대분류 클릭
+	// 첫 클릭은 "펼치기만" 하고 페이지 이동은 막습니다.
+	// 같은 항목을 다시 클릭하면 이동을 허용합니다(이미 열려 있고 해당 항목이 active일 때).
+	catNav.addEventListener('click', (e) => {
+ 		const a = e.target.closest('.category-link');         // 실제 클릭한 요소가 아이콘/텍스트여도 a 태그를 찾습니다.
+ 		if (!a) return;
+ 		const key = getCatKeyFromHref(a.getAttribute('href') || '');
+ 		if (!key) return;
+
+ 		// 이미 소분류가 열려 있고, 지금 누른 항목이 활성 상태라면 이번에는 이동을 막지 않습니다.
+ 		if (!subNav.hidden && a.classList.contains('active')) return;
+
+ 		// 첫 클릭: 기본 동작(페이지 이동)을 막고, 소분류만 펼칩니다.
+ 		e.preventDefault();
+ 		show(key, a);
+	});
+
+	// 이벤트: 대분류 호버(마우스를 올리면 미리 펼쳐서 보여줌)
+	catNav.addEventListener('mouseover', (e) => {
+ 		const a = e.target.closest('.category-link');
+ 		if (!a) return;
+ 		const key = getCatKeyFromHref(a.getAttribute('href') || '');
+ 		if (!key) return;
+ 		show(key, a);
+	});
+
+	// 마우스가 대/소분류 영역 둘 다 벗어나면 약간 지연 후 소분류 닫기
+	// 사용자가 대분류 → 소분류로 이동하는 짧은 순간에 깜빡 꺼지는 것을 방지하려고 딜레이를 줍니다.
+	let hideTimer = null;               // 닫기 타이머 id(중복 닫기 방지)
+	const HIDE_DELAY = 160;             // 닫기 지연 시간(ms)
+
+	function armHide() {                // "닫기 예약" 함수
+ 		clearTimeout(hideTimer);          // 기존 예약이 있으면 취소
+ 		hideTimer = setTimeout(hide, HIDE_DELAY); // HIDE_DELAY 뒤에 hide() 실행
+	}
+	
+	function cancelHide() {             // 닫기 예약을 취소
+ 		clearTimeout(hideTimer);
+	}
+
+	// 대분류/소분류 영역에 마우스가 들어오면 닫기 예약을 취소, 나가면 닫기 예약 실행
+	catNav.addEventListener('mouseenter', cancelHide);
+	catNav.addEventListener('mouseleave', armHide);
+	subNav.addEventListener('mouseenter', cancelHide);
+	subNav.addEventListener('mouseleave', armHide);
+
+	// 바깥을 클릭하거나 ESC 키를 누르면 소분류 닫기
+	document.addEventListener('click', (e) => {
+ 		// 클릭한 곳이 대분류 혹은 소분류 안이면 무시
+ 		if (e.target.closest('#category-nav') || e.target.closest('#subcategory-nav')) return;
+ 		hide(); // 그 외 아무 곳이나 클릭하면 닫기
+	});
+	document.addEventListener('keydown', (e) => {
+ 		if (e.key === 'Escape') hide(); // ESC 키로 닫기
+	});
+
+	// 페이지가 /product/list/{key} 경로라면 진입 시 자동으로 해당 카테고리 소분류를 펼칩니다.
+	(function autoOpen() {
+ 		const m = location.pathname.match(/\/product\/list\/([^/]+)/); // 경로에서 {key} 추출
+ 		if (!m) return;
+ 		const key = m[1];
+ 		const link = catNav.querySelector(`.category-link[href$="/${key}"]`); // 해당 key를 가진 대분류 링크 찾기
+ 		if (link) show(key, link); // 찾아지면 자동으로 소분류 펼치기
+	})();
+
+	// 초기 설정: 문서 로드/창 크기 변경/스크롤 시마다 상태를 동기화
+	window.addEventListener('load', () => {  // 모든 리소스가 로드된 뒤
+ 		measureStartY();                       // 대분류의 시작 Y좌표를 측정하고
+ 		syncFixed();                           // 현재 스크롤 위치에 맞춰 고정 여부를 반영
+	});
+	
+	window.addEventListener('resize', () => { // 창 크기가 바뀌면 위치가 달라질 수 있으므로 다시 측정
+ 		measureStartY();
+ 		syncFixed();
+	});
+	
+	window.addEventListener('scroll', syncFixed, { passive: true }); // 스크롤할 때마다 고정/해제 판단
+})();
+</script>
+</th:block>

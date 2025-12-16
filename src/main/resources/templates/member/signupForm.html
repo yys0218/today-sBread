@@ -1,0 +1,476 @@
+<!-- 회원가입 페이지 -->
+<head>
+<meta name="_csrf" th:content="${_csrf.token}" />
+<meta name="_csrf_header" th:content="${_csrf.headerName}" />
+<link rel="stylesheet" th:href="@{/css/member/signupForm.css}">
+<script
+	src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script th:src="@{/js/comm/sweetalert.noah.js}"></script>
+</head>
+
+<body>
+	<div class="signup-card">
+		<!-- 로고 -->
+		<div class="logo-container"
+			style="text-align: center; margin-bottom: 20px;">
+			<a href="/"><img th:src="@{/image/header/logo_text.png}"
+				alt="오늘의빵 로고" class="header-logo" /></a>
+		</div>
+
+		<h2>회원가입</h2>
+		<form th:action="@{/member/signup}" method="post"
+			th:object="${memberInsertForm}" id="signupForm" novalidate>
+			<input type="hidden" th:name="${_csrf.parameterName}"
+				th:value="${_csrf.token}" />
+
+			<!-- 아이디 -->
+			<div class="form-group">
+				<label for="memberId">아이디</label>
+				<div class="flex-row">
+					<input type="text" th:field="*{memberId}" id="memberId"
+						placeholder="아이디" />
+					<button type="button" id="checkIdBtn" class="custom-btn"
+						style="width: 110px;">중복확인</button>
+				</div>
+				<div id="idCheckMsg" class="check-msg"></div>
+			</div>
+
+			<!-- 비밀번호 -->
+			<div class="form-group">
+				<label for="memberPw">비밀번호</label> <input type="password"
+					th:field="*{memberPw}" id="memberPw" placeholder="비밀번호" />
+			</div>
+
+			<div class="form-group">
+				<label for="memberPw1">비밀번호 확인</label> <input type="password"
+					th:field="*{memberPw1}" id="memberPw1" placeholder="비밀번호 확인" />
+				<div id="pwCheckMsg" class="check-msg"></div>
+			</div>
+
+			<!-- 이름/닉네임 -->
+			<div class="form-group">
+				<label for="memberName">이름</label> <input type="text"
+					th:field="*{memberName}" id="memberName" placeholder="이름" />
+			</div>
+
+			<div class="form-group">
+				<label for="memberNick">닉네임</label>
+				<div class="flex-row">
+					<input type="text" th:field="*{memberNick}" id="memberNick"
+						placeholder="닉네임" />
+					<button type="button" id="checkNickBtn" class="custom-btn"
+						style="width: 110px;">중복확인</button>
+				</div>
+				<div id="nickCheckMsg" class="check-msg"></div>
+			</div>
+
+			<!-- 이메일 -->
+			<div class="form-group">
+				<label>이메일</label>
+				<div class="flex-row">
+					<input type="text" th:field="*{emailLocal}" id="emailLocal"
+						placeholder="이메일 앞부분" /> <span style="align-self: center;">@</span>
+					<input type="text" th:field="*{emailDomain}" id="emailDomain"
+						placeholder="도메인" /> <select id="emailDomainSelect">
+						<option value="">직접 입력</option>
+						<option value="naver.com">naver.com</option>
+						<option value="gmail.com">gmail.com</option>
+						<option value="daum.net">daum.net</option>
+						<option value="nate.com">nate.com</option>
+						<option value="hanmail.com">hanmail.com</option>
+					</select>
+					<button type="button" id="checkEmailBtn" class="custom-btn"
+						style="width: 110px;">중복확인</button>
+					<input type="hidden" th:field="*{memberEmail}" id="memberEmail" />
+				</div>
+				<div id="emailCheckMsg" class="check-msg"></div>
+			</div>
+
+			<!-- 생년월일 -->
+			<div class="form-group">
+				<label for="memberBirth">생년월일</label> <input type="date"
+					th:field="*{memberBirth}" id="memberBirth" />
+			</div>
+
+			<!-- 주소 -->
+			<div class="form-group">
+				<label for="memberAddress">주소</label>
+				<div class="flex-row">
+					<!-- 화면 표시용 -->
+					<input type="text" id="memberAddress" placeholder="주소" readonly />
+					<!-- 상세 주소 -->
+					<input type="text" id="memberDetailAddress"
+						placeholder="상세주소: ex) 동/호" />
+					<!-- 우편 번호 -->
+					<button type="button" onclick="execDaumPostcode()"
+						class="postcode-btn">우편번호 찾기</button>
+					<!-- 서버 전송용 -->
+					<input type="hidden" th:field="*{memberAddress}" id="fullAddress" />
+				</div>
+			</div>
+
+			<!-- 전화번호 -->
+			<div class="form-group">
+				<label for="memberPhone">전화번호</label> <input type="text"
+					th:field="*{memberPhone}" id="memberPhone" placeholder="전화번호" />
+			</div>
+
+			<!-- 성별 -->
+			<div class="form-group">
+				<label>성별</label>
+				<div class="gender-group">
+					<div>
+						<input type="radio" th:field="*{memberGender}" value="M"
+							id="genderMale" /> <label for="genderMale">남성</label>
+					</div>
+					<div>
+						<input type="radio" th:field="*{memberGender}" value="F"
+							id="genderFemale" /> <label for="genderFemale">여성</label>
+					</div>
+				</div>
+			</div>
+
+			<!-- 서버 검증 에러를 스윗알럿으로 표시 -->
+			<th:block
+				th:if="${#fields.hasErrors('*') or #fields.hasGlobalErrors()}">
+				<script th:inline="javascript">
+					/*<![CDATA[*/
+					const _fieldErrors = /*[[ ${#strings.listJoin(#fields.errors('*'), '\n')} ]]*/'';
+					const _globalErrors = /*[[ ${#strings.listJoin(#fields.globalErrors(), '\n')} ]]*/''; // thymeleaf가 문자열 목록을 반환하지 않는다면 빈 문자열로 평가됨
+					const _msgs = [ _fieldErrors, _globalErrors ].filter(
+							Boolean).join('\n');
+					if (_msgs) {
+						showErrorTitleAlert('회원가입 실패', _msgs);
+					}
+					/*]]>*/
+				</script>
+			</th:block>
+
+			<button type="submit" class="custom-btn">회원가입</button>
+		</form>
+	</div>
+
+	<!-- 컨트롤러에서 내려주는 메시지 통일 -->
+	<th:block th:if="${alertMessage != null}">
+		<script th:inline="javascript">
+			/*<![CDATA[*/
+			// Thymeleaf가 JS 리터럴로 안전하게 치환해 줍니다 (문자열이면 자동으로 따옴표 포함).
+			const __alertMessage = /*[[${alertMessage}]]*/null;
+			if (__alertMessage) {
+				showInfoAlert(__alertMessage);
+			}
+			/*]]>*/
+		</script>
+	</th:block>
+
+	<script th:if="${param.success != null}">
+		showSuccessAlert('회원가입이 완료되었습니다.');
+	</script>
+
+	<script th:inline="javascript">
+		// 생년월일 : 오늘 날짜를 max로 설정
+		(function setBirthMaxToday() {
+			const el = document.getElementById('memberBirth');
+			if (!el)
+				return;
+			const tzOffsetMs = new Date().getTimezoneOffset() * 60000;
+			const todayLocalISO = new Date(Date.now() - tzOffsetMs)
+					.toISOString().slice(0, 10);
+			el.max = todayLocalISO;
+		})();
+
+		// 이메일 도메인 선택
+		document.getElementById('emailDomainSelect').addEventListener('change',
+				function() {
+					document.getElementById('emailDomain').value = this.value;
+				});
+
+		// 다음 우편번호 API : 도로명 주소 선택 시 화면 + 히든 세팅
+		function execDaumPostcode() {
+			new daum.Postcode({
+				oncomplete : function(data) {
+					const base = data.roadAddress || data.jibunAddress
+							|| data.autoRoadAddress || data.autoJibunAddress
+							|| '';
+					// 화면 표시용
+					document.getElementById('memberAddress').value = base;
+					// 서버 전송용 (상세 주소는 submit 시 합침)
+					document.getElementById('fullAddress').value = base;
+				}
+			}).open();
+		}
+
+		// 폼 제출 시 필수 검증
+		$('#signupForm').on('submit', function() {
+
+			// 공통: 경고 + 포커스 이동
+			function warnAndFocus(selector, msg) {
+				showWarningAlert(msg);
+				const $el = $(selector);
+				if ($el.length)
+					$el.focus();
+			}
+
+			// 1) 필수값 (아이디/비번/비번확인/이름/닉네임)
+			const memberId = $('#memberId').val().trim();
+			const pw = $('#memberPw').val();
+			const pw1 = $('#memberPw1').val();
+			const memberName = $('#memberName').val().trim();
+			const memberNick = $('#memberNick').val().trim();
+
+			if (!memberId) {
+				warnAndFocus('#memberId', '아이디를 입력해주세요.');
+				return false;
+			}
+			if (!pw) {
+				warnAndFocus('#memberPw', '비밀번호를 입력해주세요.');
+				return false;
+			}
+			if (!pw1) {
+				warnAndFocus('#memberPw1', '비밀번호 확인을 입력해주세요.');
+				return false;
+			}
+			if (pw !== pw1) {
+				warnAndFocus('#memberPw1', '비밀번호가 일치하지 않습니다.');
+				return false;
+			}
+			if (!memberName) {
+				warnAndFocus('#memberName', '이름을 입력해주세요.');
+				return false;
+			}
+			if (!memberNick) {
+				warnAndFocus('#memberNick', '닉네임을 입력해주세요.');
+				return false;
+			}
+
+			// 이메일 합치기(hidden 세팅)
+			const local = $('#emailLocal').val().trim();
+			const domain = $('#emailDomain').val().trim();
+			if (local && domain) {
+				$('#memberEmail').val(local + '@' + domain);
+			}
+			if (!local) {
+				showWarningAlert('이메일 아이디를 입력해주세요.');
+				return false;
+			} else if (!domain) {
+				showWarningAlert('이메일 도메인을 입력하거나 선택해주세요');
+				return false;
+			}
+			
+			const birth = $('#memberBirth').val();
+			if (!birth) { warnAndFocus('#memberBirth', '생년월일을 선택해주세요.'); return false; }
+
+
+			// 주소 합치기
+			const base = $('#memberAddress').val().trim();
+			const detail = $('#memberDetailAddress').val().trim();
+			if (!base) {
+				// alert -> 스윗알럿
+				showWarningAlert('우편번호 찾기로 주소를 선택해주세요.');
+				return false;
+			}
+			$('#fullAddress').val(base + (detail ? ' ' + detail : ''));
+
+			// 전화번호 필수 + 정규식 검사
+			const phone = $('#memberPhone').val().trim();
+			const regex = /^01[0-9]{8,9}$/;
+			if (!phone) {
+				showWarningAlert('전화번호를 입력해주세요.');
+				$('#memberPhone').focus();
+				return false;
+			}
+			if (!regex.test(phone)) {
+				showWarningAlert('전화번호 형식이 올바르지 않습니다. (예: 01012345678)');
+				$('#memberPhone').focus();
+				return false;
+			}
+			
+			  const genderChecked = $('input[name="memberGender"]:checked').length > 0;
+			  if (!genderChecked) {
+			    showWarningAlert('성별을 선택해주세요.');
+			    $('#genderMale').focus(); // 첫 라디오에 포커스
+			    return false;
+			  }
+
+			// (선택) 전송 직전 로딩
+			showLoadingModal('제출 중...', '잠시만 기다려주세요.');
+		});
+
+		// CSRF
+		var token = $("meta[name='_csrf']").attr("content");
+		var header = $("meta[name='_csrf_header']").attr("content");
+
+		// 아이디 중복확인
+		$('#checkIdBtn')
+				.on(
+						'click',
+						function() {
+							let memberId = $('#memberId').val().trim();
+							if (!memberId) {
+								$('#idCheckMsg').text('아이디를 입력해주세요.').css(
+										'color', 'red');
+								// 입력 유도 토스트
+								showTitleToast('중복확인', '아이디를 입력해주세요.',
+										'warning', 1600);
+								return;
+							}
+							$.ajax({
+								url : '/member/checkId',
+								type : 'post',
+								contentType : 'application/json',
+								data : JSON.stringify({
+									memberId : memberId
+								}),
+								beforeSend : function(xhr) {
+									xhr.setRequestHeader(header, token);
+								},
+								success : function(res) {
+									if (res.available) {
+										$('#idCheckMsg').text('사용 가능한 아이디입니다.')
+												.css('color', 'green');
+										showToast('사용 가능한 아이디입니다.', 'success',
+												1400);
+									} else {
+										$('#idCheckMsg')
+												.text('이미 사용중인 아이디입니다.').css(
+														'color', 'red');
+										showToast('이미 사용중인 아이디입니다.', 'error',
+												1400);
+									}
+								},
+								error : function() {
+									$('#idCheckMsg').text('아이디 중복확인 중 오류 발생')
+											.css('color', 'red');
+									showErrorAlert('아이디 중복확인 중 오류가 발생했습니다.');
+								}
+							});
+						});
+
+		// 이메일 중복확인
+		$('#checkEmailBtn').on(
+				'click',
+				function() {
+					let local = $('#emailLocal').val().trim();
+					let domain = $('#emailDomain').val().trim();
+					let email = local && domain ? (local + '@' + domain) : '';
+					if (!local || !domain) {
+						$('#emailCheckMsg').text('이메일을 정확히 입력해주세요.').css(
+								'color', 'red');
+						showTitleToast('중복확인', '이메일을 정확히 입력해주세요.', 'warning',
+								1600);
+						return;
+					}
+					$.ajax({
+						url : '/member/checkEmail',
+						type : 'post',
+						contentType : 'application/json',
+						data : JSON.stringify({
+							memberEmail : email
+						}),
+						beforeSend : function(xhr) {
+							xhr.setRequestHeader(header, token);
+						},
+						success : function(res) {
+							if (res.available) {
+								$('#emailCheckMsg').text('사용 가능한 이메일입니다.').css(
+										'color', 'green');
+								showToast('사용 가능한 이메일입니다.', 'success', 1400);
+							} else {
+								$('#emailCheckMsg').text('이미 사용중인 이메일입니다.')
+										.css('color', 'red');
+								showToast('이미 사용중인 이메일입니다.', 'error', 1400);
+							}
+						},
+						error : function() {
+							$('#emailCheckMsg').text('이메일 중복확인 중 오류 발생').css(
+									'color', 'red');
+							showErrorAlert('이메일 중복확인 중 오류가 발생했습니다.');
+						}
+					});
+				});
+
+		// 닉네임 중복 확인
+		$('#checkNickBtn')
+				.on(
+						'click',
+						function() {
+							let nick = $('#memberNick').val().trim();
+							if (!nick) {
+								$('#nickCheckMsg').text('닉네임을 입력해주세요.').css(
+										'color', 'red');
+								showTitleToast('중복확인', '닉네임을 입력해주세요.',
+										'warning', 1600);
+								return;
+							}
+							$.ajax({
+								url : '/member/checkNick',
+								type : 'post',
+								contentType : 'application/json',
+								data : JSON.stringify({
+									memberNick : nick
+								}),
+								beforeSend : function(xhr) {
+									xhr.setRequestHeader(header, token);
+								},
+								success : function(res) {
+									if (res.available) {
+										$('#nickCheckMsg').text(
+												'사용 가능한 닉네임입니다.').css('color',
+												'green');
+										showToast('사용 가능한 닉네임입니다.', 'success',
+												1400);
+									} else {
+										$('#nickCheckMsg').text(
+												'이미 사용중인 닉네임입니다.').css('color',
+												'red');
+										showToast('이미 사용중인 닉네임입니다.', 'error',
+												1400);
+									}
+								},
+								error : function() {
+									$('#nickCheckMsg').text('닉네임 중복확인 중 오류 발생')
+											.css('color', 'red');
+									showErrorAlert('닉네임 중복확인 중 오류가 발생했습니다.');
+								}
+							});
+						});
+
+		// 비밀번호 입력 실시간 확인
+		$('#memberPw, #memberPw1').on('input', function() {
+			let pw = $('#memberPw').val();
+			let pw1 = $('#memberPw1').val();
+			if (!pw1) {
+				$('#pwCheckMsg').text('');
+				return;
+			}
+			if (pw === pw1) {
+				$('#pwCheckMsg').text('비밀번호가 일치합니다.').css('color', 'green');
+			} else {
+				$('#pwCheckMsg').text('비밀번호가 일치하지 않습니다.').css('color', 'red');
+			}
+		});
+
+		// 전화번호 입력 시 숫자만 허용
+		$('#memberPhone').on('input', function() {
+			let phone = $(this).val().replace(/[^0-9]/g, ''); // 숫자만 남김
+			$(this).val(phone);
+		});
+
+		// 생년월일 오늘 이후 입력 방지
+		$('#memberBirth').on('change', function() {
+			if (!this.value) {
+				return;
+			}
+			const chosen = new Date(this.value);
+			const today = new Date();
+			chosen.setHours(0, 0, 0, 0);
+			today.setHours(0, 0, 0, 0);
+			if (chosen > today) {
+				showWarningAlert('생년월일은 오늘 이후로 등록할 수 없습니다.');
+				$(this).val('').focus();
+			}
+		});
+	</script>
+</body>
+</html>

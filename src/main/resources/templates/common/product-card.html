@@ -1,0 +1,78 @@
+<!-- 카드의 내용부분만 (th:each등은 제외) -->
+<div th:fragment="card">
+<head>
+<link rel="stylesheet" th:href="@{/css/common/product-card.css}" />
+</head>
+		<!-- 상태 표시 -->
+		<div class="position-relative image-wrapper">
+			<!-- 상품 사진 없을 때-->
+			<span th:if="${product.thumbnailName==null}"> 
+				<img th:src="@{/upload/product/default.png}" class="w-100 mt-2" />
+			</span>
+			<!-- 상품 사진 있을 때-->
+			<span th:unless="${product.thumbnailName==null}"> 
+			<a class="linkDefault" th:href=@{|/product/detail/${product.productNo}|}>
+				<img th:src="@{|/upload/product/${product.thumbnailName}|}" class="w-100 mt-2" />
+			</a>
+			</span>
+			<!-- 상태에 따라 오버레이 효과 -->
+			<!-- shopStatus 1=준비중 0 영업중 -->
+			<div th:if="${product.shopStatus==1}"
+				class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center bg-dark bg-opacity-50 text-white fw-bold fs-4 mt-2">
+				준비 중
+			</div>
+			<div th:if="${product.shopStatus != 1 and product.status==1}"
+         		class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center bg-dark bg-opacity-50 text-white fw-bold fs-4 mt-2">
+				품절
+			</div>
+		</div>
+		<!-- 상품 정보 -->
+		<div class="card-body">
+			<!-- 장바구니 담기 버튼 -->
+			<span th:if="${product.status==0 and product.shopStatus ==0}">
+				<button class="btn btn-light w-100 insertBtn" type="button">
+					<img class="shoppingCartIcon" th:src="@{/image/main/add_shopping_cart.png}">&nbsp;담기
+				</button>
+			</span>
+			<!-- 상품 상세 페이지로 이동 -->
+			<a class="linkDefault" th:href=@{|/product/detail/${product.productNo}|}>
+				<h6 th:attr="data-shopno=${product.shopNo}" class="card-subtitle mt-1"
+					th:text="${product.shopName}"></h6>
+				<h4 th:attr="data-productname=${product.productName}"
+					class="card-title" th:text="${product.productName}"></h4>
+				<h6 th:attr="data-price=${product.price}"
+					th:text="${product.price}+'원'"></h6> 
+				<i class="bi bi-chat-left-dots"></i> 
+				<span th:text=${product.reviewCount}></span>
+				<!-- 정기상품 여부 --> 
+				<th:block th:if="${product.isSubscription==1}">
+					<span class="badge text-bg-warning w-25 text-center ms-1 p-1">정기배송</span>
+				</th:block>
+			</a>
+			<!-- 찜버튼 -->
+			<th:block th:if="${product.isWished==1}">				
+				<i class="wish-btn position-absolute bottom-0 end-0 p-3 bi bi-heart-fill"></i>
+			</th:block>
+			<th:block th:unless="${product.isWished==1}">
+				<i class="wish-btn position-absolute bottom-0 end-0 p-3 bi bi-heart"></i>
+			</th:block>
+		</div>		
+	
+</div>
+
+<!-- 캐러셀 버튼 -->
+<div th:fragment="carousel-btn(targetID)">
+	<!-- 이전 버튼 -->
+	<button class="carousel-control-prev" type="button"
+		th:attr="data-bs-target=${'#'+targetID}" data-bs-slide="prev">
+		<span class="carousel-control-prev-icon" aria-hidden="true"></span> <span
+			class="visually-hidden">Previous</span>
+	</button>
+
+	<!-- 다음 버튼 -->
+	<button class="carousel-control-next" type="button"
+		th:attr="data-bs-target=${'#'+targetID}" data-bs-slide="next">
+		<span class="carousel-control-next-icon" aria-hidden="true"></span> <span
+			class="visually-hidden">Next</span>
+	</button>
+</div>

@@ -1,0 +1,360 @@
+<html layout:decorate="~{rider/rider-layout1}">
+    <!-- 페이지 전용 CSS 주입 -->
+    <th:block layout:fragment="head-extra">
+        <link rel="stylesheet" th:href="@{/css/rider/riderCommunity.css}" />
+    </th:block>
+
+    <!-- side_bar 영역 시작 -->
+    <div layout:fragment="side_bar">
+        <!-- rider의 정보 출력용 div-->
+        <div>
+            <div class="rider_Info">
+                <div class="info_time">
+                    <span class="timezone">
+                        <span class="timezone_hour"></span>
+                        :
+                        <span class="timezone_min"></span>
+                        :
+                        <span class="timezone_sec"></span>
+                    </span>
+                </div>
+                <div class="info_id">
+                    <span th:text="|#${#authentication.principal.username} 님 |"></span>
+                </div>
+            </div>
+            <div>
+                <div class="delivery_info card mt-3">
+                    <div class="step requested done">
+                        <div class="time">14:00</div>
+                        <div class="circle"></div>
+                        <div class="label">요청</div>
+                    </div>
+                    <div class="step assigned active">
+                        <div class="time">15:30</div>
+                        <div class="circle"></div>
+                        <div class="label">배차</div>
+                    </div>
+                    <div class="step pickup">
+                        <div class="time"></div>
+                        <div class="circle"></div>
+                        <div class="label">픽업</div>
+                    </div>
+                    <div class="step">
+                        <div class="time"></div>
+                        <div class="circle"></div>
+                        <div class="label">완료</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="delivery_detail card px-3 mt-3">
+            <div class="delivery_title">
+                <span>금액</span>
+                <div class="d-flex">
+                    <input type="text" name="text" id="text" class="custom-h-input" value="125,000원" />
+                </div>
+            </div>
+            <div class="delivery_title">
+                <span>고객연락처</span>
+                <div class="d-flex">
+                    <input type="text" name="text" id="text" class="custom-h-input" value="010-0000-0000" />
+                </div>
+            </div>
+            <div class="delivery_title">
+                <span>배달주소</span>
+                <div id="delivery_address">서울특별시 관악구 남부순환로 1820 6층 글로벌아이티 6B</div>
+            </div>
+            <div class="delivery_title flex-column">
+                <span>고객 메모</span>
+                <div>
+                    <div class="order-box">
+                        <p>★ 통새우맥시멈2 세트 116,000</p>
+                        <p>통새우맥시멈210</p>
+                        <p>@프렌치프라이R 교환 - 교환 10</p>
+                        <p>@코카콜라 제로L 교환 - 교환 1200</p>
+                        <p>★ 통새우맥시멈2 세트 116,000</p>
+                        <p>@프렌치프라이R 교환 - 교환 10</p>
+                        <p>@코카콜라 제로L 교환 - 교환 1200</p>
+                        <p>★ 통새우맥시멈2 세트 116,000</p>
+                    </div>
+                </div>
+            </div>
+            <div class="delivery_title flex-column">
+                <span>주문 내역</span>
+                <div>
+                    <div class="order-box">
+                        <p>★ 통새우맥시멈2 세트 116,000</p>
+                        <p>통새우맥시멈210</p>
+                        <p>@프렌치프라이R 교환 - 교환 10</p>
+                        <p>@코카콜라 제로L 교환 - 교환 1200</p>
+                        <p>★ 통새우맥시멈2 세트 116,000</p>
+                        <p>@프렌치프라이R 교환 - 교환 10</p>
+                        <p>@코카콜라 제로L 교환 - 교환 1200</p>
+                        <p>★ 통새우맥시멈2 세트 116,000</p>
+                        <p>@프렌치프라이R 교환 - 교환 10</p>
+                        <p>@코카콜라 제로L 교환 - 교환 1200</p>
+                        <p>★ 통새우맥시멈2 세트 116,000</p>
+                        <p>@프렌치프라이R 교환 - 교환 10</p>
+                        <p>@코카콜라 제로L 교환 - 교환 1200</p>
+                        <p>★ 통새우맥시멈2 세트 116,000</p>
+                        <p>@프렌치프라이R 교환 - 교환 10</p>
+                        <p>@코카콜라 제로L 교환 - 교환 1200</p>
+                        <p>★ 통새우맥시멈2 세트 116,000</p>
+                        <p>@프렌치프라이R 교환 - 교환 10</p>
+                        <p>@코카콜라 제로L 교환 - 교환 1200</p>
+                        <p>★ 통새우맥시멈2 세트 116,000</p>
+                        <p>@프렌치프라이R 교환 - 교환 10</p>
+                        <p>@코카콜라 제로L 교환 - 교환 1200</p>
+                        <p>★ 통새우맥시멈2 세트 116,000</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // jQuery가 로드된 뒤 실행
+            $(function () {
+                function tickOne($box) {
+                    const tz = $box.data('tz') || Intl.DateTimeFormat().resolvedOptions().timeZone;
+                    const fmt = new Intl.DateTimeFormat('ko-KR', {
+                        timeZone: tz,
+                        hour12: false,
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                    });
+                    const parts = fmt.formatToParts(new Date());
+                    const map = {};
+                    parts.forEach((p) => (map[p.type] = p.value));
+
+                    $box.find('.timezone_hour').text(map.hour);
+                    $box.find('.timezone_min').text(map.minute);
+                    $box.find('.timezone_sec').text(map.second);
+                }
+
+                function tickAll() {
+                    $('.timezone').each(function () {
+                        tickOne($(this));
+                    });
+                }
+
+                tickAll(); // 즉시 1회
+                setInterval(tickAll, 1000); // 1초마다 갱신
+            });
+        </script>
+    </div>
+    <!-- side_bar 영역 끝 -->
+
+    <!-- content 영역 시작 -->
+    <div layout:fragment="content" class="mt-3">
+        <div class="community_card active-card">
+            <div class="community_write">
+                <div class="body_content">
+                    <textarea name="communityContent" id="communityContent"></textarea>
+                    <button class="writeBtn" type="button">글작성</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 게시글이 한개도 없을 경우 -->
+        <th:block th:if="${#lists.isEmpty(list)}">
+            <div class="community_card active-card" data-community_no="100">
+                <div class="community_body">
+                    <div class="body_content">게시글이 없습니다.</div>
+                </div>
+            </div>
+        </th:block>
+        <!-- 게시글이 있을 경우 -->
+        <th:block th:unless="${#lists.isEmpty(list)}">
+            <div id="communityList">
+                <th:block th:replace="~{rider/communityList :: communityList}"></th:block>
+            </div>
+        </th:block>
+
+        <script>
+            // 모든 jQuery AJAX 요청에 CSRF 헤더 자동 첨부
+            $(function () {
+                const token = $('meta[name="_csrf"]').attr('content');
+                const header = $('meta[name="_csrf_header"]').attr('content');
+                $(document).ajaxSend(function (e, xhr) {
+                    if (token && header) xhr.setRequestHeader(header, token);
+                });
+            });
+
+            $('.nav_item').removeClass('active');
+            $('.nav_item').eq(5).addClass('active');
+
+            // $('.writeBtn').on('click', function () {
+            //     let contentText = $('#communityContent').val();
+            //     if (!contentText) {
+            //         showErrorAlert('내용이 비어있습니다.');
+            //     } else {
+            //         console.log('실행');
+            //         $.ajax({
+            //             url: '/rider/ajaxCommunityInsert',
+            //             type: 'POST',
+            //             data: { communityContent: contentText },
+            //             success: function (response) {
+            //                 if (response == 'success') {
+            //                     $('#communityList').load('/rider/communityListFragment #communityList > *');
+            //                     $('#communityContent').val(''); // 작성창 초기화
+            //                 }
+            //             },
+            //             error: function (xhr, status, message) {},
+            //         });
+            //     }
+            // });
+
+            // // 게시글 좋아요 / 별로에요 누를때
+            // $('.icon').on('click', function () {
+            //     let $this = $(this);
+            //     // 게시글 번호 추출
+            //     let communityNo = $(this).closest('.community_card').data('community_no');
+            //     console.log('communityNo : ' + communityNo);
+
+            //     let isLike = $(this).hasClass('icon-like');
+            //     if (isLike) {
+            //         isLike = 1;
+            //     } else {
+            //         isLike = 2;
+            //     }
+
+            //     console.log(isLike);
+            //     let svg = $(this).find('svg');
+            //     let oldClass = svg.attr('class') || '';
+            //     $(this)
+            //         .closest('.community_footer')
+            //         .find('svg')
+            //         .each(function () {
+            //             let cls = $(this).attr('class') || '';
+            //             $(this).attr('class', cls.replace('active-icon', '').trim());
+            //         });
+            //     // 기존 클래스 읽기
+            //     console.log(oldClass);
+
+            //     $.ajax({
+            //         url: '/rider/ajaxCommunityEmotions',
+            //         type: 'POST',
+            //         data: { communityNo, emotionsType: isLike },
+            //         success: function (response) {
+            //             if (response == 'success') {
+            //                 $.ajax({
+            //                     url: '/rider/ajaxGetEmotionCounts',
+            //                     type: 'POST',
+            //                     data: { communityNo },
+            //                     success: function (response) {
+            //                         console.log('ajax 동작');
+            //                         console.log(response);
+            //                         $this.closest('.community_footer').find('.like-acount').text(response[0]);
+            //                         $this.closest('.community_footer').find('.unlike-acount').text(response[1]);
+            //                         // 이미 active-icon이 있으면 제거, 없으면 추가
+            //                         if (oldClass.includes('active-icon')) {
+            //                             svg.attr('class', oldClass.replace('active-icon', '').trim());
+            //                         } else {
+            //                             svg.attr('class', (oldClass + ' active-icon').trim());
+            //                         }
+            //                     },
+            //                     error: function (xhr, status, message) {},
+            //                 });
+            //             }
+            //         },
+            //         error: function (xhr, status, message) {},
+            //     });
+
+            //     console.log('class:', svg.attr('class'));
+            // });
+
+            // $('.page_load').on('click', function () {
+            //     $('#communityList').load('/rider/communityListFragment #communityList > *');
+            // });
+
+            // 이벤트가 페이지 새로고침시 작동하지 않음 .
+            // 이유 : #communityList 영역을 통째로 다시 로드하면 , 원래의 .on('click').. 처럼 기존 바인딩한 이벤트는 날아가버림
+            // 그래서 이벤트 위임 (Event Delegation) 방식을 써야 새로 불러온 요소에도 자동으로 동작
+
+            // 글 작성 버튼
+            $(document).on('click', '.writeBtn', function () {
+                let contentText = $('#communityContent').val();
+                if (!contentText) {
+                    showErrorAlert('내용이 비어있습니다.');
+                } else {
+                    console.log('실행');
+                    $.ajax({
+                        url: '/rider/ajaxCommunityInsert',
+                        type: 'POST',
+                        data: { communityContent: contentText },
+                        success: function (response) {
+                            if (response == 'success') {
+                                $('#communityList').load('/rider/communityListFragment #communityList > *');
+                                $('#communityContent').val(''); // 작성창 초기화
+                            }
+                        },
+                        error: function (xhr, status, message) {},
+                    });
+                }
+            });
+
+            // 게시글 좋아요 / 싫어요
+            $(document).on('click', '.icon', function () {
+                let $this = $(this);
+                let communityNo = $this.closest('.community_card').data('community_no');
+                console.log('communityNo : ' + communityNo);
+
+                let isLike = $this.hasClass('icon-like') ? 1 : 2;
+
+                let svg = $this.find('svg');
+                let oldClass = svg.attr('class') || '';
+
+                // 같은 카드 내 모든 svg에서 active-icon 제거
+                $this
+                    .closest('.community_footer')
+                    .find('svg')
+                    .each(function () {
+                        let cls = $(this).attr('class') || '';
+                        $(this).attr('class', cls.replace('active-icon', '').trim());
+                    });
+
+                $.ajax({
+                    url: '/rider/ajaxCommunityEmotions',
+                    type: 'POST',
+                    data: { communityNo, emotionsType: isLike },
+                    success: function (response) {
+                        if (response == 'success') {
+                            $.ajax({
+                                url: '/rider/ajaxGetEmotionCounts',
+                                type: 'POST',
+                                data: { communityNo },
+                                success: function (res) {
+                                    console.log('ajax 동작');
+                                    console.log(res);
+
+                                    // 카운트 반영
+                                    $this.closest('.community_footer').find('.like-acount').text(res[0]);
+                                    $this.closest('.community_footer').find('.unlike-acount').text(res[1]);
+
+                                    // active-icon 토글
+                                    if (oldClass.includes('active-icon')) {
+                                        svg.attr('class', oldClass.replace('active-icon', '').trim());
+                                    } else {
+                                        svg.attr('class', (oldClass + ' active-icon').trim());
+                                    }
+                                },
+                                error: function (xhr, status, message) {},
+                            });
+                        }
+                    },
+                    error: function (xhr, status, message) {},
+                });
+
+                console.log('class:', svg.attr('class'));
+            });
+
+            // 새로고침 버튼
+            $(document).on('click', '.page_load', function () {
+                $('#communityList').load('/rider/communityListFragment #communityList > *');
+            });
+        </script>
+    </div>
+
+    <!-- content 영역 끝 -->
+</html>

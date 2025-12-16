@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/adminLayout}">
+
+<head>
+  <link rel="stylesheet" th:href="@{/css/admin/report.css}">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script th:src="@{/js/comm/sweetalert.noah.js}"></script>
+</head>
+<div layout:fragment="content">
+  <div class="rd-wrap box">
+    <h2 class="rd-title">신고 상세</h2>
+
+    <section th:if="${report != null}">
+      <!-- 메타 정보 -->
+      <div class="rd-meta">
+        <div><b>제목:</b> <span th:text="${report.reportTitle}"></span></div>
+        <div><b>신고자:</b> <span th:text="${report.member.memberNick}"></span></div>
+        <div><b>신고 대상:</b> <span th:text="${report.reportRef}"></span></div>
+        <div><b>신고 유형:</b>
+          <span th:if="${report.reportType==0}">회원 관련 신고</span>
+          <span th:if="${report.reportType==1}">매장 관련 신고</span>
+          <span th:if="${report.reportType==2}">기타</span>
+        </div>
+        <div><b>신고 사유:</b>
+          <span th:if="${report.reportReason==0}">별점 테러(악성 리뷰)</span>
+          <span th:if="${report.reportReason==1}">허위주문, 노쇼</span>
+          <span th:if="${report.reportReason==2}">악성 행위(욕설 비방)</span>
+          <span th:if="${report.reportReason==3}">부정 이용(다계정)</span>
+          <span th:if="${report.reportReason==4}">위생 문제</span>
+          <span th:if="${report.reportReason==5}">상품 문제</span>
+          <span th:if="${report.reportReason==6}">배송 문제</span>
+          <span th:if="${report.reportReason==7}">불친절</span>
+          <span th:if="${report.reportReason==8}">기타</span>
+        </div>
+        <div th:if="${report.reportEtc!=null}">
+          <b>기타 내용:</b> <span th:text="${report.reportEtc}"></span>
+        </div>
+        <div><b>작성일:</b> <span th:text="${#temporals.format(report.reportAt,'yyyy-MM-dd HH:mm')}"></span></div>
+        <div>
+          <b>상태:</b>
+          <span th:if="${report.reportStatus==0}" class="il-status il-status--wait">미답변</span>
+          <span th:if="${report.reportStatus==1 or report.reportStatus==2}" class="il-status il-status--done">처리완료</span>
+        </div>
+      </div>
+
+      <!-- 본문 -->
+      <article class="rd-content">
+        <pre th:text="${report.reportContent}"></pre>
+      </article>
+
+      <!-- 첨부 이미지 -->
+      <div th:if="${!#lists.isEmpty(images)}" class="image-list">
+        <div th:each="img : ${images}">
+          <img th:src="@{${img.filePath}}" th:alt="${img.originFilename}" onerror="this.parentElement.remove();">
+        </div>
+      </div>
+
+      <!-- 처리 결과 -->
+      <section id="replyDisplay" class="id-reply" th:if="${report.reportReply != null}">
+        <h3>답변 결과</h3>
+        <div th:text="${report.reportReply}"></div>
+      </section>
+
+      <!-- 처리 폼 -->
+      <section class="id-reply-form" th:if="${report.reportReply == null}">
+        <h3>신고 답변</h3>
+        <form id="reportForm" th:action="@{/admin/board/report/reply/{reportNo}(reportNo=${report.reportNo})}" method="post">
+          <input type="hidden" id="csrfToken" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+          <textarea name="reportReply" rows="5" placeholder="답변 내용을 입력하세요."></textarea>
+          <button type="submit">답변 등록</button>
+        </form>
+      </section>
+
+      <!-- 하단 액션 -->
+      <div class="rd-actions">
+        <a th:href="@{/admin/board/report}">목록으로</a>
+      </div>
+    </section>
+
+    <!-- 존재하지 않는 신고 -->
+    <section th:if="${report == null}">
+      <p>존재하지 않는 신고입니다.</p>
+      <a th:href="@{/admin/board/report}">목록으로</a>
+    </section>
+  </div>
+
+  <!-- 이미지 확대 오버레이 -->
+  <div class="image-overlay"></div>
+
+  <!-- 이미지 확대 스크립트 -->
+  <script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+      const images = document.querySelectorAll('.image-list img');
+      const imageOverlay = document.querySelector('.image-overlay');
+      let currentEnlargedImage = null;
+
+      images.forEach(img => {
+        img.addEventListener('click', function () {
+          if (this.classList.contains('enlarged')) {
+            this.classList.remove('enlarged');
+            imageOverlay.classList.remove('active');
+            currentEnlargedImage = null;
+          } else {
+            if (currentEnlargedImage) {
+              currentEnlargedImage.classList.remove('enlarged');
+            }
+            this.classList.add('enlarged');
+            imageOverlay.classList.add('active');
+            currentEnlargedImage = this;
+          }
+        });
+      });
+
+      imageOverlay.addEventListener('click', function () {
+        if (currentEnlargedImage) {
+          currentEnlargedImage.classList.remove('enlarged');
+          imageOverlay.classList.remove('active');
+          currentEnlargedImage = null;
+        }
+      });
+
+      document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && currentEnlargedImage) {
+          currentEnlargedImage.classList.remove('enlarged');
+          imageOverlay.classList.remove('active');
+          currentEnlargedImage = null;
+        }
+      });
+    });
+  </script>
+
+  <!-- 신고 처리 비동기 등록 -->
+  <script th:inline="javascript">
+    document.addEventListener("DOMContentLoaded", function () {
+      const reportForm = document.getElementById("reportForm");
+
+      if (reportForm) {
+        reportForm.addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          const formData = new FormData(reportForm);
+          const actionUrl = reportForm.getAttribute("action");
+          const csrfToken = document.getElementById("csrfToken").value;
+
+          fetch(actionUrl, {
+            method: "POST",
+            body: formData,
+            headers: { "X-CSRF-TOKEN": csrfToken }
+          })
+            .then(response => {
+              if (!response.ok) throw new Error("서버 오류");
+              return response.text();
+            })
+            .then(result => {
+              Swal.fire({
+                icon: "success",
+                title: "답변 완료",
+                text: "답변을 등록했습니다.",
+                confirmButtonText: "확인",
+                confirmButtonColor: "#ff6600"
+              }).then(() => {
+                location.reload();
+              });
+            })
+            .catch(error => {
+              Swal.fire({
+                icon: "error",
+                title: "실패",
+                text: "답변 등록에 실패했습니다. 다시 시도해주세요."
+              });
+            });
+        });
+      }
+    });
+  </script>
+</div>
+</html>

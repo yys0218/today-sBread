@@ -1,0 +1,24 @@
+/*  <link rel="stylesheet" th:href="@{/css/member/find-id.css}"> */
+
+    	/* 기본 스타일 설정 */
+    	body{font-family: "Noto Sans KR", sans-serif;background-color: #f9f9f9;margin: 0;padding: 0;}
+    	/* 페이지 중앙 정렬 */
+    	.container{display: flex;justify-content: center;align-items: center;min-height: 100vh;}
+    	/* 아이디 찾기 박스 */
+    	.find-id-box{background: #fff;padding: 30px 40px;border-radius: 12px;box-shadow: 0 4px 10px rgba(0,0,0,0.1);width: 100%;max-width: 400px;text-align: center;}
+    	.find-id-box h2{margin-bottom: 20px;font-size: 22px;color: #333;}
+    	/* 폼 입력 필드 */
+    	.form-group{margin-bottom: 15px;text-align: left;}
+    	.form-group label{display: block;margin-bottom: 6px;font-size: 14px;color: #555;}
+    	.form-group input{width: 100%;padding: 10px;border: 1px solid #ddd;border-radius: 6px;font-size: 14px;box-sizing: border-box;}
+    	/* 버튼 스타일 */
+    	.btn-group{margin-top: 20px;display: flex;gap: 10px;}
+    	.btn-group button{flex: 1;padding: 10px;border: none;border-radius: 6px;font-size: 14px;cursor: pointer;transition: background 0.2s;}
+    	/* 취소 버튼 */
+    	.btn-cancel{background-color: #e0e0e0;color: #333;}    	
+    	.btn-cancel:hover{background-color: #d5d5d5;}    	
+    	/* 아이디 찾기 버튼 */
+    	.btn-submit{background-color: #4CAF50;color: white;}    	
+    	.btn-submit:hover{background-color: #45a049;}   	
+    	/* 결과 메시지 */
+    	#result{margin-top: 20px;font-size: 15px;color: #333;}

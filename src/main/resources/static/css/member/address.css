@@ -1,0 +1,273 @@
+/* ===========================
+   Address Page (address.css)
+   =========================== */
+
+:root {
+  --addr-radius: 16px;
+  --addr-shadow: 0 4px 14px rgba(0,0,0,.06);
+  --addr-border: #e9ecef;
+  --addr-ink: #212529;
+  --addr-muted: #6c757d;
+  --addr-bg: #fafbfc;
+  --addr-primary: #0d6efd;
+}
+
+/* 페이지 오른쪽 영역 */
+.content-area {
+  background: var(--addr-bg);
+  padding: px;
+  border-radius: px;
+  min-height: 500px;
+  box-sizing: border-box;
+}
+
+
+/* 리스트 그리드 */
+.addr-list {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+@media (min-width: 576px) { .addr-list { grid-template-columns: 1fr; } }
+@media (min-width: 768px) { .addr-list { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 1200px) { .addr-list { grid-template-columns: 1fr 1fr 1fr; } }
+
+/* 카드 */
+.addr-item {
+  position: relative;
+  background: #fff;
+  border: 1px solid var(--addr-border);
+  border-radius: var(--addr-radius);
+  box-shadow: var(--addr-shadow);
+  padding: 16px 16px 12px;
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+.addr-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,.08);
+  border-color: #dee2e6;
+}
+
+/* 헤더 */
+.addr-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.addr-name { font-weight: 700; color: var(--addr-ink); }
+
+/* 배지 */
+.badge-chip {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.badge-primary { background: var(--addr-primary); color: #fff; }
+
+/* 바디 */
+.addr-body .row-line {
+  color: var(--addr-ink);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 6px 0;
+}
+.addr-body .row-line + .row-line { color: var(--addr-muted); }
+
+/* 푸터 */
+.addr-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+  position: relative;
+  z-index: 2;
+  pointer-events: auto;
+}
+.addr-footer .btn {
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+/* ===========================
+   버튼 컬러 커스텀
+   =========================== */
+
+/* 배송지 추가 버튼 (진한 주황) */
+.btn-addr-add {
+  --addr-accent: #ff7a59;
+  --addr-accent-hover: #ff6a45;
+  --addr-accent-active: #f4582e;
+
+  background: var(--addr-accent);
+  color: #fff;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-weight: 600;
+  transition: background-color .15s ease, transform .05s ease, box-shadow .15s ease;
+}
+.btn-addr-add:hover {
+  background: var(--addr-accent-hover);
+  box-shadow: 0 6px 18px rgba(255,122,89,.25);
+}
+.btn-addr-add:active {
+  background: var(--addr-accent-active);
+  transform: translateY(1px);
+}
+
+/* 삭제 버튼 (연한 회색, mypage.css 오버라이드) */
+.addr-delete-btn,
+.mypage .addr-delete-btn {
+  background: #f1f3f5 !important;
+  border: 1px solid #dee2e6 !important;
+  color: #495057 !important;
+}
+.addr-delete-btn:hover,
+.mypage .addr-delete-btn:hover {
+  background: #e9ecef !important;
+  color: #212529 !important;
+}
+
+/* 수정 버튼 (연한 주황색) */
+.addr-edit-btn {
+  background: #ffe8e0;
+  border: 1px solid #ffd2c2;
+  color: #e8590c;
+}
+.addr-edit-btn:hover {
+  background: #ffdacc;
+  border-color: #ffbfa3;
+  color: #d9480f;
+}
+
+/* 기본 배송지 저장 버튼 (연한 파랑) */
+#btnDefaultSave {
+  background: #e7f1ff;
+  border: 1px solid #cfe2ff;
+  color: #0d6efd;
+}
+#btnDefaultSave:hover {
+  background: #d0e2ff;
+  border-color: #b6d4fe;
+  color: #084298;
+}
+
+/* 모달 취소 버튼 */
+.modal-footer .btn-outline-secondary {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  color: #495057;
+}
+.modal-footer .btn-outline-secondary:hover {
+  background: #e9ecef;
+  color: #212529;
+}
+
+/* 모달 저장 버튼 */
+.modal-footer .btn-primary {
+  background: #0d6efd;
+  border-color: #0d6efd;
+  color: #fff;
+}
+.modal-footer .btn-primary:hover { background: #0b5ed7; }
+
+/* =========================== */
+
+/* 기본배송지 라디오 */
+.default-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  z-index: 2;
+  pointer-events: auto;
+}
+.default-ctrl input[type="radio"] { width: 16px; height: 16px; }
+.default-ctrl label { font-size: 13px; color: var(--addr-ink); margin: 0; }
+
+/* 하단 안내 */
+.default-save-wrap { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 6px; }
+.default-actions { display: flex; gap: 8px; }
+.addr-help { color: var(--addr-muted); font-size: 13px; }
+
+/* 빈 상태 */
+.addr-empty {
+  background: #fff;
+  border: 1px solid var(--addr-border);
+  border-radius: var(--addr-radius);
+  padding: 24px 16px;
+  color: var(--addr-muted);
+  text-align: center;
+}
+
+/* 상단 배너 */
+.soft-banner {
+  position: sticky;
+  top: 8px;
+  z-index: 10;
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #f6f7fb;
+  border: 1px solid #e8eaf1;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--addr-ink);
+  box-shadow: var(--addr-shadow);
+  margin-bottom: 12px;
+  animation: softBannerIn .25s ease;
+}
+@keyframes softBannerIn { from {opacity:0; transform:translateY(-6px);} to {opacity:1; transform:translateY(0);} }
+
+/* 반응형 */
+@media (max-width: 575.98px) {
+  .addr-footer { flex-wrap: wrap; gap: 8px 10px; }
+  .default-save-wrap { justify-content: stretch; }
+  #btnDefaultSave { width: 100%; }
+  .default-save-wrap { gap: 8px; }
+  .default-actions { width: 100%; }
+  .addr-help { width: 100%; order: 3; }
+}
+
+/* 모달 체크박스 (추가/수정 공통) */
+#addressAddModal .form-check,
+#addressEditModal .form-check {
+  padding-left: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+#addressAddModal .form-check-input,
+#addressEditModal .form-check-input {
+  position: static;
+  float: none;
+  margin: 0;
+  width: 16px;
+  height: 16px;
+  border-radius: 2px;
+  accent-color: var(--addr-primary);
+}
+#addressAddModal .form-check-input:focus,
+#addressEditModal .form-check-input:focus {
+  box-shadow: 0 0 0 .15rem rgba(13,110,253,.15);
+}
+#addressAddModal .form-check-label,
+#addressEditModal .form-check-label {
+  margin: 0;
+  line-height: 1.2;
+  font-size: 14px;
+  cursor: pointer;
+}
+.address-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0 0 16px 4px;
+  color: #333;
+}

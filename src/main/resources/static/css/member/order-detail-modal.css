@@ -1,0 +1,42 @@
+/*  <link rel="stylesheet" th:href="@{/css/member/order-detail-modal.css}"> */
+
+/* 페이지 전용 스타일(간결) */
+.order-detail-page{max-width:1000px;margin:0 auto;padding:24px;background:#fff;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.07)}
+.od-title{font-size:1.4rem;font-weight:800;margin:0 0 16px}
+.od-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;background:#fafafa;border:1px solid #eee;border-radius:8px;padding:12px;margin-bottom:16px}
+.od-meta b{display:inline-block;width:120px}
+.od-shop{margin-bottom:10px}
+.od-table{width:100%;border-collapse:collapse;border:1px solid #eee;margin:10px 0 14px}
+.od-table th,.od-table td{border:1px solid #eee;padding:10px;text-align:left}
+.od-sum{display:flex;justify-content:flex-end;gap:14px}
+.od-sum .box{border:1px solid #eee;border-radius:8px;padding:12px;background:#fafafa;min-width:260px}
+.od-sum .row{display:flex;justify-content:space-between;margin:6px 0}
+.od-sum .row.total{font-weight:800}
+.mt-16{margin-top:16px}
+/* === 합계 + 수령정보 가로배치 (옵션) === */
+.od-bottom{display:flex; gap:16px; align-items:flex-start; margin-top:16px}
+.od-bottom .sum{flex:0 0 320px}
+.od-bottom .info{flex:1}
+.my-swal-container{ z-index: 9999 !important;}
+@media (max-width: 768px){ .od-bottom{flex-direction:column} .od-bottom .sum{flex:1} }
+
+.od-dimmed{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1200;display:none}
+.od-modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+width:min(920px, 92vw);max-height:88vh;overflow:auto;z-index:1210;display:none}
+.od-box{background:#fff;border-radius:12px;border:1px solid #eee;box-shadow:0 10px 32px rgba(0,0,0,.35)}
+.od-head{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid #f0f0f0}
+.od-head h6{margin:0;font-size:1.05rem;font-weight:800}
+.od-close{border:1px solid #ddd;background:#fff;border-radius:8px;padding:6px 10px;cursor:pointer}
+.od-body{padding:16px}
+.od-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;background:#fafafa;border:1px solid #eee;border-radius:8px;padding:12px;margin-bottom:14px}
+.od-meta b{display:inline-block;width:120px}
+.od-table{width:100%;border-collapse:collapse;border:1px solid #eee;margin:8px 0 12px}
+.od-table th,.od-table td{border:1px solid #eee;padding:10px;text-align:left}
+.od-sum{display:flex;justify-content:flex-end}
+.od-sumbox{border:1px solid #eee;border-radius:8px;padding:12px;background:#fafafa;min-width:260px}
+.od-row{display:flex;justify-content:space-between;margin:6px 0}
+.od-row.total{font-weight:800}
+.od-bottom{display:flex; gap:16px; align-items:flex-start; margin-top:12px}
+.od-bottom .sum{flex:0 0 320px}
+.od-bottom .info{flex:1}
+@media (max-width: 768px){ .od-bottom{flex-direction:column} .od-bottom .sum{flex:1} }

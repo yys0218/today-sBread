@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{common/layout}">
+
+<head>
+  <title>FAQ</title>
+  <meta charset="UTF-8">
+  <meta th:name="_csrf" th:content="${_csrf.token}">
+  <meta th:name="_csrf_header" th:content="${_csrf.headerName}">
+  <link rel="stylesheet" th:href="@{/css/center/help-center.css}">
+  <link rel="stylesheet" th:href="@{/css/center/centerSidebar.css}">
+  <link rel="stylesheet" th:href="@{/css/center/faq.css}">
+</head>
+
+<body>
+  <div layout:fragment="content" class="container my-3">
+    <div class="container hc-layout">
+      
+      <!-- 좌측 사이드바 -->
+      <div th:replace="~{center/centerSidebar :: centerMenu('faq')}"></div>
+
+      <!-- 우측 본문 -->
+      <main class="hc-main">
+        <h2 class="fl-title">FAQ</h2>
+
+        <!-- 카테고리 버튼 (기존 구조 유지, 클래스만 추가) -->
+        <table class="fl-cats">
+          <tr>
+            <td><button type="button" class="cat-btn" data-category=""
+                th:classappend="${category==''} ? ' selected' : ''">(전체)</button></td>
+            <td><button type="button" class="cat-btn" data-category="회원"
+                th:classappend="${category=='회원'} ? ' selected' : ''">회원</button></td>
+            <td><button type="button" class="cat-btn" data-category="주문"
+                th:classappend="${category=='주문'} ? ' selected' : ''">주문</button></td>
+            <td><button type="button" class="cat-btn" data-category="결제"
+                th:classappend="${category=='결제'} ? ' selected' : ''">결제</button></td>
+          </tr>
+          <tr>
+            <td><button type="button" class="cat-btn" data-category="배송"
+                th:classappend="${category=='배송'} ? ' selected' : ''">배송</button></td>
+            <td><button type="button" class="cat-btn" data-category="취소/환불"
+                th:classappend="${category=='취소/환불'} ? ' selected' : ''">취소/환불</button></td>
+            <td><button type="button" class="cat-btn" data-category="쿠폰/포인트"
+                th:classappend="${category=='쿠폰/포인트'} ? ' selected' : ''">쿠폰/포인트</button></td>
+            <td><button type="button" class="cat-btn" data-category="매장"
+                th:classappend="${category=='매장'} ? ' selected' : ''">매장</button></td>
+          </tr>
+        </table>
+
+        <!-- 검색/필터 폼 (POST, AJAX 그대로) -->
+        <form id="searchForm" th:action="@{/center/faq/list}" method="post" onsubmit="return false;">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+          <input type="hidden" name="category" th:value="${category}">
+          <input type="text" name="kw" th:value="${kw}" placeholder="검색어">
+          <button id="btnSearch" type="button">검색</button>
+        </form>
+
+        <!-- FAQ 목록 fragment (id/fragment명/구조 유지) -->
+        <div id="faqListWrapper" th:fragment="listFragment (paging, category, kw)">
+          <ul class="fl-list">
+            <li th:each="f : ${paging.content}" class="fl-item">
+              <!-- 질문 -->
+              <div class="fl-q" th:attr="data-faqno=${f.faqNo}" th:text="${f.faqTitle}"></div>
+              <div class="fl-a" style="display:none;" th:text="${f.faqContent}"></div>
+              <!-- 답변 -->
+              <div class="fl-a" style="display:none;" th:text="${f.faqContent}"></div>
+            </li>
+          </ul>
+          <!-- 페이징처리 -->
+          <div th:if="${!paging.isEmpty()}">
+            <ul class="pagination justify-content-center">
+              <span class="page-item" th:if="${paging.hasPrevious()}">
+                <a class="page-link page-link-ajax" href="#" th:attr="data-page=${paging.number-1}">
+                  <span>이전</span>
+                </a>
+              </span>
+
+              <span th:each="page : ${#numbers.sequence(0, paging.totalPages-1)}"
+                th:if="${page >= paging.number-5 and page <= paging.number+5}"
+                th:classappend="${page==paging.number} ? 'active'" class='page-item'>
+                <a th:text="${page+1}" class="page-link page-link-ajax" href="#" th:attr="data-page=${page}"></a>
+              </span>
+
+              <span class="page-item" th:if="${paging.hasNext()}">
+                <a class="page-link page-link-ajax" href="#" th:attr="data-page=${paging.number+1}">
+                  <span>다음</span>
+                </a>
+              </span>
+            </ul>
+          </div>
+        </div>
+        
+      </main>
+    </div>
+  </div>
+
+  <!-- 기존 스크립트 그대로 유지 -->
+  <div layout:fragment="script">
+    <script>
+      (() => {
+        // DOM 준비 후에만 실행되도록 래퍼
+        function ready(fn) {
+          if (document.readyState !== 'loading') fn();
+          else document.addEventListener('DOMContentLoaded', fn);
+        }
+
+        ready(() => {
+          const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+          const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+          const searchForm = document.getElementById('searchForm');
+          if (!searchForm) return; // 방어
+
+          const categoryInput = searchForm.querySelector('input[name="category"]');
+          const kwInput = searchForm.querySelector('input[name="kw"]');
+          const btnSearch = document.getElementById('btnSearch');
+          let listWrapper = document.getElementById('faqListWrapper');
+
+          // 공통 AJAX
+          async function loadFaqList({ kw, category, page }) {
+            const formData = new FormData();
+            formData.append('kw', kw ?? '');
+            formData.append('category', category ?? '');
+            formData.append('page', page ?? 0);
+
+            const resp = await fetch(searchForm.getAttribute('action'), {
+              method: 'POST',
+              headers: csrfHeader && csrfToken ? { [csrfHeader]: csrfToken } : {},
+              body: formData
+            });
+            const html = await resp.text();
+            const frag = new DOMParser().parseFromString(html, "text/html").getElementById("faqListWrapper");
+            if (frag) listWrapper.innerHTML = frag.innerHTML;
+          }
+
+          // 카테고리(이벤트 위임)
+          document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.cat-btn');
+            if (!btn) return;
+            const cat = btn.getAttribute('data-category') || '';
+            categoryInput.value = cat;
+
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+
+            loadFaqList({ kw: kwInput.value, category: cat, page: 0 });
+          });
+
+          // 검색 버튼
+          btnSearch?.addEventListener('click', () => {
+            loadFaqList({ kw: kwInput.value, category: categoryInput.value, page: 0 });
+          });
+
+          // 페이지네이션(이벤트 위임)
+          document.addEventListener('click', (e) => {
+            const a = e.target.closest('.page-link-ajax');
+            if (!a) return;
+            e.preventDefault();
+            const page = a.getAttribute('data-page');
+            loadFaqList({ kw: kwInput.value, category: categoryInput.value, page });
+          });
+        });
+      })();
+
+      // title 클릭시 ajax : 조회수증가 + 내용보기
+      document.addEventListener('click', async (e) => {
+        const q = e.target.closest('.fl-q');
+        if (!q) return;
+
+        const faqNo = q.getAttribute('data-faqno');
+        const a = q.nextElementSibling;
+
+        // 조회수 증가 Ajax
+        const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+        await fetch(`/center/faq/increase/${faqNo}`, {
+          method: 'POST',
+          headers: csrfHeader && csrfToken ? { [csrfHeader]: csrfToken } : {}
+        });
+
+        // 토글 동작
+        document.querySelectorAll('.fl-a').forEach(ans => ans.style.display = 'none');
+        a.style.display = (a.style.display === 'none' ? 'block' : 'none');
+      });
+    </script>
+  </div>
+</body>
+
+</html>

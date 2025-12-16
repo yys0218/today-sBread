@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{admin/adminLayout}">
+
+<head>
+  <link rel="stylesheet" th:href="@{/css/admin/inquiry.css}">
+</head>
+<div layout:fragment="content">
+  <h2 class="il-title">1:1문의 관리</h2>
+
+  <form id="inquirySortForm" th:action="@{/admin/board/inquiry/list}" method="get">
+    <!-- hidden inputs -->
+    <input type="hidden" name="inquiryType" id="inquiryType" th:value="${type}" />
+    <input type="hidden" name="inquiryStatus" id="inquiryStatus" th:value="${status}" />
+    <input type="hidden" name="sortField" id="inquirySortField" th:value="${sortField}" />
+    <input type="hidden" name="sortDir" id="inquirySortDir" th:value="${sortDir}" />
+
+    <!-- 문의유형 카테고리 -->
+    <div class="il-tabs">
+      <button type="button" class="cat-btn" data-field="inquiryType" data-value="-1"
+        th:classappend="${type==-1} ? ' active ' + ${sortDir} : ''">전체</button>
+      <button type="button" class="cat-btn" data-field="inquiryType" data-value="0"
+        th:classappend="${type==0} ? ' active ' + ${sortDir} : ''">회원</button>
+      <button type="button" class="cat-btn" data-field="inquiryType" data-value="1"
+        th:classappend="${type==1} ? ' active ' + ${sortDir} : ''">매장</button>
+      <button type="button" class="cat-btn" data-field="inquiryType" data-value="2"
+        th:classappend="${type==2} ? ' active ' + ${sortDir} : ''">주문/배송</button>
+      <button type="button" class="cat-btn" data-field="inquiryType" data-value="3"
+        th:classappend="${type==3} ? ' active ' + ${sortDir} : ''">결제</button>
+      <button type="button" class="cat-btn" data-field="inquiryType" data-value="4"
+        th:classappend="${type==4} ? ' active ' + ${sortDir} : ''">기타</button>
+    </div>
+
+    <!-- 상태 필터 -->
+    <div class="il-tabs">
+      <button type="button" class="cat-btn" data-field="inquiryStatus" data-value="-1"
+        th:classappend="${status==-1} ? ' active ' + ${sortDir} : ''">전체</button>
+      <button type="button" class="cat-btn" data-field="inquiryStatus" data-value="0"
+        th:classappend="${status==0} ? ' active ' + ${sortDir} : ''">미답변</button>
+      <button type="button" class="cat-btn" data-field="inquiryStatus" data-value="1"
+        th:classappend="${status==1} ? ' active ' + ${sortDir} : ''">답변완료</button>
+    </div>
+  </form>
+
+  <!-- 글 출력 갯수 선택 -->
+  <div class="il-filter box">
+    <label for="size">페이지당 글 수:</label>
+    <select id="sizeSelect">
+      <option th:value="10" th:selected="${size==10}">10개</option>
+      <option th:value="20" th:selected="${size==20}">20개</option>
+      <option th:value="30" th:selected="${size==30}">30개</option>
+    </select>
+  </div>
+
+  <!-- 목록 + 페이징 감싸기 -->
+  <div id="inquiry-list-wrap">
+    <!-- 목록 테이블 -->
+    <table class="il-table">
+      <thead>
+        <tr>
+          <th>번호</th>
+          <th>유형</th>
+          <th>상태</th>
+          <th>제목</th>
+          <th>작성자</th>
+          <th>작성일</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="i, loop : ${paging.content}"
+          th:onclick="|location.href='@{/admin/board/inquiry/detail/{inquiryNo}(inquiryNo=${i.inquiryNo}, page=${page}, status=${status}, type=${type}, size=${size})}'|"
+          style="cursor:pointer;">
+          <!-- 번호 -->
+          <td th:text="${paging.getTotalElements - (paging.number * paging.size) - loop.index}"></td>
+
+          <!-- 문의 유형 -->
+          <td class="il-type" th:switch="${i.inquiryType}">
+            <span th:case="0">회원</span>
+            <span th:case="1">매장</span>
+            <span th:case="2">주문/배송</span>
+            <span th:case="3">결제</span>
+            <span th:case="4">기타</span>
+          </td>
+
+          <!-- 상태 -->
+          <td>
+            <span class="il-status il-status--wait" th:if="${i.inquiryStatus==0}">미답변</span>
+            <span class="il-status il-status--done" th:if="${i.inquiryStatus==1 or i.inquiryStatus==2}">답변완료</span>
+          </td>
+
+          <!-- 제목 -->
+          <td th:text="${i.inquiryTitle}"></td>
+
+          <!-- 작성자 / 작성일 -->
+          <td>
+            <div th:text="${i.member.memberNick}"></div>
+          </td>
+          <td>
+            <div th:text="${#temporals.format(i.inquiryAt,'yyyy-MM-dd')}"></div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- 페이징 처리 -->
+    <div th:if="${!paging.isEmpty()}">
+      <ul class="pagination justify-content-center">
+        <span class="page-item" th:if="${paging.hasPrevious()}">
+          <a class="page-link page-link-ajax" href="#" th:data-page="${paging.number-1}"><span>이전</span></a>
+        </span>
+
+        <span th:each="page:${#numbers.sequence(0, paging.totalPages-1)}"
+          th:if="${page >= paging.number-5 and page <= paging.number+5}"
+          th:classappend="${page==paging.number} ? 'active'" class="page-item">
+          <a th:text="${page+1}" class="page-link page-link-ajax" href="#" th:data-page="${page}"></a>
+        </span>
+
+        <span class="page-item" th:if="${paging.hasNext()}">
+          <a class="page-link page-link-ajax" href="#" th:data-page="${paging.number+1}"><span>다음</span></a>
+        </span>
+      </ul>
+    </div>
+  </div>
+  <!-- inquiry-list-wrap 끝 -->
+</div>
+
+<th:block layout:fragment="script">
+  <script th:src="@{/js/admin/admin.js}"></script>
+  <script>
+    (() => {
+      function ready(fn) {
+        if (document.readyState !== 'loading') fn();
+        else document.addEventListener('DOMContentLoaded', fn);
+      }
+
+      ready(() => {
+        const listWrapper = document.getElementById("inquiry-list-wrap");
+        const sortForm = document.getElementById("inquirySortForm");
+        const sizeSelect = document.getElementById("sizeSelect");
+
+        async function loadInquiryList(paramsObj) {
+          const params = new URLSearchParams(paramsObj).toString();
+          const resp = await fetch(`${sortForm.getAttribute("action")}?${params}`);
+          const html = await resp.text();
+          const frag = new DOMParser().parseFromString(html, "text/html").getElementById("inquiry-list-wrap");
+          if (frag) listWrapper.innerHTML = frag.innerHTML;
+
+          // Ajax 완료 후 버튼 CSS 갱신
+          updateActiveButtons(paramsObj);
+        }
+
+        // 현재 상태 읽기
+        function currentState() {
+          return {
+            page: 0,
+            size: sizeSelect.value,
+            inquiryType: document.getElementById("inquiryType").value,
+            inquiryStatus: document.getElementById("inquiryStatus").value,
+            sortField: document.getElementById("inquirySortField").value,
+            sortDir: document.getElementById("inquirySortDir").value
+          };
+        }
+
+        // 버튼 활성화 갱신 함수
+        function updateActiveButtons(state) {
+          document.querySelectorAll(".cat-btn").forEach(btn => {
+            const field = btn.dataset.field;
+            const value = btn.dataset.value;
+
+            // 기본 해제
+            btn.classList.remove("active", "asc", "desc");
+
+            // 조건과 맞으면 활성화 + 정렬 방향 클래스 추가
+            if (state[field] == value) {
+              btn.classList.add("active", state.sortDir);
+            }
+          });
+        }
+
+        // 카테고리/상태 버튼 클릭 처리
+        document.addEventListener("click", (e) => {
+          const btn = e.target.closest(".cat-btn");
+          if (!btn) return;
+
+          const field = btn.dataset.field;
+          const value = btn.dataset.value;
+          document.getElementById(field).value = value;
+
+          // 정렬 방향 토글
+          const dirInput = document.getElementById("inquirySortDir");
+          dirInput.value = (dirInput.value === "desc") ? "asc" : "desc";
+
+          const state = currentState();
+          loadInquiryList(state);
+        });
+
+        // 페이지네이션 클릭 처리
+        document.addEventListener("click", (e) => {
+          const a = e.target.closest(".page-link-ajax");
+          if (!a) return;
+          e.preventDefault();
+
+          const state = currentState();
+          state.page = a.getAttribute("data-page");
+          loadInquiryList(state);
+        });
+
+        // 페이지당 글 수 변경 Ajax 처리
+        sizeSelect.addEventListener("change", () => {
+          const state = currentState();
+          state.page = 0; // 첫 페이지로
+          loadInquiryList(state);
+        });
+
+        // 첫 로딩 시에도 버튼 상태 반영
+        updateActiveButtons(currentState());
+      });
+
+    })();
+  </script>
+</th:block>
+
+</html>
